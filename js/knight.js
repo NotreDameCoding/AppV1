@@ -96,16 +96,14 @@
     // shield on the left arm, sword or staff on the right
     if (eq.shield !== "none") {
       const s = SHIELDS[eq.shield || "oak"] || SHIELDS.oak;
-      // wide, thick kite shield: coloured body, light rim, one simple cross
-      const rows = [[1, 11], [0, 12], [0, 12], [0, 12], [0, 12], [0, 12], [0, 12], [0, 12], [1, 11], [2, 10], [3, 9], [4, 8], [5, 7]];
+      // wide, thick kite shield: coloured body with a light rim
+      const rows = [[1, 13], [0, 14], [0, 14], [0, 14], [0, 14], [0, 14], [0, 14], [0, 14], [0, 14], [1, 13], [2, 12], [3, 11], [4, 10], [5, 9], [6, 8]];
       const rim = L(s.n, { hi: tint(s.n, 0.35), sh: tint(s.n, -0.3) }), body = L(s.m);
       rows.forEach(([a, b], i) => {
-        const y = 15 + i;
+        const y = 14 + i;
         for (let x = a; x <= b; x++) add(rim, x, y);
         if (i > 0 && i < rows.length - 1) for (let x = a + 1; x <= b - 1; x++) add(body, x, y);
       });
-      const em = L(s.n, { flat: true });
-      rect(em, 6, 17, 1, 8); rect(em, 3, 19, 7, 1);
     }
     if (eq.weapon !== "none") {
       const w = WEAPONS[eq.weapon || "wood"] || WEAPONS.wood;
@@ -171,7 +169,7 @@
     /* gear icons: the piece alone on a small canvas */
     icon(slot, k) {
       if (slot === "helm") return NDC.svg(toSvg(compose({ helm: k, armor: "steel", shield: "none", weapon: "none", cape: "none" }), { crop: [4, 0, 20, 18], label: k }));
-      if (slot === "shield") return NDC.svg(toSvg(compose({ shield: k, helm: "squire", weapon: "none" }), { crop: [0, 14, 13, 14], label: k }));
+      if (slot === "shield") return NDC.svg(toSvg(compose({ shield: k, helm: "squire", weapon: "none" }), { crop: [0, 13, 15, 17], label: k }));
       if (slot === "weapon") return NDC.svg(toSvg(compose({ weapon: k, shield: "none" }), { crop: [20, 2, 8, 26], label: k }));
       if (slot === "cape") return NDC.svg(toSvg(compose({ cape: k, shield: "none", weapon: "none" }), { crop: [2, 13, 24, 19], label: k }));
       return NDC.svg(toSvg(compose({ armor: k, shield: "none", weapon: "none", helm: "squire" }), { crop: [1, 12, 26, 19], label: k }));
