@@ -67,41 +67,37 @@
     ell(armor(tint(A.a, 0.08)), 5.5, 18, 3.8, 3.6); ell(armor(tint(A.a, 0.08)), 22.5, 18, 3.8, 3.6);
     rect(L(tint(A.a, -0.1)), 12, 17, 4, 2);
 
-    // head, by helm
+    // head, by helm (the simple original faces and helms, on the wide body)
     const helm = eq.helm || "squire";
-    const steel = ARMOR.steel;
-    const metal = (c) => L(c, { hi: steel.h, sh: steel.b });
+    const hm = (c) => (c ? L(c, { hi: tint(c, 0.35), sh: tint(c, -0.35) }) : armor());
     if (helm === "squire") {
-      ell(L(SKIN), 13.5, 10.5, 6.5, 6);
-      ell(L("#b5651d"), 13.5, 6, 7, 3.2); rect(L("#b5651d"), 6, 6, 3, 6); rect(L("#b5651d"), 19, 6, 3, 6);
-      rect(L("#4f7cf0"), 8, 4, 12, 3);
+      ell(L(SKIN), 13.5, 11, 5.6, 5.6);
+      rect(L("#6a4630", { flat: true }), 9, 6, 10, 2);
+      rect(L("#4f7cf0"), 8, 4, 12, 3); rect(L("#4f7cf0"), 8, 7, 2, 2); rect(L("#4f7cf0"), 18, 7, 2, 2);
       pts(L(DARK, { flat: true }), [[11, 11], [11, 12], [16, 11], [16, 12]]);
-      pts(L("#d89a78", { flat: true }), [[13, 14], [14, 14]]);
+      rect(L("#d6a47e", { flat: true }), 12, 15, 4, 1);
     } else {
-      metal("#9fb0d0"); const hl = layers[layers.length - 1];
-      if (helm === "horned") { hl.c = "#7a82ac"; rect(hl, 8, 3, 12, 11); rect(hl, 7, 8, 14, 6); }
-      else if (helm === "crowned") rect(hl, 8, 3, 12, 13);
-      else rect(hl, 7, 3, 14, 13);
-      rect(L(DARK, { flat: true }), helm === "horned" ? 9 : 8, 9, helm === "horned" ? 10 : 12, 2);
-      if (helm !== "horned") rect(L(DARK, { flat: true }), 13, 9, 2, 6);
-      pts(L(helm === "crowned" ? "#bfe0ff" : helm === "horned" ? "#ff8a3d" : "#f4f1e6", { flat: true }), [[10, 9], [11, 9], [16, 9], [17, 9]]);
-      if (helm === "iron") rect(metal("#6a7899"), 13, 2, 2, 2);
-      if (helm === "plumed") { ell(L("#e5484d", { hi: "#ff9ea0", sh: "#942e3a" }), 13.5, 3, 3.2, 3); rect(layers[layers.length - 1], 12, 4, 4, 3); }
+      const base = helm === "crowned" ? ARMOR.gold.a : A.a, hi = helm === "crowned" ? ARMOR.gold.h : A.h, sh = helm === "crowned" ? ARMOR.gold.b : A.b;
+      const hl = L(base, { hi, sh });
+      rect(hl, 7, 4, 14, 12); rect(hl, 8, 3, 12, 1);
+      rect(L(DARK, { flat: true }), 8, 9, 12, 2);
+      if (helm === "iron") rect(L(sh, { flat: true }), 8, 13, 12, 1);
+      if (helm === "plumed") { ell(L("#e5484d", { hi: "#ff9ea0", sh: "#942e3a" }), 13.5, 3, 3.4, 3); rect(layers[layers.length - 1], 12, 4, 4, 3); }
       if (helm === "horned") {
         const hn = L("#efe6cc", { hi: "#fffaf0", sh: "#b8ad92" });
-        rect(hn, 3, 3, 2, 6); rect(hn, 4, 2, 2, 3); rect(hn, 5, 7, 2, 3); rect(hn, 23, 3, 2, 6); rect(hn, 22, 2, 2, 3); rect(hn, 21, 7, 2, 3);
+        rect(hn, 5, 3, 2, 6); rect(hn, 6, 2, 2, 3); rect(hn, 21, 3, 2, 6); rect(hn, 20, 2, 2, 3); rect(hn, 4, 1, 2, 3); rect(hn, 22, 1, 2, 3);
       }
       if (helm === "crowned") {
         const gd = L(GOLD, { hi: "#ffe19a", sh: "#a9761f" });
-        rect(gd, 8, 2, 12, 2); rect(gd, 8, 0, 2, 2); rect(gd, 13, 0, 2, 2); rect(gd, 18, 0, 2, 2);
+        rect(gd, 7, 2, 14, 2); rect(gd, 7, 0, 2, 2); rect(gd, 13, 0, 2, 2); rect(gd, 19, 0, 2, 2);
       }
     }
 
     // shield on the left arm, sword or staff on the right
     if (eq.shield !== "none") {
       const s = SHIELDS[eq.shield || "oak"] || SHIELDS.oak;
-      const sh = L(s.m); rect(sh, 0, 12, 8, 15); rect(sh, 1, 27, 6, 2); rect(sh, 2, 29, 4, 1);
-      const em = L(s.n, { flat: true }); rect(em, 3, 15, 2, 10); rect(em, 1, 18, 6, 2);
+      ell(L(s.m), 5, 22, 5, 6.5);
+      ell(L(s.n, { flat: true }), 5, 22, 2, 2);
     }
     if (eq.weapon !== "none") {
       const w = WEAPONS[eq.weapon || "wood"] || WEAPONS.wood;
