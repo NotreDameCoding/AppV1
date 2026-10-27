@@ -116,7 +116,7 @@
       { id: "iron", name: "Iron helm", ...P(50, "Sturdy", { hp: 10 }) },
       { id: "plumed", name: "Plumed helm", ...P(100, "Sturdy", { hp: 20 }) },
       { id: "horned", name: "Horned helm", ...P(160, "Tough", { hp: 30 }) },
-      { id: "crowned", name: "Gold crest", ...P(250, "Mighty", { hp: 45 }) },
+      { id: "crowned", name: "Crown", ...P(250, "Mighty", { hp: 45 }) },
     ],
     shield: [
       { id: "oak", name: "Oak shield", ...P(0, "Basic", { block: 0.5, cost: 20, arc: 100, parry: 0 }) },

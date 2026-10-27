@@ -93,6 +93,93 @@
           },
         ],
       },
+      {
+        title: "Cleaner sketches", blurb: "Variables, constants and your own functions.",
+        lessons: [
+          {
+            id: "ar-7", title: "Variables and constants", blurb: "Name your pins and numbers.",
+            intro: { text: "Instead of writing `13` everywhere, give the number a name: `const int LED_PIN = 13;`. `int` holds whole numbers, `float` holds decimals, and `bool` holds true or false. `const` means it never changes. Declare it above `setup()` so both `setup()` and `loop()` can use it.", code: "const int LED_PIN = 13;\nint waitTime = 500;\n\nvoid setup() {\n  pinMode(LED_PIN, OUTPUT);\n}\n\nvoid loop() {\n  digitalWrite(LED_PIN, HIGH);\n  delay(waitTime);\n}" },
+            ex: [
+              Q.mc("Why write `const int LED_PIN = 13;`?", ["The name explains the number and it never changes", "It makes the LED brighter", "It runs faster", "It is required"], 0, "Names make code readable, and `const` protects the value."),
+              Q.mc("Which type holds a whole number like 42?", ["int", "float", "bool", "String"], 0, "`int` is for whole numbers."),
+              Q.fill("Mark the button pin as a constant.", "___ int BUTTON = 2;", ["const", "final", "static", "let"], "const", "Arduino uses `const`."),
+              Q.mc("Where should a variable go so both `setup()` and `loop()` can use it?", ["Above both functions", "Inside setup()", "Inside loop()", "At the very end"], 0, "A variable declared outside every function is global."),
+              Q.led("Use timing variables: make the LED stay on for 300 ms and off for 700 ms.", BLINK, { on: 500, off: 500 }, (p) => p.on === 300 && p.off === 700, "300 on plus 700 off is a 1-second cycle."),
+              Q.match("Match each word to its meaning.", [["int", "a whole number"], ["float", "a number with decimals"], ["bool", "true or false"], ["const", "a value that never changes"]], "The four you'll see most."),
+            ],
+          },
+          {
+            id: "ar-8", title: "Your own functions", blurb: "Package steps and reuse them.",
+            intro: { text: "You can write your own functions. `void` means the function gives nothing back. Give it a name, parentheses, and a body in curly braces, then call it by name. Functions keep `loop()` short and easy to read, and they can take parameters like `void flash(int times)`.", code: "void flash() {\n  digitalWrite(13, HIGH);\n  delay(100);\n  digitalWrite(13, LOW);\n  delay(100);\n}\n\nvoid loop() {\n  flash();\n  flash();\n  delay(1000);\n}" },
+            ex: [
+              Q.mc("What does `void` mean in `void flash()`?", ["The function returns nothing", "The function does nothing", "The function is empty", "It runs once"], 0, "It's a function that acts but gives no value back."),
+              Q.mc("What does this loop do?", ["Blinks twice, then waits a second", "Blinks once forever", "Never blinks", "Blinks forever with no pause"], 0, "It calls `flash()` two times and then delays 1000 ms.", "void loop() {\n  flash();\n  flash();\n  delay(1000);\n}"),
+              Q.fill("Start a function that takes how many times to flash.", "___ flash(int times) {", ["void", "int", "function", "def"], "void", "It returns nothing, so it's `void`."),
+              Q.type("How do you call a function named flash? Type the call.", ["flash()", "flash();"], "A call is the name followed by parentheses."),
+              Q.order("Order the lines to define and use a function.", ["void flash() {", "  digitalWrite(13, HIGH);", "  delay(100);", "  digitalWrite(13, LOW);", "}", "void loop() {", "  flash();", "}"], "Define the function first, then call it from loop."),
+              Q.mc("Why write your own function?", ["To reuse steps and keep loop() tidy", "Arduino requires it", "To make the board faster", "To use less power"], 0, "Reusable, named steps make a sketch easier to read and change."),
+            ],
+          },
+        ],
+      },
+      {
+        title: "Fades and sound", blurb: "Loops that dim lights, and a buzzer that sings.",
+        lessons: [
+          {
+            id: "ar-9", title: "Loops and fading", blurb: "Count your way to a smooth fade.",
+            intro: { text: "A `for` loop repeats code a set number of times: `for (int i = 0; i <= 255; i++)` counts from 0 to 255. Put `analogWrite(9, i)` and a tiny `delay` inside to fade an LED smoothly up. Count down with `i--` to fade out.", code: "for (int i = 0; i <= 255; i++) {\n  analogWrite(9, i);\n  delay(5);\n}" },
+            ex: [
+              Q.mc("What does this loop do to the LED?", ["Fades it from off to full brightness", "Blinks it", "Turns it off", "Nothing"], 0, "`i` climbs from 0 to 255, so the brightness rises.", "for (int i = 0; i <= 255; i++) {\n  analogWrite(9, i);\n  delay(5);\n}"),
+              Q.mc("How many times does `for (int i = 0; i < 5; i++)` run its body?", ["5", "4", "6", "Forever"], 0, "`i` takes the values 0, 1, 2, 3 and 4."),
+              Q.fill("Count down so the LED fades out.", "for (int i = 255; i >= 0; i___) {\n  analogWrite(9, i);\n}", ["--", "++", "+=", "=="], "--", "`i--` lowers `i` by one each time."),
+              Q.led("Make the LED stay on for three quarters of each second and off for the rest.", BLINK, { on: 500, off: 500 }, (p) => p.on === 750 && p.off === 250, "750 plus 250 is 1000 ms, and the LED is on 75% of the time."),
+              Q.order("Order the lines to fade the LED up.", ["for (int i = 0; i <= 255; i++) {", "  analogWrite(9, i);", "  delay(5);", "}"], "The loop wraps the write and the pause."),
+              Q.type("What is the biggest value `analogWrite` accepts?", "255", "255 means fully on."),
+            ],
+          },
+          {
+            id: "ar-10", title: "Sound with tone", blurb: "Make a buzzer play notes.",
+            intro: { text: "A piezo buzzer makes sound when its pin switches quickly. `tone(8, 440)` plays 440 Hz (the note A) on pin 8 until you call `noTone(8)`. A higher frequency gives a higher pitch. `tone(8, 440, 500)` plays for 500 ms and stops by itself.", code: "void loop() {\n  tone(8, 440);\n  delay(500);\n  noTone(8);\n  delay(500);\n}" },
+            ex: [
+              Q.mc("What does `tone(8, 440)` do?", ["Plays 440 Hz on pin 8 until stopped", "Plays for 440 seconds", "Turns pin 440 on", "Sets the volume to 8"], 0, "It starts a steady note on pin 8."),
+              Q.mc("What does a higher frequency sound like?", ["A higher pitch", "A lower pitch", "Louder", "Quieter"], 0, "More vibrations per second means a higher note."),
+              Q.fill("Stop the sound on pin 8.", "___(8);", ["noTone", "stop", "mute", "tone"], "noTone", "`noTone` ends the note."),
+              Q.mc("In `tone(8, 262, 250)`, what is 250?", ["How long the note plays, in milliseconds", "The pin", "The frequency", "The volume"], 0, "The optional third value is the duration."),
+              Q.order("Order the lines to beep once and pause.", ["tone(8, 440);", "delay(500);", "noTone(8);", "delay(500);"], "Start the note, wait, stop it, wait."),
+              Q.type("How many milliseconds is a quarter of a second?", "250", "1000 divided by 4."),
+            ],
+          },
+        ],
+      },
+      {
+        title: "Sensors and projects", blurb: "Read the world and build something real.",
+        lessons: [
+          {
+            id: "ar-11", title: "Light and distance sensors", blurb: "Decide things based on what the board senses.",
+            intro: { text: "A photoresistor changes with light. Wire it with a resistor to an analog pin and `analogRead` gives a number you can compare, like `if (light < 300)` for dark. An ultrasonic sensor measures distance by timing an echo. `map()` converts a reading to a range you can use.", code: "int light = analogRead(A0);\nif (light < 300) {\n  digitalWrite(13, HIGH);   // dark: lights on\n} else {\n  digitalWrite(13, LOW);\n}" },
+            ex: [
+              Q.fill("Read the light sensor on pin A0.", "int v = ___(A0);", ["analogRead", "digitalRead", "read", "sense"], "analogRead", "Light is a range of values, so it's an analog read."),
+              Q.mc("The sensor reads about 900 in bright light and 100 in dark. Which test finds darkness?", ["light < 300", "light > 800", "light == 1023", "light == HIGH"], 0, "Dark gives small readings."),
+              Q.mc("How does an ultrasonic sensor measure distance?", ["It times how long a sound echo takes to return", "It measures color", "It measures heat", "It sees the object"], 0, "Sound travels at a known speed, so time tells distance."),
+              Q.mc("Why use `map()` on a sensor reading?", ["To convert it to a more useful range", "To make it louder", "To delete it", "To print it"], 0, "For example, turn 0 to 1023 into 0 to 255 for `analogWrite`."),
+              Q.type("Which function reads a pin as a number from 0 to 1023?", "analogRead", "It reads a voltage and gives back 0 to 1023."),
+              Q.match("Match each part to what it measures.", [["photoresistor", "light"], ["thermistor", "temperature"], ["ultrasonic sensor", "distance"], ["potentiometer", "knob position"]], "Each sensor turns the world into a number."),
+            ],
+          },
+          {
+            id: "ar-12", title: "Build a project", blurb: "Plan a small project from start to finish.",
+            intro: { text: "A good project starts with a plan: what the board senses, what it decides, and what it does. Wire one thing at a time and test it before adding the next. An LED needs a resistor, often 220 ohms, in series so it doesn't burn out. If something doesn't work, check the pin number, the wiring, and the LED's direction.", code: "// traffic light: red, then green\ndigitalWrite(RED, HIGH);\ndelay(2000);\ndigitalWrite(RED, LOW);\ndigitalWrite(GREEN, HIGH);\ndelay(2000);\ndigitalWrite(GREEN, LOW);" },
+            ex: [
+              Q.order("Order the lines so red shows for 2 seconds, then green for 2 seconds.", ["digitalWrite(RED, HIGH);", "delay(2000);", "digitalWrite(RED, LOW);", "digitalWrite(GREEN, HIGH);", "delay(2000);", "digitalWrite(GREEN, LOW);"], "Turn a light on, wait, turn it off, then move on to the next."),
+              Q.led("Make a heartbeat: on for 100 ms, then off for 900 ms.", BLINK, { on: 500, off: 500 }, (p) => p.on === 100 && p.off === 900, "A quick flash and a long pause make a heartbeat."),
+              Q.mc("Your LED never lights. What should you check first?", ["The pin number, the wiring and the LED's direction", "The color of the board", "The USB cable length", "Nothing, it's broken"], 0, "Most problems are a wrong pin or a backward LED."),
+              Q.type("What resistor value in ohms is commonly used with an LED? Type a number.", ["220", "330"], "A 220 or 330 ohm resistor limits the current to a safe level."),
+              Q.mc("What is a good way to build a project?", ["Wire and test one piece at a time", "Wire everything, then hope", "Skip testing", "Write all the code first without running it"], 0, "Small tested steps make mistakes easy to find."),
+              Q.match("Match each part to its job in a night light.", [["photoresistor", "senses the light level"], ["if statement", "decides when it is dark"], ["LED", "shows the light"], ["resistor", "protects the LED"]], "Sense, decide, act."),
+            ],
+          },
+        ],
+      },
     ],
   });
 })();

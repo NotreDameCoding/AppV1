@@ -55,14 +55,11 @@
     if (cape) {
       const c = L(cape.c, { hi: tint(cape.c, 0.25), sh: cape.C });
       // wide, flared cape that ends in a row of sharp triangles
-      for (let y = 15; y < 27; y++) {
-        const x0 = y < 18 ? 6 : y < 21 ? 5 : y < 24 ? 4 : 3, x1 = 27 - x0;
-        rect(c, x0, y, x1 - x0 + 1, 1);
-      }
-      for (const cx of [5.75, 11.25, 16.75, 22.25]) {
+      rect(c, 5, 15, 18, 12);
+      for (const cx of [7.25, 11.75, 16.25, 20.75]) {
         for (let y = 27; y < 32; y++) {
-          const hw = 2.75 * (1 - (y - 27) / 5);
-          for (let x = 3; x < 25; x++) if (Math.abs(x + 0.5 - cx) <= hw + 0.3) add(c, x, y);
+          const hw = 2.25 * (1 - (y - 27) / 5);
+          for (let x = 5; x < 23; x++) if (Math.abs(x + 0.5 - cx) <= hw + 0.3) add(c, x, y);
         }
       }
     }
@@ -79,10 +76,14 @@
     // head, by helm (the simple original faces and helms, on the wide body)
     const helm = eq.helm || "squire";
     const hm = (c) => (c ? L(c, { hi: tint(c, 0.35), sh: tint(c, -0.35) }) : armor());
-    if (helm === "squire") {
+    if (helm === "squire" || helm === "crowned") {
       ell(L(SKIN), 13.5, 11, 5.6, 5.6);
       rect(L("#6a4630", { flat: true }), 9, 6, 10, 2);
-      rect(L("#4f7cf0"), 8, 4, 12, 3); rect(L("#4f7cf0"), 8, 7, 2, 2); rect(L("#4f7cf0"), 18, 7, 2, 2);
+      if (helm === "crowned") {
+        const cr = L(GOLD, { hi: "#ffe19a", sh: "#a9761f" });
+        rect(cr, 8, 3, 12, 3); rect(cr, 8, 1, 2, 2); rect(cr, 13, 0, 2, 3); rect(cr, 18, 1, 2, 2);
+        pts(L("#e5484d", { flat: true }), [[13, 4], [14, 4]]);
+      } else { rect(L("#4f7cf0"), 8, 4, 12, 3); rect(L("#4f7cf0"), 8, 7, 2, 2); rect(L("#4f7cf0"), 18, 7, 2, 2); }
       pts(L(DARK, { flat: true }), [[11, 11], [11, 12], [16, 11], [16, 12]]);
       rect(L("#d6a47e", { flat: true }), 12, 15, 4, 1);
     } else {

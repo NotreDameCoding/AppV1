@@ -92,6 +92,93 @@
           },
         ],
       },
+      {
+        title: "Text and objects", blurb: "Handle words, and group related values.",
+        lessons: [
+          {
+            id: "js-7", title: "Strings", blurb: "Change, slice and search text.",
+            intro: { text: "Strings have helpful methods: `.toUpperCase()`, `.toLowerCase()`, `.includes()` and `.slice()`. The `.length` property counts characters. Template literals use backticks and `${}` to drop values into text.", code: 'const word = "python";\nconsole.log(word.toUpperCase());\nconsole.log(word.slice(0, 3));\nconsole.log(`${word} has ${word.length} letters`);' },
+            ex: [
+              Q.mc("What does `\"hello\".toUpperCase()` give you?", ["HELLO", "Hello", "hello", "An error"], 0, "It makes every letter a capital."),
+              Q.mc("What does this print?", ["pyt", "pyth", "yth", "py"], 0, "`slice(0, 3)` takes characters 0, 1 and 2. It stops before 3.", 'const word = "python";\nconsole.log(word.slice(0, 3));'),
+              Q.fill("Check whether the sentence contains the word cat.", 'const s = "the cat sat";\nconsole.log(s.___("cat"));', ["includes", "has", "contains", "find"], "includes", "In JavaScript the method is `includes`."),
+              Q.mc("Which one builds the text `Hi Ana` using a variable called name?", ["`Hi ${name}`", '"Hi ${name}"', "'Hi {name}'", "`Hi name`"], 0, "Template literals use backticks, and `${ }` holds the variable."),
+              Q.run("Print the word banana in all capital letters.", 'const word = "banana";\n// print it in capitals below\n', [{ out: "BANANA" }, { replace: ['const word = "banana"', 'const word = "kiwi"'], out: "KIWI", label: "Works for any word" }], "Call a string method on the variable.", "`console.log(word.toUpperCase());`"),
+              Q.type("What number does `\"knight\".length` give?", "6", "`length` counts every character."),
+            ],
+          },
+          {
+            id: "js-8", title: "Objects", blurb: "Group related values under names.",
+            intro: { text: "An object holds named values called properties. Write it with curly braces. Read a property with a dot, `player.name`, or with brackets, `player[\"name\"]`. You can add or change properties by assigning to them.", code: 'const player = { name: "Mia", score: 10 };\nplayer.score = 25;\nplayer.level = 2;\nconsole.log(player.name, player.score);' },
+            ex: [
+              Q.mc("What does this print?", ["17", "Bo", "age", "undefined"], 0, "`ages.Bo` reads the value stored under the name Bo.", 'const ages = { Ana: 15, Bo: 17 };\nconsole.log(ages.Bo);'),
+              Q.mc("Which brackets make an object?", ["{ }", "[ ]", "( )", "< >"], 0, "Curly braces hold the name: value pairs."),
+              Q.fill("Change the score to 99.", 'const p = { score: 10 };\np.score ___ 99;\nconsole.log(p.score);', ["=", "==", ":", "=>"], "=", "Assign with a single `=`."),
+              Q.mc("What does reading a property that doesn't exist give you?", ["undefined", "0", "An error", "null"], 0, "JavaScript quietly returns `undefined`."),
+              Q.run("Print how many points Sam has.", "const points = { Ana: 12, Sam: 9 };\n// print Sam's points below\n", [{ out: "9" }, { replace: ["Sam: 9", "Sam: 20"], out: "20", label: "Reads the object" }], "Read the property with a dot.", "`console.log(points.Sam);`"),
+              Q.match("Match each expression to what it does.", [["p.name", "reads a property"], ["p.age = 16", "sets a property"], ["Object.keys(p)", "lists the property names"], ["{ }", "makes an object"]], "Dots read, assignments write."),
+            ],
+          },
+        ],
+      },
+      {
+        title: "Array power", blurb: "Transform and search lists.",
+        lessons: [
+          {
+            id: "js-9", title: "map and filter", blurb: "Build new arrays from old ones.",
+            intro: { text: "`.map()` makes a new array by running a function on every item. `.filter()` makes a new array with only the items that pass a test. Neither changes the original. The arrow function `n => n * 2` is a short way to write a small function.", code: "const nums = [1, 2, 3, 4];\nconst doubled = nums.map(n => n * 2);\nconst big = nums.filter(n => n > 2);\nconsole.log(doubled.join(\",\"), big.join(\",\"));" },
+            ex: [
+              Q.mc("What does `[1, 2, 3].map(n => n + 1)` give?", ["[2, 3, 4]", "[1, 2, 3]", "[1, 2, 3, 1]", "6"], 0, "`map` runs the function on every item and collects the results."),
+              Q.mc("What does `[5, 12, 8, 20].filter(n => n > 10)` give?", ["[12, 20]", "[5, 8]", "[5, 12, 8, 20]", "2"], 0, "`filter` keeps only the items where the test is true."),
+              Q.fill("Triple every number.", "const out = [1, 2, 3].___(n => n * 3);", ["map", "filter", "forEach", "find"], "map", "Use `map` when you want one result per item."),
+              Q.run("Use map to multiply every number by 10, then print them joined with dashes.", "const nums = [1, 2, 3];\n// print the new numbers below\n", [{ out: "10-20-30" }], "`map` returns a new array. Then join it into one string.", 'console.log(nums.map(n => n * 10).join("-"));'),
+              Q.run("Use filter to keep only numbers over 10, then print how many there are.", "const nums = [4, 12, 30, 7, 15];\n// print the count below\n", [{ out: "3" }, { replace: ["\\[4, 12, 30, 7, 15\\]", "[1, 2]"], out: "0", label: "Works for other arrays" }], "`filter` gives an array, and arrays have a `length`.", "`nums.filter(n => n > 10).length`"),
+              Q.match("Match each array method to what it does.", [[".map()", "transforms every item"], [".filter()", "keeps items that pass a test"], [".push()", "adds to the end"], [".join()", "glues items into one string"]], "These four cover most array work."),
+            ],
+          },
+          {
+            id: "js-10", title: "Looping and math", blurb: "for...of, Math and running totals.",
+            intro: { text: "`for (const x of list)` walks through every item without an index. The `Math` object has `Math.max`, `Math.min`, `Math.round` and `Math.floor`. Spread an array into a function with `...`, like `Math.max(...nums)`.", code: 'const names = ["ada", "bo"];\nfor (const n of names) {\n  console.log(n);\n}\nconsole.log(Math.max(3, 9, 4));' },
+            ex: [
+              Q.mc("What does `Math.round(4.6)` give?", ["5", "4", "4.6", "6"], 0, "It rounds to the nearest whole number."),
+              Q.mc("What does `Math.floor(4.9)` give?", ["4", "5", "4.9", "0"], 0, "`floor` always rounds down."),
+              Q.fill("Loop over every name.", 'for (const name ___ ["a", "b"]) {\n  console.log(name);\n}', ["of", "in", "at", "each"], "of", "`for...of` walks through the items."),
+              Q.run("Print the largest number using Math.max.", "const nums = [3, 9, 4];\n// print the biggest below\n", [{ out: "9" }, { replace: ["\\[3, 9, 4\\]", "[50, 2]"], out: "50", label: "Works for other arrays" }], "Math.max takes separate numbers. Spread the array into it.", "`console.log(Math.max(...nums));`"),
+              Q.run("Loop with for...of and print each name in capital letters.", 'const names = ["ada", "bo"];\n// loop below\n', [{ out: "ADA\nBO" }], "Use `for (const n of names)` and a string method.", "`console.log(n.toUpperCase());`"),
+              Q.type("What does this print?", "6", "The loop adds 1, then 2, then 3.", "let t = 0;\nfor (const n of [1, 2, 3]) {\n  t += n;\n}\nconsole.log(t);"),
+            ],
+          },
+        ],
+      },
+      {
+        title: "Toward the browser", blurb: "How JavaScript talks to a page, and small projects.",
+        lessons: [
+          {
+            id: "js-11", title: "The DOM", blurb: "How code finds and changes page elements.",
+            intro: { text: "In a browser, the page is a tree of objects called the DOM. `document.querySelector(\"#title\")` finds an element using a CSS selector. You can change its `.textContent` or its `.style`. `addEventListener(\"click\", fn)` runs a function when something is clicked.", code: 'const title = document.querySelector("#title");\ntitle.textContent = "Welcome!";\ntitle.addEventListener("click", () => {\n  title.style.color = "gold";\n});' },
+            ex: [
+              Q.mc("What does `document.querySelector(\".card\")` return?", ["The first element with the class card", "Every element with the class card", "The text of the card", "A new card"], 0, "`querySelector` gives back the first match."),
+              Q.mc("Which property changes the text inside an element?", ["textContent", "innerText2", "words", "label"], 0, "`textContent` reads or sets an element's text."),
+              Q.fill("Run the function when the button is clicked.", 'btn.addEventListener("___", () => {\n  alert("hi");\n});', ["click", "press", "tap", "onclick"], "click", "The event name is `click`."),
+              Q.mc("In `querySelector(\"#score\")`, what does the `#` mean?", ["Find the element with that id", "Find a class", "Comment", "Number"], 0, "A hash selects by id, just like in CSS."),
+              Q.order("Order the lines to change a heading when it's clicked.", ['const h = document.querySelector("h1");', 'h.addEventListener("click", () => {', '  h.textContent = "Clicked!";', "});"], "Find it first, then listen, then change it."),
+              Q.match("Match each piece to its job.", [["querySelector", "finds an element"], ["textContent", "its text"], ["addEventListener", "reacts to events"], ["style", "its inline CSS"]], "These four power most small interactive pages."),
+            ],
+          },
+          {
+            id: "js-12", title: "Mini programs", blurb: "Classic problems, solved in JavaScript.",
+            intro: { text: "Real programs are small ideas combined: loops, conditions, arrays and strings. Break the problem into steps, solve one step at a time, and `console.log` values along the way to see what's happening.", code: 'const word = "level";\nconst back = word.split("").reverse().join("");\nconsole.log(word === back);' },
+            ex: [
+              Q.run("Print the numbers 1 to 15, but print Fizz instead of every multiple of 3.", "// loop below\n", [{ out: "1\n2\nFizz\n4\n5\nFizz\n7\n8\nFizz\n10\n11\nFizz\n13\n14\nFizz" }], "Loop from 1 to 15 and test each number.", "A multiple of 3 has `i % 3 === 0`."),
+              Q.run("Print the average of the scores.", "const scores = [80, 90, 100];\n// print the average below\n", [{ out: "90" }, { replace: ["\\[80, 90, 100\\]", "[1, 2]"], out: "1.5", label: "Works for other arrays" }], "Add them up and divide by how many there are.", "Use a loop for the total, then divide by `scores.length`."),
+              Q.run("Print the word backwards.", 'const word = "knight";\n// print it reversed below\n', [{ out: "thgink" }, { replace: ['"knight"', '"dragon"'], out: "nogard", label: "Works for any word" }], "Split into letters, reverse the array, join it back.", '`word.split("").reverse().join("")`'),
+              Q.run("Count how many vowels (a, e, i, o, u) are in the word and print the count.", 'const word = "education";\n// count below\n', [{ out: "5" }, { replace: ['"education"', '"sky"'], out: "0", label: "Works for other words" }], "Keep a counter and loop over the letters.", 'Start `let count = 0;`, then `if ("aeiou".includes(c)) count++;`'),
+              Q.type("What does `\"ab\".repeat(3)` give?", "ababab", "`repeat` repeats a string."),
+              Q.mc("Your program prints the wrong answer. What helps most?", ["console.log values in the middle to see where it goes wrong", "Delete everything and start over", "Add more loops", "Ignore it"], 0, "Logging as you go shows exactly where the program stops matching your plan."),
+            ],
+          },
+        ],
+      },
     ],
   });
 })();

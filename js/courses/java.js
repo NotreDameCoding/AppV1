@@ -92,6 +92,93 @@
           },
         ],
       },
+      {
+        title: "More about data", blurb: "Text methods, math and casting.",
+        lessons: [
+          {
+            id: "jv-7", title: "String methods", blurb: "Measure, slice and compare text.",
+            intro: { text: "A Java `String` is an object with methods. `length()` counts characters, `charAt(i)` reads one character, `substring(a, b)` takes the part from a up to (not including) b, and `toUpperCase()` changes the case. To compare text, use `equals`, never `==`.", code: 'String s = "knight";\nSystem.out.println(s.length());\nSystem.out.println(s.charAt(0));\nSystem.out.println(s.substring(1, 3));\nSystem.out.println(s.equals("knight"));' },
+            ex: [
+              Q.mc("What does this print?", ["6", "5", "7", "An error"], 0, "`length()` counts every character in \"knight\".", 'String s = "knight";\nSystem.out.println(s.length());'),
+              Q.mc("What does `\"Hello\".charAt(1)` give?", ["e", "H", "l", "o"], 0, "Counting starts at 0, so index 1 is the second letter."),
+              Q.fill("Compare two strings the right way.", "if (a.___(b)) {\n    System.out.println(\"same\");\n}", ["equals", "==", "compare", "same"], "equals", "`==` compares references. `equals` compares the text itself."),
+              Q.mc("What does `\"Java\".substring(1, 3)` give?", ["av", "Jav", "ava", "va"], 0, "It takes indexes 1 and 2 and stops before 3."),
+              Q.type("What does `\"ab\" + \"cd\"` produce?", "abcd", "`+` joins strings together."),
+              Q.match("Match each String method to its job.", [[".length()", "counts the characters"], [".toUpperCase()", "makes every letter a capital"], [".equals(x)", "compares the text"], [".charAt(0)", "reads the first character"]], "These four cover most text work."),
+            ],
+          },
+          {
+            id: "jv-8", title: "Math and casting", blurb: "Whole-number division, remainders and conversions.",
+            intro: { text: "Dividing two `int` values gives an `int`, so `7 / 2` is 3 and the decimal part is dropped. `%` gives the remainder: `7 % 2` is 1. To keep decimals, cast one side to `double`. The `Math` class has `Math.max`, `Math.min`, `Math.pow` and `Math.sqrt`.", code: "System.out.println(7 / 2);\nSystem.out.println(7 % 2);\nSystem.out.println((double) 7 / 2);\nSystem.out.println(Math.max(4, 9));" },
+            ex: [
+              Q.mc("What does `System.out.println(7 / 2);` print?", ["3", "3.5", "4", "2"], 0, "Both numbers are ints, so Java drops the decimal part."),
+              Q.mc("What does `10 % 4` give?", ["2", "2.5", "6", "0"], 0, "10 divided by 4 is 2 with 2 left over."),
+              Q.fill("Cast so the division keeps its decimals.", "double r = (___) 7 / 2;", ["double", "int", "long", "char"], "double", "A `double` cast makes the division produce 3.5."),
+              Q.mc("What does `Math.pow(2, 3)` print?", ["8.0", "8", "6", "9"], 0, "`Math.pow` returns a `double`, so it prints 8.0."),
+              Q.type("What does `Math.max(4, 9)` give?", "9", "`Math.max` returns the larger of the two."),
+              Q.order("Order the lines to print the average 2.5 of two ints.", ["int a = 10;", "int b = 4;", "double r = (double) a / b;", "System.out.println(r);"], "Declare both numbers, divide with a cast, then print."),
+            ],
+          },
+        ],
+      },
+      {
+        title: "Loops and lists", blurb: "Repeat with while, and hold a growing list.",
+        lessons: [
+          {
+            id: "jv-9", title: "while and nested loops", blurb: "Repeat until something changes.",
+            intro: { text: "A `while` loop repeats as long as its condition is true, so something inside it must change or it never ends. A loop inside another loop runs completely for each turn of the outer loop. `break` leaves a loop early and `continue` skips to the next turn.", code: "int i = 1;\nwhile (i <= 3) {\n    System.out.println(i);\n    i++;\n}" },
+            ex: [
+              Q.mc("What does this print?", ["1, 2, 3 on separate lines", "1, 2", "0, 1, 2", "Nothing"], 0, "`i` starts at 1 and the loop stops once `i` passes 3.", "int i = 1;\nwhile (i <= 3) {\n    System.out.println(i);\n    i++;\n}"),
+              Q.mc("What happens if you forget `i++` in a `while (i <= 3)` loop?", ["It loops forever", "It runs once", "It doesn't run", "A compile error"], 0, "The condition never becomes false."),
+              Q.fill("Keep looping while i is less than 5.", "while (i ___ 5) {\n    i++;\n}", ["<", "<=", ">", "=="], "<", "Use `<` so the loop stops at 5."),
+              Q.mc("How many stars does this print?", ["6", "5", "3", "2"], 0, "The inner loop runs 2 times for each of the 3 outer turns.", "for (int i = 0; i < 3; i++) {\n    for (int j = 0; j < 2; j++) {\n        System.out.println(\"*\");\n    }\n}"),
+              Q.order("Order the lines to count down 5 to 1.", ["int n = 5;", "while (n > 0) {", "    System.out.println(n);", "    n--;", "}"], "Set up the variable, loop while it's positive, print, then shrink it."),
+              Q.match("Match each word to what it does.", [["while", "repeats while a condition is true"], ["for", "a counter loop on one line"], ["break", "leaves the loop early"], ["continue", "skips to the next turn"]], "Four loop tools you'll use all the time."),
+            ],
+          },
+          {
+            id: "jv-10", title: "ArrayList", blurb: "A list that grows and shrinks.",
+            intro: { text: "An array has a fixed size. An `ArrayList` can grow. Import it first with `import java.util.ArrayList;`. Create one with the type in angle brackets, then use `add`, `get(i)`, `size()` and `remove(i)`.", code: 'import java.util.ArrayList;\n\nArrayList<String> names = new ArrayList<>();\nnames.add("Ana");\nnames.add("Bo");\nSystem.out.println(names.get(0));\nSystem.out.println(names.size());' },
+            ex: [
+              Q.mc("Which line creates an empty list of Strings?", ["ArrayList<String> names = new ArrayList<>();", "ArrayList names = [];", "String[] names = new ArrayList();", "List names = new String();"], 0, "The type goes in angle brackets, and `new ArrayList<>()` builds it."),
+              Q.mc("What does this print?", ["2", "1", "0", "ab"], 0, "Two items were added.", 'list.add("a");\nlist.add("b");\nSystem.out.println(list.size());'),
+              Q.fill("Read the first item.", "System.out.println(list.___(0));", ["get", "at", "index", "read"], "get", "`get(0)` reads the first item."),
+              Q.mc("What does `list.remove(0)` do?", ["Deletes the first item", "Deletes the last item", "Empties the list", "Nothing"], 0, "It removes the item at index 0."),
+              Q.type("Which method tells you how many items an ArrayList holds?", ["size", "size()"], "Arrays use `.length`, but an ArrayList uses `size()`."),
+              Q.match("Match each ArrayList method to its job.", [[".add(x)", "adds to the end"], [".get(i)", "reads item i"], [".size()", "counts the items"], [".remove(i)", "deletes item i"]], "The four you'll use most."),
+            ],
+          },
+        ],
+      },
+      {
+        title: "Objects", blurb: "Build your own types with classes.",
+        lessons: [
+          {
+            id: "jv-11", title: "Classes and objects", blurb: "Blueprints and the things built from them.",
+            intro: { text: "A class is a blueprint. An object is one thing built from it with `new`. A class can hold fields (variables that belong to each object) and methods (actions an object can do). You reach them with a dot.", code: 'public class Dog {\n    String name;\n    void bark() {\n        System.out.println("Woof");\n    }\n}\n\nDog d = new Dog();\nd.name = "Rex";\nd.bark();' },
+            ex: [
+              Q.mc("What is a class?", ["A blueprint for objects", "A kind of loop", "A number type", "A comment"], 0, "A class describes what its objects have and can do."),
+              Q.fill("Create a Dog object.", "Dog d = ___ Dog();", ["new", "make", "create", "object"], "new", "`new` builds a fresh object from the class."),
+              Q.mc("What does this print?", ["Rex", "name", "d", "null"], 0, "The field `name` was set to \"Rex\" on this object.", 'Dog d = new Dog();\nd.name = "Rex";\nSystem.out.println(d.name);'),
+              Q.mc("Which call makes the dog bark?", ["d.bark();", "bark(d);", "Dog.bark;", "d->bark();"], 0, "You call a method with a dot and parentheses."),
+              Q.order("Order the lines to build a Dog class with a bark method.", ["public class Dog {", "    String name;", "    void bark() {", "        System.out.println(\"Woof\");", "    }", "}"], "Fields and methods live between the class braces."),
+              Q.match("Match each word to its meaning.", [["class", "a blueprint"], ["object", "one thing made from a class"], ["field", "a variable inside an object"], ["method", "an action an object can do"]], "The four core ideas of object-oriented code."),
+            ],
+          },
+          {
+            id: "jv-12", title: "Constructors and private data", blurb: "Set up objects, and protect their fields.",
+            intro: { text: "A constructor runs when an object is created. It has the same name as the class and no return type. Inside it, `this` means the object being built. Mark fields `private` so only the class can touch them, and give outsiders getter and setter methods.", code: "public class Dog {\n    private String name;\n\n    public Dog(String name) {\n        this.name = name;\n    }\n\n    public String getName() {\n        return name;\n    }\n}" },
+            ex: [
+              Q.mc("What is a constructor?", ["A method that runs when an object is created", "A loop", "A kind of variable", "A comment"], 0, "It sets the new object up."),
+              Q.fill("Store the parameter in the field.", "public Dog(String n) {\n    ___ = n;\n}", ["this.name", "name.this", "Dog.name", "self.name"], "this.name", "`this.name` is the field of the object being built."),
+              Q.mc("Why make a field `private`?", ["So only the class can change it directly", "To make it faster", "To make it print", "It is required"], 0, "Private data is protected. Other code must go through methods."),
+              Q.mc("Which method is a typical getter for a private field `name`?", ["getName()", "name.get", "readName", "private name()"], 0, "By convention a getter is `get` plus the field name."),
+              Q.type("Which keyword refers to the current object?", "this", "Inside a method or constructor, `this` is the object itself."),
+              Q.order("Order the lines to write a constructor.", ["public Dog(String name) {", "    this.name = name;", "}"], "Signature first, then the body, then the closing brace."),
+            ],
+          },
+        ],
+      },
     ],
   });
 })();

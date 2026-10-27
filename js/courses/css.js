@@ -96,6 +96,93 @@
           },
         ],
       },
+      {
+        title: "Looks", blurb: "Color, borders and shadows.",
+        lessons: [
+          {
+            id: "cs-7", title: "Color and backgrounds", blurb: "Hex, rgb and gradients.",
+            intro: { text: "Colors can be names (`gold`), hex codes (`#f4b942`), or `rgb(244, 185, 66)`. Add a fourth value, `rgba(0, 0, 0, 0.5)`, for transparency. `background` can also be a gradient like `linear-gradient(to right, red, blue)`.", code: ".box {\n  background: #f4b942;\n  color: #111;\n}\n.banner {\n  background: linear-gradient(to right, red, blue);\n}" },
+            ex: [
+              Q.mc("Which color is `#000000`?", ["Black", "White", "Red", "Transparent"], 0, "No red, green or blue light at all is black. `#ffffff` is white."),
+              Q.mc("Which value makes a color half see-through?", ["rgba(0, 0, 0, 0.5)", "rgb(0, 0, 0, 5)", "half(black)", "#00000"], 0, "The fourth number in `rgba` is the opacity from 0 to 1."),
+              Q.fill("Make a left-to-right gradient.", "background: ___(to right, red, blue);", ["linear-gradient", "gradient", "blend", "mix"], "linear-gradient", "The function is `linear-gradient`."),
+              Q.web("Give the box a gold background (#f4b942) and dark text.", '<div class="box">Hello</div>\n<style>\n  .box { padding: 20px; }\n</style>\n', [{ label: "Gold background", test: (d, w) => { const c = rgb(w, d.querySelector(".box"), "backgroundColor"); return Math.abs(c[0] - 244) < 25 && Math.abs(c[1] - 185) < 25 && Math.abs(c[2] - 66) < 40; } }, { label: "Dark text", test: (d, w) => avg(rgb(w, d.querySelector(".box"), "color")) < 90 }], "Set `background` and `color` in the `.box` rule.", ".box { background: #f4b942; color: #111; }"),
+              Q.web("Give the banner a gradient background.", '<div class="banner">Welcome</div>\n<style>\n  .banner { padding: 30px; }\n</style>\n', [{ label: "The banner uses a gradient", test: (d, w) => cs(w, d.querySelector(".banner"), "backgroundImage").includes("gradient") }], "Use `linear-gradient(...)` as the background.", ".banner { background: linear-gradient(to right, red, blue); }"),
+              Q.match("Match each color to what it is.", [["#fff", "white"], ["#000", "black"], ["rgb(255, 0, 0)", "red"], ["rgba(0, 0, 0, 0.5)", "half-transparent black"]], "Four ways you'll see color written."),
+            ],
+          },
+          {
+            id: "cs-8", title: "Borders and shadows", blurb: "Frames, round corners and depth.",
+            intro: { text: "`border: 2px solid red` draws a frame: width, style, color. `border-radius` rounds the corners, and `50%` on a square makes a circle. `box-shadow: 0 4px 8px rgba(0,0,0,0.3)` adds depth: sideways offset, down offset, blur, color.", code: ".card {\n  border: 2px solid #f4b942;\n  border-radius: 12px;\n  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);\n}" },
+            ex: [
+              Q.mc("Which line draws a 2px solid red border?", ["border: 2px solid red;", "border: red solid;", "border: 2 red;", "frame: 2px red;"], 0, "`border` takes a width, a style and a color."),
+              Q.fill("Round the corners.", ".card { border-___: 12px; }", ["radius", "round", "curve", "corner"], "radius", "The property is `border-radius`."),
+              Q.mc("What does `border-radius: 50%` do to a square?", ["Makes it a circle", "Makes it half as big", "Adds a border", "Does nothing"], 0, "50% rounds every corner all the way."),
+              Q.web("Give the card a 3px solid border and corners rounded by at least 10px.", '<div class="card">Hello</div>\n<style>\n  .card { padding: 20px; }\n</style>\n', [{ label: "3px border", test: (d, w) => cs(w, d.querySelector(".card"), "borderTopWidth") === "3px" }, { label: "Solid style", test: (d, w) => cs(w, d.querySelector(".card"), "borderTopStyle") === "solid" }, { label: "Rounded corners", test: (d, w) => parseFloat(cs(w, d.querySelector(".card"), "borderTopLeftRadius")) >= 10 }], "Use `border` and `border-radius`.", ".card { border: 3px solid gold; border-radius: 12px; }"),
+              Q.web("Make the .dot a circle that is 40px wide and 40px tall.", '<div class="dot"></div>\n<style>\n  .dot { background: gold; }\n</style>\n', [{ label: "40px wide", test: (d, w) => cs(w, d.querySelector(".dot"), "width") === "40px" }, { label: "40px tall", test: (d, w) => cs(w, d.querySelector(".dot"), "height") === "40px" }, { label: "Round", test: (d, w) => { const r = cs(w, d.querySelector(".dot"), "borderTopLeftRadius"); return r.endsWith("%") ? parseFloat(r) >= 50 : parseFloat(r) >= 20; } }], "Set a width, a height and a 50% radius.", ".dot { width: 40px; height: 40px; border-radius: 50%; }"),
+              Q.type("Which property adds a shadow behind a box? (two words joined by a hyphen)", "box-shadow", "`box-shadow` takes offsets, blur and a color."),
+            ],
+          },
+        ],
+      },
+      {
+        title: "Interaction and position", blurb: "Hover effects and placing things exactly.",
+        lessons: [
+          {
+            id: "cs-9", title: "Hover and transitions", blurb: "Make things react and animate.",
+            intro: { text: "A pseudo-class like `:hover` styles an element in a special state, such as when the mouse is over it. `transition` makes the change smooth instead of instant. `transition: background 0.3s` animates the background over 0.3 seconds.", code: ".btn {\n  background: gold;\n  transition: background 0.3s;\n}\n.btn:hover {\n  background: orange;\n}" },
+            ex: [
+              Q.mc("When does `a:hover` apply?", ["While the mouse is over the link", "After the link is clicked", "Always", "Only on phones"], 0, "`:hover` matches while the pointer is on the element."),
+              Q.fill("Style the button when the mouse is over it.", ".btn___ { background: gold; }", [":hover", ".hover", "#hover", "::hover"], ":hover", "Pseudo-classes start with a single colon."),
+              Q.mc("What does `transition: background 0.3s` do?", ["Animates background changes over 0.3 seconds", "Delays the page", "Changes the background to 0.3", "Nothing"], 0, "Without a transition the change is instant."),
+              Q.web("Make the button's changes smooth: give .btn a transition lasting 0.3s.", '<button class="btn">Press</button>\n<style>\n  .btn { background: gold; }\n  .btn:hover { background: orange; }\n</style>\n', [{ label: "Transition lasts 0.3s", test: (d, w) => cs(w, d.querySelector(".btn"), "transitionDuration").split(",").some((x) => x.trim() === "0.3s") }], "Add a `transition` property to `.btn`.", ".btn { transition: all 0.3s; }"),
+              Q.web("Style the link: orange text and no underline.", '<a href="#">Home</a>\n<style>\n  \n</style>\n', [{ label: "Orange text", test: (d, w) => { const c = rgb(w, d.querySelector("a"), "color"); return c[0] > 200 && c[1] > 100 && c[2] < 80; } }, { label: "No underline", test: (d, w) => cs(w, d.querySelector("a"), "textDecorationLine") === "none" }], "Set `color` and `text-decoration`.", "a { color: orange; text-decoration: none; }"),
+              Q.match("Match each selector to when it applies.", [[":hover", "the mouse is over it"], [":focus", "it is selected by keyboard or click"], [":first-child", "it is the first of its siblings"], ["::before", "adds content before the element"]], "Pseudo-classes and pseudo-elements."),
+            ],
+          },
+          {
+            id: "cs-10", title: "Positioning", blurb: "Place an element exactly where you want it.",
+            intro: { text: "By default elements follow the normal flow (`position: static`). `position: relative` keeps the flow but lets you nudge. `position: absolute` removes the element from the flow and places it against the nearest positioned ancestor using `top`, `right`, `bottom` and `left`. `position: fixed` sticks to the screen. `z-index` decides what sits on top.", code: ".card { position: relative; }\n.badge {\n  position: absolute;\n  top: 0;\n  right: 0;\n}" },
+            ex: [
+              Q.mc("What is the default value of `position`?", ["static", "relative", "absolute", "fixed"], 0, "Elements follow normal flow unless you change it."),
+              Q.mc("An absolutely positioned element is placed relative to what?", ["The nearest positioned ancestor", "The browser window always", "The previous sibling", "The body only"], 0, "Give the parent `position: relative` to make it the anchor."),
+              Q.fill("Pin the badge to the card's corner.", ".badge { position: ___; top: 0; right: 0; }", ["absolute", "static", "fixed", "flow"], "absolute", "`absolute` uses `top` and `right` to place it."),
+              Q.mc("Which element shows on top?", ["The one with the higher z-index", "The one with the lower z-index", "The first one in the code", "Neither"], 0, "A higher `z-index` stacks above a lower one."),
+              Q.web("Pin the badge in the top-right corner of the card.", '<div class="card"><span class="badge">New</span></div>\n<style>\n  .card { width: 200px; height: 100px; background: #223; }\n</style>\n', [{ label: "The card is positioned", test: (d, w) => cs(w, d.querySelector(".card"), "position") !== "static" }, { label: "The badge is absolute", test: (d, w) => cs(w, d.querySelector(".badge"), "position") === "absolute" }, { label: "The badge is at the top", test: (d, w) => cs(w, d.querySelector(".badge"), "top") === "0px" }], "Make the card `relative`, the badge `absolute`.", ".card { position: relative; } .badge { position: absolute; top: 0; right: 0; }"),
+              Q.web("Make the nav stay stuck to the top of the screen.", "<nav>Menu</nav>\n<style>\n  \n</style>\n", [{ label: "The nav is fixed", test: (d, w) => cs(w, d.querySelector("nav"), "position") === "fixed" }, { label: "It sits at the top", test: (d, w) => cs(w, d.querySelector("nav"), "top") === "0px" }], "Use `position: fixed` and `top: 0`.", "nav { position: fixed; top: 0; }"),
+            ],
+          },
+        ],
+      },
+      {
+        title: "Responsive and polish", blurb: "Pages that fit every screen.",
+        lessons: [
+          {
+            id: "cs-11", title: "Responsive design", blurb: "Make layouts adapt to the screen.",
+            intro: { text: "A media query applies styles only when a condition is true, such as `@media (max-width: 600px)` for small screens. Use flexible units like `%`, `rem` and `vw` instead of fixed pixels. `max-width: 100%` stops an image from overflowing its container.", code: "img { max-width: 100%; }\nh1 { font-size: 3rem; }\n\n@media (max-width: 600px) {\n  h1 { font-size: 2rem; }\n}" },
+            ex: [
+              Q.mc("What does a media query do?", ["Applies styles only when a condition is true", "Loads media files", "Plays audio", "Hides the page"], 0, "It's a conditional for CSS, usually about screen width."),
+              Q.fill("Apply this rule only on screens up to 600px wide.", "@media (___-width: 600px) {\n  h1 { font-size: 2rem; }\n}", ["max", "min", "wide", "less"], "max", "`max-width` means 600px or narrower."),
+              Q.mc("Which unit is a share of the screen's width?", ["vw", "px", "em", "pt"], 0, "`1vw` is 1% of the viewport width."),
+              Q.web("Stop the image from ever being wider than its container.", '<div style="width: 200px"><img src="x.png" alt="x"></div>\n<style>\n  \n</style>\n', [{ label: "Max width is 100%", test: (d, w) => cs(w, d.querySelector("img"), "maxWidth") === "100%" }], "Set `max-width` to 100%.", "img { max-width: 100%; }"),
+              Q.web("Add a media query for screens up to 600px that makes the h1 smaller.", "<h1>Hello</h1>\n<style>\n  h1 { font-size: 3rem; }\n</style>\n", [{ label: "Has a max-width media query", test: (d) => [...d.styleSheets].some((ss) => [...ss.cssRules].some((r) => r.type === 4 && /max-width/.test(r.media.mediaText))) }, { label: "Changes the h1 inside it", test: (d) => [...d.styleSheets].some((ss) => [...ss.cssRules].some((r) => r.type === 4 && /max-width/.test(r.media.mediaText) && [...r.cssRules].some((x) => x.selectorText === "h1"))) }], "Wrap an h1 rule inside the `@media` block.", "@media (max-width: 600px) { h1 { font-size: 2rem; } }"),
+              Q.match("Match each unit to its meaning.", [["px", "a fixed size"], ["%", "a share of the parent"], ["rem", "relative to the root font size"], ["vw", "a share of the screen width"]], "Flexible units help pages adapt."),
+            ],
+          },
+          {
+            id: "cs-12", title: "Style a card", blurb: "Put it all together.",
+            intro: { text: "Good CSS is built a layer at a time: spacing first, then color and type, then borders and details. Open your browser's developer tools and inspect an element to see which rules apply. When two rules conflict, the more specific selector wins: an id beats a class, and a class beats a tag.", code: ".card {\n  padding: 20px;\n  border: 2px solid #f4b942;\n  border-radius: 12px;\n  background: #1b2146;\n  color: white;\n}" },
+            ex: [
+              Q.web("Style the card: 20px of padding, a 2px border and 12px rounded corners.", '<div class="card">Knight</div>\n<style>\n  \n</style>\n', [{ label: "20px padding", test: (d, w) => cs(w, d.querySelector(".card"), "paddingTop") === "20px" }, { label: "2px border", test: (d, w) => cs(w, d.querySelector(".card"), "borderTopWidth") === "2px" }, { label: "12px rounded corners", test: (d, w) => parseFloat(cs(w, d.querySelector(".card"), "borderTopLeftRadius")) === 12 }], "Three properties on the `.card` rule.", ".card { padding: 20px; border: 2px solid gold; border-radius: 12px; }"),
+              Q.web("Make the title centered and 28px.", '<h2 class="title">Club</h2>\n<style>\n  \n</style>\n', [{ label: "Centered", test: (d, w) => cs(w, d.querySelector(".title"), "textAlign") === "center" }, { label: "28px text", test: (d, w) => cs(w, d.querySelector(".title"), "fontSize") === "28px" }], "Use `text-align` and `font-size`.", ".title { text-align: center; font-size: 28px; }"),
+              Q.web("Style the button: gold background, dark text, 12px 24px padding and rounded corners.", '<button class="go">Join</button>\n<style>\n  \n</style>\n', [{ label: "Gold background", test: (d, w) => { const c = rgb(w, d.querySelector(".go"), "backgroundColor"); return c[0] > 200 && c[1] > 150 && c[2] < 120; } }, { label: "Dark text", test: (d, w) => avg(rgb(w, d.querySelector(".go"), "color")) < 100 }, { label: "12px 24px padding", test: (d, w) => cs(w, d.querySelector(".go"), "paddingTop") === "12px" && cs(w, d.querySelector(".go"), "paddingLeft") === "24px" }, { label: "Rounded", test: (d, w) => parseFloat(cs(w, d.querySelector(".go"), "borderTopLeftRadius")) >= 4 }], "Combine background, color, padding and radius.", ".go { background: gold; color: #111; padding: 12px 24px; border-radius: 8px; }"),
+              Q.mc("Two rules set a different color for the same element: one on `.a`, one on `#a`. Which wins?", ["The id rule", "The class rule", "The one written first", "Neither"], 0, "An id is more specific than a class."),
+              Q.type("Which property sets the space inside a box, between its content and its border?", "padding", "Margin is outside the border. Padding is inside."),
+              Q.mc("Where do you see which CSS rules apply to an element?", ["Developer tools: right-click and Inspect", "The page source's title", "The address bar", "The favicon"], 0, "Inspect shows the computed styles and which rule wins."),
+            ],
+          },
+        ],
+      },
     ],
   });
 })();
