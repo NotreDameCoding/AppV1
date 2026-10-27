@@ -54,6 +54,7 @@
     const user = NDC.auth.user;
     if (st.streak > 0) rightEl.append(h("span", { class: "chip flame px", title: "Day streak" }, st.streak + "d"));
     rightEl.append(h("span", { class: "chip px", title: "Experience points" }, st.xp + " XP"));
+    rightEl.append(h("span", { class: "chip px", title: "Coins" }, st.coins + " coins"));
     if (!user) {
       rightEl.append(h("button", { class: "btn primary small", type: "button", onclick: openSignIn }, "Sign in"));
       return;

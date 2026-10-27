@@ -126,7 +126,7 @@
       const acc = Math.round(res.acc * 100);
       const nextL = NDC.store.nextLesson(course);
       const unlocks = [];
-      res.newGear.forEach((k) => { const g = G.findGear(k); unlocks.push(h("div", { class: "unlock px" }, h("span", { style: { width: "40px", display: "inline-block" } }, NDC.knight.icon(g.slot, g.id)), h("span", null, h("b", null, "New gear: "), g.name))); });
+      if (res.coinsGained) unlocks.push(h("div", { class: "unlock px" }, h("span", { class: "pixel", style: { fontSize: "1.4rem", color: "var(--gold)", minWidth: "40px", textAlign: "center" } }, "$"), h("span", null, h("b", null, "+" + res.coinsGained + " coins"), ` (you have ${res.stats.coins})`)));
       res.newBadges.forEach((b) => { const bd = G.badges.find((x) => x.id === b); unlocks.push(h("div", { class: "unlock px" }, h("span", { class: "pixel", style: { fontSize: "1.4rem", color: "var(--gold)", minWidth: "40px", textAlign: "center" } }, bd.glyph), h("span", null, h("b", null, "Badge: "), bd.name))); });
       if (res.levelUp) unlocks.unshift(h("div", { class: "unlock px" }, h("span", { class: "pixel", style: { fontSize: "1.4rem", color: "var(--gold)", minWidth: "40px", textAlign: "center" } }, "L" + res.levelUp), h("span", null, h("b", null, "Level up! "), `You are now a ${G.title(res.levelUp)}.`)));
       col.append(h("div", { class: "finish" },

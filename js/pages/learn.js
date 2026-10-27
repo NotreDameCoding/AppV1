@@ -73,8 +73,7 @@
         NDC.ring(cs.pct, c.hex, c.glyph), h("span", null, h("span", { class: "nm" }, c.name), h("br"), h("span", { class: "sub" }, cs.done ? cs.rank : `${cs.total} lessons`)));
     }));
 
-    const next = G.nextUnlocks(stats)[0];
-    const today = (state.days[NDC.dayKey()] || {}).lessons || 0;
+        const today = (state.days[NDC.dayKey()] || {}).lessons || 0;
     const side = h("aside", { class: "side-card" },
       h("div", { class: "card px", style: { textAlign: "center" } },
         h("div", { class: "knight-mini" }, NDC.knight.node(NDC.store.equipped())),
@@ -86,12 +85,9 @@
         h("div", { class: "statline" }, h("span", null, "Day streak"), h("b", { class: "pixel" }, stats.streak)),
         h("div", { class: "statline" }, h("span", null, "Lessons today"), h("b", { class: "pixel" }, today)),
         h("div", { class: "statline" }, h("span", null, "Accuracy"), h("b", { class: "pixel" }, stats.answers.total ? Math.round((100 * stats.answers.correct) / stats.answers.total) + "%" : "-"))),
-      next ? h("div", { class: "card px" },
-        h("p", { class: "muted", style: { fontSize: "0.88rem" } }, "Closest unlock"),
-        h("div", { class: "row", style: { gap: "0.7rem", marginTop: "0.4rem", flexWrap: "nowrap" } },
-          h("div", { style: { width: "48px", flex: "none" } }, NDC.knight.icon(next.slot, next.gear.id)),
-          h("div", null, h("b", null, next.gear.name), h("p", { class: "muted", style: { fontSize: "0.88rem", lineHeight: 1.3 } }, next.gear.req.text))),
-        h("div", { class: "bar px", style: { margin: "0.6rem 0 0" } }, h("i", { style: { width: Math.max(4, Math.round(next.ratio * 100)) + "%" } }))) : null);
+      h("div", { class: "card px" },
+        h("div", { class: "statline" }, h("span", null, "Coins"), h("b", { class: "pixel" }, stats.coins)),
+        h("a", { class: "link-btn", href: "#/knight", style: { marginTop: "0.4rem", display: "inline-block" } }, "Spend them on the Knight page")));
 
     const cs = G.courseStats(state, course);
     const head = h("div", { style: { marginBottom: "1.8rem" } },
