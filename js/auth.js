@@ -43,6 +43,20 @@
       NDC.store.setIdentity("guest");
     },
 
+    /* Dungeon leaderboard: only a display name, best floor and game level are shared with other members. */
+    async postScore(state) {
+      if (!real || !sb || !A.user) return;
+      const gs = NDC.game.gameStats(state);
+      const name = (state.name || "").trim() || "Knight " + String(A.user.id).slice(0, 4);
+      await sb.from("leaderboard").upsert({ user_id: A.user.id, name, best_floor: gs.best, game_level: gs.level, updated_at: new Date().toISOString() });
+    },
+    async leaderboard() {
+      if (!real || !sb) return { rows: null };
+      const { data, error } = await sb.from("leaderboard").select("name,best_floor,game_level").order("best_floor", { ascending: false }).order("game_level", { ascending: false }).limit(15);
+      if (error) throw new Error(error.message);
+      return { rows: data };
+    },
+
     /* officers only */
     async listProgress() {
       if (!real) return { demo: true, rows: [] };

@@ -26,3 +26,16 @@ create policy "officers read all"    on public.progress for select using (public
 
 -- Add officers (run separately, one per officer):
 -- insert into public.officers (email) values ('blake.westin.2029@ndhs.org');
+
+-- Dungeon leaderboard (run this part after the rest). Only a display name, best floor and level are stored here.
+create table if not exists public.leaderboard (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  name text not null,
+  best_floor int not null default 0,
+  game_level int not null default 1,
+  updated_at timestamptz not null default now()
+);
+alter table public.leaderboard enable row level security;
+create policy "leaderboard: signed-in members read" on public.leaderboard for select to authenticated using (true);
+create policy "leaderboard: insert own" on public.leaderboard for insert to authenticated with check (auth.uid() = user_id);
+create policy "leaderboard: update own" on public.leaderboard for update to authenticated using (auth.uid() = user_id);

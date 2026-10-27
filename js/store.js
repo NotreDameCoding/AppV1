@@ -3,7 +3,7 @@
 (function () {
   const KEY = "ndc.hub.v1.";
   const mem = {}; // fallback if localStorage is blocked
-  const blank = () => ({ v: 1, name: "", done: {}, skipped: {}, days: {}, equipped: {}, bought: {}, answers: { total: 0, correct: 0 }, updated: 0 });
+  const blank = () => ({ v: 1, name: "", done: {}, skipped: {}, days: {}, equipped: {}, bought: {}, game: { xp: 0, best: 0, kills: 0 }, answers: { total: 0, correct: 0 }, updated: 0 });
 
   let identity = "guest";
   let state = blank();
@@ -35,6 +35,8 @@
       for (const [k, v] of Object.entries(src.days || {})) out.days[k] = { lessons: Math.max(v.lessons || 0, (out.days[k] || {}).lessons || 0) };
       Object.assign(out.equipped, src.equipped || {});
       Object.assign(out.bought, src.bought || {});
+      const sg = src.game || {};
+      out.game = { xp: Math.max(out.game.xp, sg.xp || 0), best: Math.max(out.game.best, sg.best || 0), kills: Math.max(out.game.kills, sg.kills || 0) };
       out.answers = { total: Math.max(out.answers.total, (src.answers || {}).total || 0), correct: Math.max(out.answers.correct, (src.answers || {}).correct || 0) };
     }
     for (const id of Object.keys(out.done)) delete out.skipped[id];

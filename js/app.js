@@ -2,7 +2,7 @@
 (function () {
   const h = NDC.h;
   const cfg = NDC.config;
-  const LINKS = [["learn", "Learn"], ["members", "Members"], ["knight", "Knight"], ["meetings", "Meetings"], ["projects", "Projects"], ["account", "Account"]];
+  const LINKS = [["learn", "Learn"], ["members", "Members"], ["knight", "Knight"], ["dungeon", "Dungeon"], ["meetings", "Meetings"], ["projects", "Projects"], ["account", "Account"]];
   let current = null; // { destroy }
   let navEl, rightEl, appEl;
 
@@ -88,11 +88,12 @@
     lesson: (a) => NDC.pages.lesson(a[0]),
     members: () => NDC.pages.members(),
     knight: () => NDC.pages.knight(),
+    dungeon: () => NDC.pages.dungeon(),
     meetings: () => NDC.pages.meetings(),
     projects: () => NDC.pages.projects(),
     account: () => NDC.pages.account(),
   };
-  const TITLES = { "": "", learn: "Learn", lesson: "Lesson", members: "Members", knight: "Knight", meetings: "Meetings", projects: "Projects", account: "Account" };
+  const TITLES = { "": "", learn: "Learn", lesson: "Lesson", members: "Members", knight: "Knight", dungeon: "Dungeon", meetings: "Meetings", projects: "Projects", account: "Account" };
 
   function route() {
     const parts = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);

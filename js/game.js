@@ -175,6 +175,16 @@
     for (const slot of Object.keys(G.gear)) G.gear[slot].forEach((g) => { if (!(own[slot] || []).includes(g.id)) out.push({ slot, gear: g }); });
     return out.sort((a, b) => a.gear.price - b.gear.price);
   };
+  /* ---- Dungeon (game) levels. Fully separate from lessons: they never touch coins or looks. ---- */
+  G.FLOORS = 5;
+  G.gameXpFor = (L) => 20 * (L - 1) * L; // L2 = 40, L3 = 120, L4 = 240, L5 = 400 ...
+  G.gameStats = function (state) {
+    const gm = state.game || {}, xp = gm.xp || 0;
+    let L = 1; while (xp >= G.gameXpFor(L + 1)) L++;
+    const a = G.gameXpFor(L), b = G.gameXpFor(L + 1);
+    return { xp, level: L, into: xp - a, span: b - a, pct: (xp - a) / (b - a), best: gm.best || 0, kills: gm.kills || 0,
+      hpBonus: (L - 1) * 10, staminaBonus: (L - 1) * 8, floorOpen: (f) => L >= f };
+  };
   NDC.courseById = (id) => NDC.courses.find((c) => c.id === id);
 
   /* ---- XP for a lesson ---- */

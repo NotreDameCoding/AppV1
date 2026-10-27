@@ -1,6 +1,6 @@
 # Notre Dame Coding — Hub
 
-The club site: learn Python, Java, JavaScript, HTML, CSS and Arduino in short lessons, earn XP and gear for your knight, and see meetings, members and projects. Plain HTML, CSS and JavaScript. No build step.
+The club site: learn Python, Java, JavaScript, HTML, CSS and Arduino in short lessons, earn XP and coins, buy gear for your knight, fight in the Dungeon, and see meetings, members and projects. Plain HTML, CSS and JavaScript. No build step.
 
 ## Run it
 Open `index.html`, or for the best results run a tiny server: `python3 -m http.server` and visit http://localhost:8000.
@@ -14,11 +14,11 @@ Deploy: push to GitHub, then Settings > Pages > Deploy from branch > main.
 | Projects | `js/data-projects.js` |
 | Lessons | `js/courses/*.js` (one file per language) |
 | Colors and fonts | `css/styles.css` (top of file) |
-| Knight gear and unlock rules | `js/game.js`, sprites in `js/knight.js` |
+| Gear, prices, coins and Dungeon levels | `js/game.js`, sprites in `js/knight.js`, game in `js/pages/dungeon.js` |
 | Club name, email, keys | `js/config.js` |
 
 ## Sign-in
-Out of the box it runs in **demo mode**: signing in saves progress in that browser only, and no email is sent.
+Real email sign-in is on (Supabase keys are in `js/config.js`). Clear those two keys to fall back to demo mode, where signing in saves progress in that browser only. Run `supabase/schema.sql` once in Supabase, including the leaderboard section at the bottom.
 For real email sign-in and saved progress on any device:
 1. Create a free project at supabase.com. Run `supabase/schema.sql` in the SQL editor.
 2. Authentication > Providers > Email: turn on, and keep "Confirm email" on.
