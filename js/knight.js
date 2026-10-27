@@ -71,8 +71,7 @@
     gold:   { a: "#e5b04a", h: "#ffe19a", b: "#a9761f" },
     crimson:{ a: "#d65a5f", h: "#ff9ea0", b: "#942e3a" },
     emerald:{ a: "#3fbf8f", h: "#8cf0c4", b: "#1f7d5e" },
-    obsidian:{ a: "#4b5070", h: "#8088b0", b: "#2a2e48" },
-  };
+    obsidian:{ a: "#007ba7", h: "#4ba3c7", b: "#00415a" };
   const BASE_PAL = { o: "#0a0c16", s: "#f1c9a1", d: "#6a4630", k: "#16182b", g: "#f4b942", x: "#efe6cc", t: "#a8793c" };
 
   const SHIELDS = {
