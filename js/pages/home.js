@@ -1,16 +1,6 @@
 (function () {
   const h = NDC.h, G = NDC.game;
 
-  /* the hero knight cycles through every piece of gear when clicked (a preview; real gear is earned) */
-  const TRY = [
-    { helm: "iron", shield: "cobalt", weapon: "steel", cape: "red", armor: "cobalt" },
-    { helm: "plumed", shield: "crimson", weapon: "flame", cape: "royal", armor: "crimson" },
-    { helm: "horned", shield: "starlight", weapon: "spark", cape: "none", armor: "obsidian" },
-    { helm: "crowned", shield: "oak", weapon: "steel", cape: "gold", armor: "gold" },
-    { helm: "squire", shield: "oak", weapon: "wood", cape: "none", armor: "steel" },
-    { helm: "iron", shield: "cobalt", weapon: "spark", cape: "royal", armor: "emerald" },
-  ];
-
   function pathTile(course, state) {
     const cs = G.courseStats(state, course);
     return h("a", { class: "lang-tile px", href: "#/learn/" + course.id, style: { "--cc": course.hex } },
@@ -24,11 +14,7 @@
   NDC.pages.home = function () {
     const st = NDC.store.get();
     const stats = NDC.store.stats();
-    let tryIdx = 0;
-    const knightBtn = h("button", { class: "knight-wrap", type: "button", "aria-label": "Try on different gear" });
-    const draw = (eq) => { NDC.clear(knightBtn); knightBtn.append(NDC.knight.node(eq)); };
-    draw(stats.lessons ? NDC.store.equipped() : TRY[TRY.length - 1]);
-    knightBtn.addEventListener("click", () => { draw(TRY[tryIdx % TRY.length]); tryIdx++; });
+    const knightBtn = h("div", { class: "knight-wrap" }, NDC.knight.node(NDC.store.equipped()));
 
     // where to pick up
     const started = NDC.courses.map((c) => ({ c, last: Math.max(0, ...NDC.allLessons(c).map((l) => (st.done[l.id] || {}).at || 0)) })).filter((x) => x.last > 0).sort((a, b) => b.last - a.last);
@@ -37,33 +23,30 @@
 
     const hero = h("section", { class: "hero" }, h("div", { class: "wrap" },
       h("div", null,
-        h("h1", null, "Code your way up the ranks."),
-        h("p", { class: "lede" }, "Six languages, one club. Learn a little at a time, earn gear for your knight, and build things with other members of Notre Dame Coding."),
+        h("h1", null, "Notre Dame High School Coding Club"),
+        h("p", { class: "lede" }, `We meet to learn and build with Python, Java, JavaScript, HTML, CSS and Arduino. ${NDC.config.meetingInfo}.`),
         h("div", { class: "cta" },
           resumeLesson
             ? h("a", { class: "btn primary", href: "#/learn/" + resumeCourse.id }, `Continue ${resumeCourse.name}`)
             : h("a", { class: "btn primary", href: "#/learn" }, "Start learning"),
           h("a", { class: "btn", href: "#/meetings" }, "See meetings"))),
       h("div", { class: "stage" },
-        h("span", { class: "float-chip px a" }, "+25 XP"),
-        h("span", { class: "float-chip px b" }, "Level up!"),
-        h("span", { class: "float-chip px c" }, "7 day streak"),
         knightBtn,
         h("div", { class: "platform px" }),
-        h("p", { class: "hint" }, "Click the knight to try on gear. Earn the real thing by learning."))));
+        h("p", { class: "hint" }, `Level ${stats.level} ${G.title(stats.level)} \u00b7 ${stats.streak} day streak`))));
 
     const today = NDC.dayKey();
     const next = NDC.meetings.find((m) => m.date >= today);
     const meetCard = next
       ? h("div", { class: "next-meet" },
         h("div", { class: "datebox px" }, h("div", { class: "m" }, NDC.parseDay(next.date).toLocaleDateString(undefined, { month: "short" })), h("div", { class: "d" }, String(NDC.parseDay(next.date).getDate()))),
-        h("div", null, h("h3", { style: { fontFamily: "var(--f-display)", fontSize: "1.9rem", lineHeight: 1.1 } }, next.title), h("p", { class: "muted", style: { marginTop: "0.3rem" } }, next.note), h("p", { class: "muted", style: { marginTop: "0.3rem", fontSize: "0.95rem" } }, NDC.config.meetingInfo)),
+        h("div", null, h("h3", { style: { fontFamily: "var(--f-display)", fontSize: "1.9rem", lineHeight: 1.1 } }, next.title), h("p", { class: "muted", style: { marginTop: "0.3rem", fontSize: "0.95rem" } }, NDC.config.meetingInfo)),
         h("a", { class: "btn", href: "#/meetings" }, "All meetings"))
       : h("div", null, h("p", { class: "muted" }, "No meetings are scheduled yet. Check back soon."));
 
     const projects = NDC.projects.length
       ? h("p", { class: "muted" }, `${NDC.projects.length} projects shared so far.`)
-      : h("p", { class: "muted" }, "Nothing has been shared yet. The first one is yours to build.");
+      : h("p", { class: "muted" }, "No projects yet.");
 
     return h("div", null,
       hero,

@@ -29,7 +29,7 @@
     const search = h("input", { class: "search", type: "search", placeholder: "Find a member", "aria-label": "Find a member", oninput: () => draw(search.value.trim()) });
     draw("");
     return h("div", { class: "page" }, h("div", { class: "wrap" },
-      h("div", { class: "page-head" }, h("h1", null, "Members"), h("p", null, `${NDC.members.length} people write code together here. Every knight is just for fun and has nothing to do with progress.`)),
+      h("div", { class: "page-head" }, h("h1", null, "Members"), h("p", null, `${NDC.members.length} members`)),
       h("div", { class: "officers" }, officers.map((m) => h("div", { class: "officer px" },
         h("div", { class: "sprite" }, NDC.knight.node(looksFor(m))),
         h("h3", null, m.name), h("p", { class: "role" }, m.role), h("p", null, m.note)))),
@@ -45,20 +45,16 @@
     const nextDate = (sorted.find((m) => m.date >= today) || {}).date;
     const items = sorted.map((m) => {
       const past = m.date < today, isNext = m.date === nextDate;
-      const learn = m.practice ? NDC.findLesson(m.practice) : null;
       return h("article", { class: "meet px " + (past ? "past" : isNext ? "next" : "") },
         h("div", { class: "meet-top" },
           h("h3", null, m.title, isNext ? h("span", { class: "tag" }, "Next up") : null),
           h("span", { class: "when" }, NDC.fmtDate(m.date))),
-        h("p", { class: "note" }, m.note),
-        past && m.learned ? h("details", null, h("summary", null, "What we learned: " + m.concept), h("p", null, NDC.rich(m.learned))) : null,
-        past && learn ? h("div", { class: "practice" }, h("a", { class: "btn small", href: "#/learn/" + learn.course.id }, "Practice in " + learn.course.name)) : null);
+        null);
     });
     return h("div", { class: "page" }, h("div", { class: "wrap", style: { maxWidth: "900px" } },
-      h("div", { class: "page-head" }, h("h1", null, "Meetings"), h("p", null, "A short lesson, then time to build. Come to as many as you can, and use the Learn tab to catch up on any you miss.")),
+      h("div", { class: "page-head" }, h("h1", null, "Meetings"), h("p", null, NDC.config.meetingInfo)),
       h("div", { class: "info-strip px" },
         h("span", null, h("b", null, "Where and when: "), NDC.config.meetingInfo),
-        h("span", null, h("b", null, "Length: "), "About 30 minutes"),
         h("span", null, h("b", null, "Questions: "), h("a", { href: "mailto:" + NDC.config.contactEmail }, NDC.config.contactEmail))),
       h("div", { class: "timeline" }, items)));
   };
@@ -76,7 +72,7 @@
         grid.append(h("div", { class: "empty px" },
           h("div", { class: "knight-sad" }, NDC.knight.node({ helm: "squire", cape: "none" })),
           h("h2", null, "No projects submitted yet"),
-          h("p", null, "This board is for things club members have built: games, sites, scripts, anything. Finish one, add it below, and yours will be the first on the wall."),
+          h("p", null, "Projects members build will show up here."),
           h("a", { class: "btn primary", href: "#howto" }, "How to submit a project")));
       } else if (!list.length) {
         grid.append(h("div", { class: "empty px" }, h("h2", null, "Nothing here yet"), h("p", null, "No projects use that language yet. Maybe you'll be the first.")));
@@ -100,7 +96,7 @@
         h("li", null, h("span", null, "Fill in the title, your name, the link, the languages and a sentence about it. Then open a pull request.")),
         h("li", null, h("span", null, "An officer reviews it, and your project shows up here."))));
     return h("div", { class: "page" }, h("div", { class: "wrap" },
-      h("div", { class: "page-head" }, h("h1", null, "Projects"), h("p", null, "Things club members have built. Finished is better than perfect.")),
+      h("div", { class: "page-head" }, h("h1", null, "Projects"), h("p", null, "Things club members have built.")),
       NDC.projects.length ? chips : null, grid, howto));
   };
 })();

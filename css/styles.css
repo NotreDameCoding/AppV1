@@ -192,7 +192,7 @@ h2.sec { font-family: var(--f-display); font-size: clamp(1.9rem, 3.6vw, 2.7rem);
   mask-image: linear-gradient(180deg, #000 30%, transparent 100%);
 }
 .hero .wrap { position: relative; z-index: 1; display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 2rem; align-items: center; padding: 4.5rem 0 5rem; }
-.hero h1 { font-family: var(--f-display); font-size: clamp(3.4rem, 9vw, 7.4rem); line-height: 0.9; letter-spacing: -0.025em; text-wrap: balance; }
+.hero h1 { font-family: var(--f-display); font-size: clamp(2.6rem, 6vw, 5rem); line-height: 0.98; letter-spacing: -0.025em; text-wrap: balance; }
 .hero .lede { color: var(--dim); font-size: 1.25rem; max-width: 34rem; margin-top: 1.6rem; }
 .hero .cta { margin-top: 2.2rem; display: flex; gap: 1rem; flex-wrap: wrap; }
 .stage { position: relative; display: grid; justify-items: center; padding-top: 1rem; }
