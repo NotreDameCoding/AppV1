@@ -10,8 +10,8 @@ NDC.config = {
 
   // Leave both empty to run in DEMO MODE (sign-in is local to this browser, no emails are sent).
   // Fill both in after following the steps in README.md to turn on real email sign-in.
-  supabaseUrl: "",
-  supabaseAnonKey: "",
+  supabaseUrl: "https://vfcwcmwuutgxcwpaakwf.supabase.co",
+  supabaseAnonKey: "sb_publishable_ZIBCgu7O27E9YN61j7cjag_gAPkpLdR",
 
   // Demo mode only: these emails see the officer panel on the Account page.
   demoOfficers: ["blake.westin.2029@ndhs.org"],
