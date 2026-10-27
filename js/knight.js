@@ -54,8 +54,13 @@
     const cape = CAPES[eq.cape || "none"];
     if (cape) {
       const c = L(cape.c, { hi: tint(cape.c, 0.25), sh: cape.C });
-      rect(c, 6, 15, 16, 14); rect(c, 4, 18, 20, 12);
-      for (let x = 4; x < 24; x += 3) rect(c, x, 30, 2, 1);
+      // draped behind the shoulders, flaring out wide, with a torn, pointed hem
+      const hem = [30, 31, 29, 31, 30, 28, 31, 30, 29, 31, 30, 29];
+      for (let x = 1; x < 27; x++) {
+        const half = Math.min(x - 1, 26 - x);
+        const top = half < 4 ? 21 - half : 15;
+        rect(c, x, top, 1, hem[half % hem.length] - top + 1);
+      }
     }
 
     // legs and boots

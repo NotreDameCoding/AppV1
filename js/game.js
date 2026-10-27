@@ -150,11 +150,11 @@
     { id: "cape", label: "Cape" }, { id: "armor", label: "Armor" },
   ];
   G.findGear = (key) => { const [slot, id] = key.split(":"); return { slot, ...G.gear[slot].find((g) => g.id === id) }; };
-  /* officers own every piece of gear (and can enter every floor) without spending coins */
+  /* officers can enter every floor, but gear is bought with coins like everyone else */
   G.isOfficer = () => !!(NDC.auth && NDC.auth.officer);
   G.owned = function (state) {
-    const bought = state.bought || {}, o = {}, all = G.isOfficer();
-    for (const slot of Object.keys(G.gear)) G.gear[slot].forEach((g) => { if (all || g.price === 0 || bought[slot + ":" + g.id]) (o[slot] = o[slot] || []).push(g.id); });
+    const bought = state.bought || {}, o = {};
+    for (const slot of Object.keys(G.gear)) G.gear[slot].forEach((g) => { if (g.price === 0 || bought[slot + ":" + g.id]) (o[slot] = o[slot] || []).push(g.id); });
     return o;
   };
   G.defaults = { helm: "squire", shield: "oak", weapon: "wood", cape: "none", armor: "steel" };
