@@ -34,16 +34,20 @@
       h("div", { class: "form-row" }, h("label", { for: "si-email" }, "Email address"), input),
       err, submit);
     input.id = "si-email";
+    const gBtn = h("button", { class: "btn block g-btn", type: "button", onclick: async () => {
+      err.textContent = ""; gBtn.disabled = true;
+      try { await NDC.auth.signInGoogle(); } catch (ex) { err.textContent = ex.message; gBtn.disabled = false; }
+    } }, NDC.svg('<svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.2 5.5-4.7 7.2l7.6 5.9c4.4-4.1 6.9-10.1 6.9-17.6z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.5-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.3 0 11.7-2.1 15.6-5.7l-7.6-5.9c-2.1 1.4-4.8 2.3-8 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>'), h("span", null, "Continue with Google"));
     body.append(
       h("h3", null, "Sign in"),
       h("p", { class: "muted", style: { margin: "0.7rem 0 1.3rem" } }, real
-        ? "No password. We email you a one-time link."
+        ? "Pick your Google account. No password to remember."
         : "Demo mode: no email is sent. Your progress saves in this browser under the address you enter."),
-      form,
+      real ? h("div", null, gBtn, err) : form,
       h("p", { class: "muted", style: { fontSize: "0.88rem", marginTop: "1.2rem" } }, "We only keep your email and your lesson progress. Only club officers can see progress."));
     scrim.append(h("div", { class: "modal px", role: "dialog", "aria-modal": "true", "aria-label": "Sign in" }, body));
     document.body.append(scrim);
-    setTimeout(() => input.focus(), 30);
+    if (!real) setTimeout(() => input.focus(), 30);
   }
   NDC.openSignIn = openSignIn;
 

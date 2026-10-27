@@ -18,7 +18,7 @@ Deploy: push to GitHub, then Settings > Pages > Deploy from branch > main.
 | Club name, email, keys | `js/config.js` |
 
 ## Sign-in
-Real email sign-in is on (Supabase keys are in `js/config.js`). Clear those two keys to fall back to demo mode, where signing in saves progress in that browser only. Run `supabase/schema.sql` once in Supabase, including the leaderboard section at the bottom.
+Real Google sign-in is on (Supabase keys are in `js/config.js`). Clear those two keys to fall back to demo mode, where signing in saves progress in that browser only. Run `supabase/schema.sql` once in Supabase, including the leaderboard section at the bottom.
 For real email sign-in and saved progress on any device:
 1. Create a free project at supabase.com. Run `supabase/schema.sql` in the SQL editor.
 2. Authentication > Providers > Email: turn on, and keep "Confirm email" on.

@@ -69,7 +69,7 @@
           h("p", null, stats.lessons
             ? `You've earned ${stats.xp} XP on this device. Sign in with your email to keep it on every device.`
             : "Sign in with your email to track your rank in every language and keep a streak."),
-          h("button", { class: "btn primary", type: "button", onclick: NDC.openSignIn }, "Sign in with email"))));
+          h("button", { class: "btn primary", type: "button", onclick: NDC.openSignIn }, "Sign in"))));
     }
 
     const name = state.name || user.email.split("@")[0];

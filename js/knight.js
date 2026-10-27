@@ -1,73 +1,7 @@
-/* The pixel knight. A 16x20 sprite built from layers, so gear can be swapped. */
+/* The pixel knight: a 28x32 sprite built from shaded layers (a tin-can helm, wide pauldrons, a tower shield),
+   so every piece of gear can be swapped. Each layer is a shape; light comes from the top left. */
 (function () {
-  const W = 20, H = 20;
-
-  /* Rows are written as the left 10 columns and mirrored. On the mirrored side "h" (highlight) becomes "a". */
-  const d = (n) => ".".repeat(n);
-  const mir = (l) => l + l.split("").reverse().join("").replace(/h/g, "a");
-  const M = (rows) => rows.map((r) => (r ? mir(r) : null));
-
-  const BASE = M([
-    "..........",
-    "......oooo",
-    "......oddd",
-    "......oddd",
-    "......osss",
-    "......osks",
-    "......osss",
-    "......oass",
-    "....ooaaaa",
-    "..ooahhaaa",
-    "..oaahaaaa",
-    "..oaaaaaaa",
-    "...oaaaaaa",
-    "...oaagggg",
-    "...oaabbbb",
-    "....oaaaao",
-    "....oaaaao",
-    "....obbbbo",
-    "....oooooo",
-    "..........",
-  ]);
-
-  const OVER = {
-    squire: M([null, "......oooo", "......occc", "......occc", null, null, null, null]),
-    iron: M(["..........", "......oooo", "......ohhh", "......oaaa", "......okek", "......oaaa", "......oaaa", "......oaaa"]),
-    plumed: M(["........pp", "......oppp", "......ohhh", "......oaaa", "......okek", "......oaaa", "......oaaa", "......oaaa"]),
-    horned: M(["....x.....", "....xooooo", "....x.ohhh", "......oaaa", "......okek", "......oaaa", "......oaaa", "......oaaa"]),
-    crowned: M(["......g.gg", "......gggg", "......ohhh", "......oaaa", "......okek", "......oaaa", "......oaaa", "......oaaa"]),
-  };
-
-  const pad = (rows, fn) => rows.map((r) => (r ? fn(r) : null));
-  const SHIELD = [
-    null, null, null, null, null, null, null, null, null,
-    ".oooo." + d(14),
-    "ommmmo" + d(14),
-    "omnnmo" + d(14),
-    "omnnmo" + d(14),
-    "ommmmo" + d(14),
-    "ommmmo" + d(14),
-    ".ommmo" + d(14),
-    "..ommo" + d(14),
-    "...oo." + d(14),
-  ];
-  const SWORD = [
-    d(17) + "oo" + d(1),
-    ...Array(11).fill(d(16) + "owwo"),
-    d(16) + "gggg",
-    d(18) + "d.", d(18) + "d.", d(18) + "g.",
-  ];
-  const STAFF = [
-    d(17) + "nn.", d(17) + "nn.", null,
-    ...Array(14).fill(d(18) + "d."),
-  ];
-  const CAPE = [
-    null, null, null, null, null, null, null, null, null, null, null, null,
-    d(16) + "cc" + d(2), d(16) + "cc" + d(2), d(16) + "cc" + d(2), d(16) + "cc" + d(2), d(16) + "cc" + d(2),
-    d(3) + "cccccccccccccc" + d(3),
-    d(2) + "occcccccccccccco" + d(2),
-    d(2) + "oCCCCCCCCCCCCCCo" + d(2),
-  ];
+  const W = 28, H = 32;
 
   const ARMOR = {
     steel:  { a: "#9fb0d0", h: "#d3def5", b: "#6a7899" },
@@ -77,8 +11,6 @@
     emerald:{ a: "#3fbf8f", h: "#8cf0c4", b: "#1f7d5e" },
     obsidian:{ a: "#4b5070", h: "#8088b0", b: "#2a2e48" },
   };
-  const BASE_PAL = { e: "#f4f1e6", o: "#0a0c16", s: "#f1c9a1", d: "#6a4630", k: "#16182b", g: "#f4b942", x: "#efe6cc", t: "#a8793c" };
-
   const SHIELDS = {
     oak:      { m: "#9a6a37", n: "#f4b942" },
     cobalt:   { m: "#3f66d8", n: "#f4f1e6" },
@@ -97,54 +29,114 @@
     royal: { c: "#6f55d8", C: "#4a36a3" },
     gold:  { c: "#f4b942", C: "#b67f1d" },
   };
-  const HELM = {
-    squire:  { c: "#4f7cf0", p: "#fff", a: null },
-    iron:    {},
-    plumed:  { p: "#e5484d" },
-    horned:  {},
-    crowned: { a: "gold" },
-  };
+  const OUT = "#0a0c16", GOLD = "#f4b942", DARK = "#16182b", SKIN = "#f1c9a1", BROWN = "#5a4636";
 
-  function paint(grid, rows, pal) {
-    rows.forEach((row, y) => {
-      if (!row) return;
-      for (let x = 0; x < W; x++) {
-        const ch = row[x];
-        if (ch && ch !== "." && ch !== " ") grid[y][x] = pal[ch] || null;
+  const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.substr(i, 2), 16));
+  const hexOf = (r, g, b) => "#" + [r, g, b].map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0")).join("");
+  const tint = (hex, f) => { const c = rgb(hex); return f >= 0 ? hexOf(c[0] + (255 - c[0]) * f, c[1] + (255 - c[1]) * f, c[2] + (255 - c[2]) * f) : hexOf(c[0] * (1 + f), c[1] * (1 + f), c[2] * (1 + f)); };
+
+  /* a layer is a set of cells plus a colour; shapes are added with rect() and ell(), mirrored left to right when asked */
+  function Layer(c, o) { this.m = new Set(); this.c = c; this.hi = (o && o.hi) || null; this.sh = (o && o.sh) || null; this.flat = !!(o && o.flat); }
+  const key = (x, y) => y * 64 + x;
+  function add(L, x, y, mir) { if (x >= 0 && x < W && y >= 0 && y < H) L.m.add(key(x, y)); if (mir && W - 1 - x >= 0 && W - 1 - x < W && y >= 0 && y < H) L.m.add(key(W - 1 - x, y)); }
+  function rect(L, x, y, w, h, mir) { for (let j = y; j < y + h; j++) for (let i = x; i < x + w; i++) add(L, i, j, mir); return L; }
+  function ell(L, cx, cy, rx, ry, mir) { for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) { const dx = (i + 0.5 - cx) / rx, dy = (j + 0.5 - cy) / ry; if (dx * dx + dy * dy <= 1) add(L, i, j, mir); } return L; }
+  const pts = (L, list) => { list.forEach(([x, y]) => add(L, x, y)); return L; };
+
+  function build(eq) {
+    eq = eq || {};
+    const A = ARMOR[eq.armor || "steel"] || ARMOR.steel;
+    const layers = [];
+    const L = (c, o) => { const l = new Layer(c, o); layers.push(l); return l; };
+    const armor = (c) => L(c || A.a, { hi: A.h, sh: A.b });
+
+    // cape hangs behind the whole body
+    const cape = CAPES[eq.cape || "none"];
+    if (cape) {
+      const c = L(cape.c, { hi: tint(cape.c, 0.25), sh: cape.C });
+      rect(c, 6, 15, 16, 14); rect(c, 4, 18, 20, 12);
+      for (let x = 4; x < 24; x += 3) rect(c, x, 30, 2, 1);
+    }
+
+    // legs and boots
+    rect(armor(), 10, 24, 4, 5, true);
+    rect(L("#6a4a2a"), 9, 28, 5, 2, true);
+    // torso, belt and pauldrons
+    ell(armor(), 13.5, 20, 9.5, 5.5);
+    rect(L(GOLD, { flat: true }), 6, 23, 16, 1);
+    ell(armor(tint(A.a, 0.08)), 5.5, 18, 3.8, 3.6); ell(armor(tint(A.a, 0.08)), 22.5, 18, 3.8, 3.6);
+    rect(L(tint(A.a, -0.1)), 12, 17, 4, 2);
+
+    // head, by helm
+    const helm = eq.helm || "squire";
+    const steel = ARMOR.steel;
+    const metal = (c) => L(c, { hi: steel.h, sh: steel.b });
+    if (helm === "squire") {
+      ell(L(SKIN), 13.5, 10.5, 6.5, 6);
+      ell(L("#b5651d"), 13.5, 6, 7, 3.2); rect(L("#b5651d"), 6, 6, 3, 6); rect(L("#b5651d"), 19, 6, 3, 6);
+      rect(L("#4f7cf0"), 8, 4, 12, 3);
+      pts(L(DARK, { flat: true }), [[11, 11], [11, 12], [16, 11], [16, 12]]);
+      pts(L("#d89a78", { flat: true }), [[13, 14], [14, 14]]);
+    } else {
+      metal("#9fb0d0"); const hl = layers[layers.length - 1];
+      if (helm === "horned") { hl.c = "#7a82ac"; rect(hl, 8, 3, 12, 11); rect(hl, 7, 8, 14, 6); }
+      else if (helm === "crowned") rect(hl, 8, 3, 12, 13);
+      else rect(hl, 7, 3, 14, 13);
+      rect(L(DARK, { flat: true }), helm === "horned" ? 9 : 8, 9, helm === "horned" ? 10 : 12, 2);
+      if (helm !== "horned") rect(L(DARK, { flat: true }), 13, 9, 2, 6);
+      pts(L(helm === "crowned" ? "#bfe0ff" : helm === "horned" ? "#ff8a3d" : "#f4f1e6", { flat: true }), [[10, 9], [11, 9], [16, 9], [17, 9]]);
+      if (helm === "iron") rect(metal("#6a7899"), 13, 2, 2, 2);
+      if (helm === "plumed") { ell(L("#e5484d", { hi: "#ff9ea0", sh: "#942e3a" }), 13.5, 3, 3.2, 3); rect(layers[layers.length - 1], 12, 4, 4, 3); }
+      if (helm === "horned") {
+        const hn = L("#efe6cc", { hi: "#fffaf0", sh: "#b8ad92" });
+        rect(hn, 3, 3, 2, 6); rect(hn, 4, 2, 2, 3); rect(hn, 5, 7, 2, 3); rect(hn, 23, 3, 2, 6); rect(hn, 22, 2, 2, 3); rect(hn, 21, 7, 2, 3);
       }
-    });
+      if (helm === "crowned") {
+        const gd = L(GOLD, { hi: "#ffe19a", sh: "#a9761f" });
+        rect(gd, 8, 2, 12, 2); rect(gd, 8, 0, 2, 2); rect(gd, 13, 0, 2, 2); rect(gd, 18, 0, 2, 2);
+      }
+    }
+
+    // shield on the left arm, sword or staff on the right
+    if (eq.shield !== "none") {
+      const s = SHIELDS[eq.shield || "oak"] || SHIELDS.oak;
+      const sh = L(s.m); rect(sh, 0, 12, 8, 15); rect(sh, 1, 27, 6, 2); rect(sh, 2, 29, 4, 1);
+      const em = L(s.n, { flat: true }); rect(em, 3, 15, 2, 10); rect(em, 1, 18, 6, 2);
+    }
+    if (eq.weapon !== "none") {
+      const w = WEAPONS[eq.weapon || "wood"] || WEAPONS.wood;
+      rect(armor(tint(A.a, 0.05)), 21, 21, 4, 4);
+      if (w.shape === "staff") {
+        rect(L(w.d, { flat: true }), 24, 7, 2, 24);
+        ell(L(w.n), 25, 5, 2.6, 2.6); pts(L("#fff", { flat: true }), [[24, 4], [25, 4]]);
+      } else {
+        rect(L(w.w), 24, 7, 2, 14);
+        rect(L(GOLD), 22, 21, 6, 1);
+        rect(L("#6a4630", { flat: true }), 24, 22, 2, 3); rect(L(GOLD, { flat: true }), 24, 25, 2, 1);
+      }
+    }
+    return layers;
   }
 
   function compose(eq) {
-    eq = eq || {};
-    const armorKey = eq.armor || "steel";
-    const armor = ARMOR[armorKey] || ARMOR.steel;
     const grid = Array.from({ length: H }, () => Array(W).fill(null));
-    const pal = Object.assign({}, BASE_PAL, armor);
-
-    // cape sits behind the body
-    const cape = CAPES[eq.cape || "none"];
-    if (cape) paint(grid, CAPE, Object.assign({}, pal, cape));
-
-    // body
-    paint(grid, BASE, pal);
-
-    // helmet
-    const helmKey = eq.helm || "squire";
-    const helmOver = OVER[helmKey] || OVER.squire;
-    const hp = Object.assign({}, pal, HELM[helmKey] || {});
-    if (HELM[helmKey] && HELM[helmKey].a === "gold") Object.assign(hp, ARMOR.gold, { g: "#ffe19a" });
-    // helmet rows start at row 0 for tall helms, row 1 for flat ones (squire)
-    // a full helm replaces the whole head, so clear it first
-    if (helmKey !== "squire") for (let y = 0; y <= 7; y++) for (let x = 0; x < W; x++) grid[y][x] = null;
-    paint(grid, helmOver, hp);
-
-    // shield (left hand) and weapon (right hand)
-    const sh = SHIELDS[eq.shield || "oak"] || SHIELDS.oak;
-    paint(grid, SHIELD, Object.assign({}, pal, sh));
-    const wp = WEAPONS[eq.weapon || "wood"] || WEAPONS.wood;
-    paint(grid, wp.shape === "staff" ? STAFF : SWORD, Object.assign({}, pal, wp));
-
+    for (const l of build(eq)) {
+      const base = l.c, hi = l.hi || tint(base, 0.32), sh = l.sh || tint(base, -0.34), has = (x, y) => l.m.has(key(x, y));
+      for (const k of l.m) {
+        const x = k % 64, y = (k - x) / 64;
+        let c = base;
+        if (!l.flat) {
+          if (!has(x - 1, y) || !has(x, y - 1)) c = hi;
+          if (!has(x + 1, y) || !has(x, y + 1)) c = sh;
+          if (!has(x, y - 1) && !has(x, y + 1)) c = base;
+        }
+        grid[y][x] = c;
+      }
+    }
+    const filled = (x, y) => x >= 0 && y >= 0 && x < W && y < H && grid[y][x];
+    const edge = [];
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (!grid[y][x] && (filled(x - 1, y) || filled(x + 1, y) || filled(x, y - 1) || filled(x, y + 1))) edge.push([x, y]);
+    edge.forEach(([x, y]) => { grid[y][x] = OUT; });
     return grid;
   }
 
@@ -170,16 +162,15 @@
     W, H, ARMOR, SHIELDS, WEAPONS, CAPES,
     svg(eq, opts) { return toSvg(compose(eq), opts); },
     node(eq, opts) { return NDC.svg(this.svg(eq, opts)); },
-    head(eq) { return NDC.svg(toSvg(compose(eq), { crop: [4, 0, 12, 9], label: "Knight" })); },
+    head(eq) { return NDC.svg(toSvg(compose(eq), { crop: [5, 0, 18, 17], label: "Knight" })); },
     /* gear icons: the piece alone on a small canvas */
-    icon(slot, key) {
-      const eq = {};
-      if (slot === "helm") { eq.helm = key; return NDC.svg(toSvg(compose({ helm: key, armor: "steel", shield: "oak", weapon: "wood", cape: "none" }), { crop: [4, 0, 12, 8], label: key })); }
-      if (slot === "shield") return NDC.svg(toSvg(compose({ shield: key, helm: "squire" }), { crop: [0, 8, 7, 10], label: key }));
-      if (slot === "weapon") return NDC.svg(toSvg(compose({ weapon: key }), { crop: [14, 0, 6, 16], label: key }));
-      if (slot === "cape") return NDC.svg(toSvg(compose({ cape: key }), { crop: [0, 9, 20, 11], label: key }));
-      return NDC.svg(toSvg(compose({ armor: key }), { crop: [0, 7, 20, 12], label: key }));
+    icon(slot, k) {
+      if (slot === "helm") return NDC.svg(toSvg(compose({ helm: k, armor: "steel", shield: "none", weapon: "none", cape: "none" }), { crop: [4, 0, 20, 18], label: k }));
+      if (slot === "shield") return NDC.svg(toSvg(compose({ shield: k, helm: "squire", weapon: "none" }), { crop: [0, 11, 9, 20], label: k }));
+      if (slot === "weapon") return NDC.svg(toSvg(compose({ weapon: k, shield: "none" }), { crop: [20, 2, 8, 26], label: k }));
+      if (slot === "cape") return NDC.svg(toSvg(compose({ cape: k, shield: "none", weapon: "none" }), { crop: [2, 13, 24, 19], label: k }));
+      return NDC.svg(toSvg(compose({ armor: k, shield: "none", weapon: "none", helm: "squire" }), { crop: [1, 12, 26, 19], label: k }));
     },
-    swatch(key) { return ARMOR[key].a; },
+    swatch(k) { return ARMOR[k].a; },
   };
 })();

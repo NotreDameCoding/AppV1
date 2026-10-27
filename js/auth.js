@@ -35,6 +35,13 @@
       return { emailSent: true };
     },
 
+    /* real mode only: opens Google's account chooser, then comes back here signed in */
+    async signInGoogle() {
+      if (!real || !sb) throw new Error("Sign-in isn't available right now. Check your connection and reload.");
+      const { error } = await sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: location.origin + location.pathname, queryParams: { prompt: "select_account" } } });
+      if (error) throw new Error(error.message || "Couldn't start Google sign-in.");
+    },
+
     async signOut() {
       if (real && sb) await sb.auth.signOut();
       try { localStorage.removeItem(SESSION); } catch (e) {}
