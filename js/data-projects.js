@@ -16,7 +16,7 @@ NDC.projects = [
    {
      title: "21325 Robotics Website",
      authors: ["Jake gozen"],
-     link: "https://notredamecoding.github.io/Coding-Club-NDHS/#home", // Filler link
+     link: "https://cyberknights.sirkorgo.com", // Filler link
      languages: ["js", "ht", "cs"],                         // py, jv, js, ht, cs, ar
      blurb: "Dedicated website for Cyberknights Robotics",
      date: "2026-12-01"
