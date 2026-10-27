@@ -9,7 +9,11 @@
     gold:   { a: "#e5b04a", h: "#ffe19a", b: "#a9761f" },
     crimson:{ a: "#d65a5f", h: "#ff9ea0", b: "#942e3a" },
     emerald:{ a: "#3fbf8f", h: "#8cf0c4", b: "#1f7d5e" },
-    obsidian:{ a: "#4b5070", h: "#8088b0", b: "#2a2e48" },
+    obsidian:{ a: "#4b5070", h: "#8088b0", b: "#2a2e48", t: "#8088b0", g: "#ff3a4a" },
+    ivory:  { a: "#eef0f8", h: "#ffffff", b: "#aab0cc", t: "#f4b942", g: "#9fe0ff" },
+    ember:  { a: "#8a1f2a", h: "#c0485a", b: "#4a0f18", t: "#c8d0e8", g: "#ff9a3a" },
+    violet: { a: "#5a3a8a", h: "#8a6ac8", b: "#2f1f4f", t: "#e0b8ff", g: "#ff6ad0" },
+    jade:   { a: "#1f7d5e", h: "#3fbf8f", b: "#0f4a38", t: "#f4d878", g: "#b8ff5a" },
   };
   const SHIELDS = {
     oak:      { m: "#9a6a37", n: "#f4b942" },
@@ -28,6 +32,9 @@
     red:   { c: "#c9454f", C: "#8f2c36" },
     royal: { c: "#6f55d8", C: "#4a36a3" },
     gold:  { c: "#f4b942", C: "#b67f1d" },
+    white: { c: "#f2f4fb", C: "#b4bad6" },
+    ember: { c: "#6e1824", C: "#3e0c14" },
+    jade:  { c: "#17604a", C: "#0c3a2c" },
   };
   const OUT = "#0a0c16", GOLD = "#f4b942", DARK = "#16182b", SKIN = "#f1c9a1", BROWN = "#5a4636";
 
@@ -59,18 +66,35 @@
     }
 
     // legs and boots
-    rect(armor(), 10, 24, 4, 5, true);
-    rect(L("#6a4a2a"), 9, 28, 5, 2, true);
+    rect(armor(), 9, 24, 4, 6, true);
+    rect(L("#6a4a2a"), 8, 29, 5, 2, true);
     // torso, belt and pauldrons
     ell(armor(), 13.5, 20, 9.5, 5.5);
     rect(L(GOLD, { flat: true }), 6, 23, 16, 1);
     ell(armor(tint(A.a, 0.08)), 5.5, 18, 3.8, 3.6); ell(armor(tint(A.a, 0.08)), 22.5, 18, 3.8, 3.6);
     rect(L(tint(A.a, -0.1)), 12, 17, 4, 2);
+    if (eq.helm === "dread") {
+      const sp = L(A.t || GOLD, { hi: tint(A.t || GOLD, 0.35), sh: tint(A.t || GOLD, -0.35) });
+      pts(sp, [[3, 14], [4, 13], [4, 12], [5, 14], [5, 13], [6, 14], [24, 14], [23, 13], [23, 12], [22, 14], [22, 13], [21, 14]]);
+      rect(sp, 13, 19, 2, 3); rect(sp, 11, 20, 6, 1);
+    }
 
     // head, by helm (the simple original faces and helms, on the wide body)
     const helm = eq.helm || "squire";
     const hm = (c) => (c ? L(c, { hi: tint(c, 0.35), sh: tint(c, -0.35) }) : armor());
-    if (helm === "squire") {
+    const TR = A.t || GOLD, GL = A.g || "#ff3a4a";
+    if (helm === "dread") {
+      // dark-knight helm: tall crest, curved horns, glowing visor
+      const hl = armor();
+      rect(hl, 7, 4, 14, 12); rect(hl, 8, 3, 12, 1);
+      const tr = L(TR, { hi: tint(TR, 0.35), sh: tint(TR, -0.35) });
+      rect(tr, 13, 1, 2, 14, false);
+      pts(tr, [[6, 7], [5, 6], [5, 5], [4, 4], [4, 3], [3, 2], [3, 1], [3, 0], [7, 7], [6, 6], [6, 5], [5, 4], [5, 3], [4, 2], [4, 1]]);
+      pts(tr, [[21, 7], [22, 6], [22, 5], [23, 4], [23, 3], [24, 2], [24, 1], [24, 0], [20, 7], [21, 6], [21, 5], [22, 4], [22, 3], [23, 2], [23, 1]]);
+      rect(L(DARK, { flat: true }), 8, 9, 12, 3);
+      rect(L(GL, { flat: true }), 9, 10, 4, 1); rect(L(GL, { flat: true }), 15, 10, 4, 1);
+      rect(L(DARK, { flat: true }), 9, 13, 10, 1); pts(L(DARK, { flat: true }), [[11, 14], [13, 14], [15, 14], [17, 14]]);
+    } else if (helm === "squire") {
       ell(L(SKIN), 13.5, 11, 5.6, 5.6);
       rect(L("#6a4630", { flat: true }), 9, 6, 10, 2);
       rect(L("#4f7cf0"), 8, 4, 12, 3); rect(L("#4f7cf0"), 8, 7, 2, 2); rect(L("#4f7cf0"), 18, 7, 2, 2);
@@ -96,8 +120,20 @@
     // shield on the left arm, sword or staff on the right
     if (eq.shield !== "none") {
       const s = SHIELDS[eq.shield || "oak"] || SHIELDS.oak;
-      ell(L(s.m), 5, 22, 5, 6.5);
-      ell(L(s.n, { flat: true }), 5, 22, 2, 2);
+      // thick kite shield: gold rim, deep body, heraldic cross
+      const rows = [[1, 8], [0, 9], [0, 9], [0, 9], [0, 9], [0, 9], [0, 9], [0, 9], [0, 9], [0, 9], [1, 8], [1, 8], [2, 7], [2, 7], [3, 6], [3, 6], [4, 5]];
+      const rim = L(s.n, { hi: tint(s.n, 0.35), sh: tint(s.n, -0.3) }), body = L(s.m);
+      rows.forEach(([a, b], i) => {
+        const y = 14 + i;
+        for (let x = a; x <= b; x++) add(rim, x, y);
+        if (i > 0 && i < rows.length - 1) {
+          const nxt = rows[i + 1];
+          const a2 = Math.max(a + 1, i === rows.length - 2 ? 4 : a + 1), b2 = Math.min(b - 1, i === rows.length - 2 ? 5 : b - 1);
+          for (let x = a2; x <= b2; x++) add(body, x, y);
+        }
+      });
+      const em = L(s.n, { flat: true });
+      rect(em, 4, 17, 2, 11); rect(em, 2, 19, 6, 2);
     }
     if (eq.weapon !== "none") {
       const w = WEAPONS[eq.weapon || "wood"] || WEAPONS.wood;
@@ -158,11 +194,11 @@
     W, H, ARMOR, SHIELDS, WEAPONS, CAPES,
     svg(eq, opts) { return toSvg(compose(eq), opts); },
     node(eq, opts) { return NDC.svg(this.svg(eq, opts)); },
-    head(eq) { return NDC.svg(toSvg(compose(eq), { crop: [5, 0, 18, 17], label: "Knight" })); },
+    head(eq) { return NDC.svg(toSvg(compose(eq), { crop: [3, 0, 22, 17], label: "Knight" })); },
     /* gear icons: the piece alone on a small canvas */
     icon(slot, k) {
-      if (slot === "helm") return NDC.svg(toSvg(compose({ helm: k, armor: "steel", shield: "none", weapon: "none", cape: "none" }), { crop: [4, 0, 20, 18], label: k }));
-      if (slot === "shield") return NDC.svg(toSvg(compose({ shield: k, helm: "squire", weapon: "none" }), { crop: [0, 11, 9, 20], label: k }));
+      if (slot === "helm") return NDC.svg(toSvg(compose({ helm: k, armor: "steel", shield: "none", weapon: "none", cape: "none" }), { crop: [3, 0, 22, 18], label: k }));
+      if (slot === "shield") return NDC.svg(toSvg(compose({ shield: k, helm: "squire", weapon: "none" }), { crop: [0, 13, 10, 18], label: k }));
       if (slot === "weapon") return NDC.svg(toSvg(compose({ weapon: k, shield: "none" }), { crop: [20, 2, 8, 26], label: k }));
       if (slot === "cape") return NDC.svg(toSvg(compose({ cape: k, shield: "none", weapon: "none" }), { crop: [2, 13, 24, 19], label: k }));
       return NDC.svg(toSvg(compose({ armor: k, shield: "none", weapon: "none", helm: "squire" }), { crop: [1, 12, 26, 19], label: k }));
