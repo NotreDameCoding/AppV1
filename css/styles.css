@@ -1,6 +1,8 @@
 /* Notre Dame Coding — Hub
    Dark ink-navy base, school gold, a little pixel-art in the edges. */
 
+/* the pixel font's numbers are easy to misread (5 looks like S), so numbers use a plain bold face instead */
+@font-face { font-family: "NDC Digits"; font-weight: 400 700; unicode-range: U+0030-0039; src: local("Segoe UI Bold"), local("SegoeUI-Bold"), local("Helvetica Neue Bold"), local("HelveticaNeue-Bold"), local("Arial Bold"), local("Arial-BoldMT"), local("DejaVu Sans Bold"), local("DejaVuSans-Bold"), local("Liberation Sans Bold"); }
 :root {
   --bg: #090b13;
   --bg-2: #0e1120;
@@ -30,7 +32,7 @@
   --f-display: "Instrument Serif", "Iowan Old Style", Georgia, serif;
   --f-body: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-code: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --f-pixel: "Pixelify Sans", "Press Start 2P", ui-monospace, monospace;
+  --f-pixel: "NDC Digits", "Pixelify Sans", "Press Start 2P", ui-monospace, monospace;
 
   --maxw: 1180px;
   --nav-h: 68px;

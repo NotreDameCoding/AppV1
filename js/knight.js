@@ -54,12 +54,16 @@
     const cape = CAPES[eq.cape || "none"];
     if (cape) {
       const c = L(cape.c, { hi: tint(cape.c, 0.25), sh: cape.C });
-      // draped behind the shoulders, flaring out wide, with a torn, pointed hem
-      const hem = [30, 31, 29, 31, 30, 28, 31, 30, 29, 31, 30, 29];
-      for (let x = 1; x < 27; x++) {
-        const half = Math.min(x - 1, 26 - x);
-        const top = half < 4 ? 21 - half : 15;
-        rect(c, x, top, 1, hem[half % hem.length] - top + 1);
+      // wide, flared cape that ends in a row of sharp triangles
+      for (let y = 15; y < 27; y++) {
+        const x0 = y < 18 ? 6 : y < 21 ? 5 : y < 24 ? 4 : 3, x1 = 27 - x0;
+        rect(c, x0, y, x1 - x0 + 1, 1);
+      }
+      for (const cx of [5.75, 11.25, 16.75, 22.25]) {
+        for (let y = 27; y < 32; y++) {
+          const hw = 2.75 * (1 - (y - 27) / 5);
+          for (let x = 3; x < 25; x++) if (Math.abs(x + 0.5 - cx) <= hw + 0.3) add(c, x, y);
+        }
       }
     }
 
