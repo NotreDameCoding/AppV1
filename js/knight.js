@@ -1,7 +1,8 @@
 /* The pixel knight: a 28x32 sprite built from shaded layers (a tin-can helm, wide pauldrons, a tower shield),
    so every piece of gear can be swapped. Each layer is a shape; light comes from the top left. */
 (function () {
-  const W = 28, H = 32;
+  const W = 30, H = 32;
+  let OFF = 2; // the body sits two cells right of the sprite edge so the shield can hang further left
 
   const ARMOR = {
     steel:  { a: "#9fb0d0", h: "#d3def5", b: "#6a7899" },
@@ -38,9 +39,9 @@
   /* a layer is a set of cells plus a colour; shapes are added with rect() and ell(), mirrored left to right when asked */
   function Layer(c, o) { this.m = new Set(); this.c = c; this.hi = (o && o.hi) || null; this.sh = (o && o.sh) || null; this.flat = !!(o && o.flat); }
   const key = (x, y) => y * 64 + x;
-  function add(L, x, y, mir) { if (x >= 0 && x < W && y >= 0 && y < H) L.m.add(key(x, y)); if (mir && W - 1 - x >= 0 && W - 1 - x < W && y >= 0 && y < H) L.m.add(key(W - 1 - x, y)); }
+  function add(L, x, y, mir) { const put = (px) => { if (px >= 0 && px < W && y >= 0 && y < H) L.m.add(key(px, y)); }; put(x + OFF); if (mir) put(27 - x + OFF); }
   function rect(L, x, y, w, h, mir) { for (let j = y; j < y + h; j++) for (let i = x; i < x + w; i++) add(L, i, j, mir); return L; }
-  function ell(L, cx, cy, rx, ry, mir) { for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) { const dx = (i + 0.5 - cx) / rx, dy = (j + 0.5 - cy) / ry; if (dx * dx + dy * dy <= 1) add(L, i, j, mir); } return L; }
+  function ell(L, cx, cy, rx, ry, mir) { for (let j = 0; j < H; j++) for (let i = 0; i < 28; i++) { const dx = (i + 0.5 - cx) / rx, dy = (j + 0.5 - cy) / ry; if (dx * dx + dy * dy <= 1) add(L, i, j, mir); } return L; }
   const pts = (L, list) => { list.forEach(([x, y]) => add(L, x, y)); return L; };
 
   function build(eq) {
@@ -48,6 +49,7 @@
     const A = ARMOR[eq.armor || "steel"] || ARMOR.steel;
     const layers = [];
     const L = (c, o) => { const l = new Layer(c, o); layers.push(l); return l; };
+    OFF = 2;
     const armor = (c) => L(c || A.a, { hi: A.h, sh: A.b });
 
     // cape hangs behind the whole body
@@ -97,6 +99,7 @@
     if (eq.shield !== "none") {
       const s = SHIELDS[eq.shield || "oak"] || SHIELDS.oak;
       // wide, thick kite shield: coloured body with a light rim
+      OFF = 0;
       const rows = [[1, 13], [0, 14], [0, 14], [0, 14], [0, 14], [0, 14], [0, 14], [0, 14], [0, 14], [1, 13], [2, 12], [3, 11], [4, 10], [5, 9], [6, 8]];
       const rim = L(s.n, { hi: tint(s.n, 0.35), sh: tint(s.n, -0.3) }), body = L(s.m);
       rows.forEach(([a, b], i) => {
@@ -104,6 +107,11 @@
         for (let x = a; x <= b; x++) add(rim, x, y);
         if (i > 0 && i < rows.length - 1) for (let x = a + 1; x <= b - 1; x++) add(body, x, y);
       });
+          // the Notre Dame interlocked ND: the N shares its right stem with the D
+      const ND = ["#...####.", "##..#...#", "#.#.#...#", "#..##...#", "#...#...#", "#...#...#", "#...####."];
+      const nd = L("#ffd36a", { flat: true });
+      ND.forEach((r, j) => [...r].forEach((c, i) => { if (c === "#") add(nd, 3 + i, 16 + j); }));
+      OFF = 2;
     }
     if (eq.weapon !== "none") {
       const w = WEAPONS[eq.weapon || "wood"] || WEAPONS.wood;
@@ -165,14 +173,14 @@
     W, H, ARMOR, SHIELDS, WEAPONS, CAPES,
     svg(eq, opts) { return toSvg(compose(eq), opts); },
     node(eq, opts) { return NDC.svg(this.svg(eq, opts)); },
-    head(eq) { return NDC.svg(toSvg(compose(eq), { crop: [5, 0, 18, 17], label: "Knight" })); },
+    head(eq) { return NDC.svg(toSvg(compose(eq), { crop: [7, 0, 18, 17], label: "Knight" })); },
     /* gear icons: the piece alone on a small canvas */
     icon(slot, k) {
-      if (slot === "helm") return NDC.svg(toSvg(compose({ helm: k, armor: "steel", shield: "none", weapon: "none", cape: "none" }), { crop: [4, 0, 20, 18], label: k }));
+      if (slot === "helm") return NDC.svg(toSvg(compose({ helm: k, armor: "steel", shield: "none", weapon: "none", cape: "none" }), { crop: [6, 0, 20, 18], label: k }));
       if (slot === "shield") return NDC.svg(toSvg(compose({ shield: k, helm: "squire", weapon: "none" }), { crop: [0, 13, 15, 17], label: k }));
-      if (slot === "weapon") return NDC.svg(toSvg(compose({ weapon: k, shield: "none" }), { crop: [20, 2, 8, 26], label: k }));
-      if (slot === "cape") return NDC.svg(toSvg(compose({ cape: k, shield: "none", weapon: "none" }), { crop: [2, 13, 24, 19], label: k }));
-      return NDC.svg(toSvg(compose({ armor: k, shield: "none", weapon: "none", helm: "squire" }), { crop: [1, 12, 26, 19], label: k }));
+      if (slot === "weapon") return NDC.svg(toSvg(compose({ weapon: k, shield: "none" }), { crop: [22, 2, 8, 26], label: k }));
+      if (slot === "cape") return NDC.svg(toSvg(compose({ cape: k, shield: "none", weapon: "none" }), { crop: [4, 13, 24, 19], label: k }));
+      return NDC.svg(toSvg(compose({ armor: k, shield: "none", weapon: "none", helm: "squire" }), { crop: [3, 12, 26, 19], label: k }));
     },
     swatch(k) { return ARMOR[k].a; },
   };
