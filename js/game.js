@@ -117,7 +117,6 @@
       { id: "plumed", name: "Plumed helm", ...P(100, "Sturdy", { hp: 20 }) },
       { id: "horned", name: "Horned helm", ...P(160, "Tough", { hp: 30 }) },
       { id: "crowned", name: "Gold crest", ...P(250, "Mighty", { hp: 45 }) },
-      { id: "dread", name: "Dread helm", ...P(320, "Fearsome", { hp: 55 }) },
     ],
     shield: [
       { id: "oak", name: "Oak shield", ...P(0, "Basic", { block: 0.5, cost: 20, arc: 100, parry: 0 }) },
@@ -129,14 +128,13 @@
       { id: "wood", name: "Practice sword", ...P(0, "Balanced", { dmg: 1, swing: 380, reach: 1.0 }) },
       { id: "steel", name: "Steel sword", ...P(70, "Fast", { dmg: 2, swing: 260, reach: 1.1 }) },
       { id: "flame", name: "Flame blade", ...P(140, "Heavy", { dmg: 5, swing: 560, reach: 1.2 }) },
-      { id: "spark", name: "Spark staff", ...P(220, "Wide", { dmg: 3, swing: 420, reach: 1.9 }) },
+      { id: "spark", name: "Storm blade", ...P(220, "Quick", { dmg: 3, swing: 300, reach: 1.3 }) },
     ],
     cape: [
       { id: "none", name: "No cape", ...P(0, "Plain", { speed: 0 }) },
       { id: "red", name: "Red cape", ...P(40, "Swift", { speed: 0.04 }) },
       { id: "royal", name: "Royal cape", ...P(100, "Swift", { speed: 0.08 }) },
       { id: "gold", name: "Gold cape", ...P(200, "Swift", { speed: 0.12 }) },
-      { id: "white", name: "White cape", ...P(220, "Swift", { speed: 0.12 }) },
     ],
     armor: [
       { id: "steel", name: "Steel", ...P(0, "Plain", { def: 0 }) },
@@ -145,7 +143,6 @@
       { id: "crimson", name: "Crimson", ...P(140, "Solid", { def: 0.15 }) },
       { id: "obsidian", name: "Obsidian", ...P(200, "Solid", { def: 0.2 }) },
       { id: "gold", name: "Gold", ...P(280, "Heavy", { def: 0.25 }) },
-      { id: "ivory", name: "Ivory & gold", ...P(340, "Heavy", { def: 0.28 }) },
     ],
   };
   G.SLOTS = [

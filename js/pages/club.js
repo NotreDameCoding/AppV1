@@ -8,14 +8,7 @@
   /* members get a stable look from their name. It has nothing to do with progress. */
   function looksFor(m) {
     const n = NDC.hash(m.name);
-    const dread = {
-      "Blake Westin": { armor: "ivory", cape: "gold", shield: "starlight", weapon: "steel" },
-      "Arie Lee": { armor: "violet", cape: "royal", shield: "cobalt", weapon: "steel" },
-      "Masha Poberejsky": { armor: "ember", cape: "ember", shield: "crimson", weapon: "flame" },
-      "Jake Gozen": { armor: "jade", cape: "jade", shield: "oak", weapon: "steel" },
-    };
-    const dk = dread[m.name] || (m.role === "President" ? dread["Blake Westin"] : null);
-    if (dk) return { helm: "dread", ...dk };
+    if (m.role === "President") return { helm: "crowned", armor: "gold", cape: "royal", shield: "starlight", weapon: "steel" };
     if (m.role !== "Member") return { helm: "plumed", armor: ARMORS[n % ARMORS.length], cape: "red", shield: SHIELDS[n % SHIELDS.length], weapon: "steel" };
     return { helm: n % 3 === 0 ? "iron" : "squire", armor: ARMORS[n % ARMORS.length], cape: CAPES[(n >> 3) % CAPES.length], shield: SHIELDS[(n >> 5) % SHIELDS.length], weapon: WEAPONS[(n >> 7) % WEAPONS.length] };
   }

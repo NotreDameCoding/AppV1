@@ -629,7 +629,7 @@
     }
     function drawWeapon() {
       const p = run.p, w = p.L.weapon, wp = NDC.knight.WEAPONS[p.L.eq.weapon] || NDC.knight.WEAPONS.wood;
-      const len = 14 * w.reach + 8, col = wp.w || wp.n, staff = wp.shape === "staff";
+      const len = 14 * w.reach + 8, col = wp.w || wp.n, staff = false;
       let a, hx = p.x, hy = p.y - 8, ext = 1;
       if (p.swing) {
         const sw = p.swing; a = swingAngle(sw, swingHalf(sw)); const u = sw.t / sw.dur;
@@ -652,7 +652,7 @@
       if (staff) { ctx.fillStyle = "#8a5a2f"; ctx.fillRect(3, -1, L - 4, 2); ctx.fillStyle = wp.n; ctx.fillRect(L - 3, -3, 5, 6); ctx.fillStyle = "#fff"; ctx.fillRect(L - 1, -1, 2, 2); }
       else { ctx.fillStyle = col; ctx.fillRect(5, -2, L - 3, 4); ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.fillRect(5, -2, L - 3, 1); ctx.fillStyle = "#f4b942"; ctx.fillRect(3, -4, 3, 8); ctx.fillStyle = "#6a4630"; ctx.fillRect(-1, -1, 4, 3); }
       ctx.restore();
-      if (p.swing && p.swing.t / p.swing.dur > 0.24 && p.swing.t / p.swing.dur < 0.5 && Math.random() < 0.6) addFx({ k: "spark", x: hx + cx * L, y: hy + cy * L, vx: rnd(-20, 20), vy: rnd(-20, 10), t: 0.25, c: wp.shape === "staff" ? wp.n : (p.L.eq.weapon === "flame" ? "#ffb04a" : "#fff") });
+      if (p.swing && p.swing.t / p.swing.dur > 0.24 && p.swing.t / p.swing.dur < 0.5 && Math.random() < 0.6) addFx({ k: "spark", x: hx + cx * L, y: hy + cy * L, vx: rnd(-20, 20), vy: rnd(-20, 10), t: 0.25, c: p.L.eq.weapon === "spark" ? "#6ef0e0" : (p.L.eq.weapon === "flame" ? "#ffb04a" : "#fff") });
     }
 
     function drawLighting() {
