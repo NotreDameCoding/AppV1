@@ -58,6 +58,7 @@
   function earnCard(stats) {
     const row = (l, v) => h("div", { class: "statline" }, h("span", null, l), h("b", { class: "pixel" }, v));
     return h("div", null,
+      G.isOfficer() ? h("p", { style: { color: "var(--gold)", marginBottom: "0.6rem" } }, "Officer account: every piece of gear is unlocked.") : null,
       row("Coins", stats.coins),
       row("Next level in", `${stats.levelSpan - stats.levelInto} XP`),
       h("p", { class: "muted", style: { marginTop: "0.8rem", fontSize: "0.92rem", lineHeight: 1.45 } },

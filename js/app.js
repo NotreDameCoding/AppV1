@@ -135,6 +135,6 @@
     window.addEventListener("hashchange", route);
     // keep the top bar's XP and avatar fresh without redrawing the page
     NDC.bus.on("progress", () => { if (rightEl) renderRight(); });
-    NDC.bus.on("auth", () => { renderRight(); if (/^#\/account/.test(location.hash)) route(); });
+    NDC.bus.on("auth", () => { renderRight(); if (/^#\/(account|knight|dungeon)/.test(location.hash)) route(); });
   };
 })();

@@ -150,9 +150,11 @@
     { id: "cape", label: "Cape" }, { id: "armor", label: "Armor" },
   ];
   G.findGear = (key) => { const [slot, id] = key.split(":"); return { slot, ...G.gear[slot].find((g) => g.id === id) }; };
+  /* officers own every piece of gear (and can enter every floor) without spending coins */
+  G.isOfficer = () => !!(NDC.auth && NDC.auth.officer);
   G.owned = function (state) {
-    const bought = state.bought || {}, o = {};
-    for (const slot of Object.keys(G.gear)) G.gear[slot].forEach((g) => { if (g.price === 0 || bought[slot + ":" + g.id]) (o[slot] = o[slot] || []).push(g.id); });
+    const bought = state.bought || {}, o = {}, all = G.isOfficer();
+    for (const slot of Object.keys(G.gear)) G.gear[slot].forEach((g) => { if (all || g.price === 0 || bought[slot + ":" + g.id]) (o[slot] = o[slot] || []).push(g.id); });
     return o;
   };
   G.defaults = { helm: "squire", shield: "oak", weapon: "wood", cape: "none", armor: "steel" };
@@ -183,7 +185,7 @@
     let L = 1; while (xp >= G.gameXpFor(L + 1)) L++;
     const a = G.gameXpFor(L), b = G.gameXpFor(L + 1);
     return { xp, level: L, into: xp - a, span: b - a, pct: (xp - a) / (b - a), best: gm.best || 0, kills: gm.kills || 0,
-      hpBonus: (L - 1) * 10, staminaBonus: (L - 1) * 8, floorOpen: (f) => L >= f };
+      hpBonus: (L - 1) * 10, staminaBonus: (L - 1) * 8, floorOpen: (f) => L >= f || G.isOfficer() };
   };
   NDC.courseById = (id) => NDC.courses.find((c) => c.id === id);
 
