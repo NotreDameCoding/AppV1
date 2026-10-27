@@ -26,7 +26,7 @@
   const CAPES = {
     none:  null,
     red:   { c: "#c9454f", C: "#8f2c36" },
-    royal: { c: "#6f55d8", C: "#4a36a3" },
+    royal: { c: "#2a2a36", C: "#14141c" },
     gold:  { c: "#f4b942", C: "#b67f1d" },
   };
   const OUT = "#0a0c16", GOLD = "#f4b942", DARK = "#16182b", SKIN = "#f1c9a1", BROWN = "#5a4636";
@@ -76,18 +76,14 @@
     // head, by helm (the simple original faces and helms, on the wide body)
     const helm = eq.helm || "squire";
     const hm = (c) => (c ? L(c, { hi: tint(c, 0.35), sh: tint(c, -0.35) }) : armor());
-    if (helm === "squire" || helm === "crowned") {
+    if (helm === "squire") {
       ell(L(SKIN), 13.5, 11, 5.6, 5.6);
       rect(L("#6a4630", { flat: true }), 9, 6, 10, 2);
-      if (helm === "crowned") {
-        const cr = L(GOLD, { hi: "#ffe19a", sh: "#a9761f" });
-        rect(cr, 8, 3, 12, 3); rect(cr, 8, 1, 2, 2); rect(cr, 13, 0, 2, 3); rect(cr, 18, 1, 2, 2);
-        pts(L("#e5484d", { flat: true }), [[13, 4], [14, 4]]);
-      } else { rect(L("#4f7cf0"), 8, 4, 12, 3); rect(L("#4f7cf0"), 8, 7, 2, 2); rect(L("#4f7cf0"), 18, 7, 2, 2); }
+      rect(L("#4f7cf0"), 8, 4, 12, 3); rect(L("#4f7cf0"), 8, 7, 2, 2); rect(L("#4f7cf0"), 18, 7, 2, 2);
       pts(L(DARK, { flat: true }), [[11, 11], [11, 12], [16, 11], [16, 12]]);
       rect(L("#d6a47e", { flat: true }), 12, 15, 4, 1);
     } else {
-      const base = helm === "crowned" ? ARMOR.gold.a : A.a, hi = helm === "crowned" ? ARMOR.gold.h : A.h, sh = helm === "crowned" ? ARMOR.gold.b : A.b;
+      const base = A.a, hi = A.h, sh = A.b;
       const hl = L(base, { hi, sh });
       rect(hl, 7, 4, 14, 12); rect(hl, 8, 3, 12, 1);
       rect(L(DARK, { flat: true }), 8, 9, 12, 2);
@@ -118,14 +114,37 @@
     if (eq.weapon !== "none") {
       const w = WEAPONS[eq.weapon || "wood"] || WEAPONS.wood;
       rect(armor(tint(A.a, 0.05)), 21, 21, 4, 4);
-      if (w.big) {
-        rect(L(w.w), 23, 4, 4, 17); rect(L(tint(w.w, 0.6), { flat: true }), 24, 5, 1, 15); pts(L(w.w), [[24, 3], [25, 3], [24, 2]]);
-        rect(L(GOLD), 21, 21, 8, 2);
-        rect(L("#6a4630", { flat: true }), 24, 23, 2, 3); rect(L(GOLD, { flat: true }), 24, 26, 2, 1);
+      const id = eq.weapon || "wood", DK = "#6a4630";
+      if (id === "spark") {
+        // storm blade: broad cyan blade with a lightning bolt and a winged guard
+        rect(L(w.w), 23, 3, 4, 18); pts(L(w.w), [[24, 2], [25, 2], [24, 1]]);
+        const bolt = L("#ffffff", { flat: true });
+        pts(bolt, [[25, 5], [24, 7], [25, 8], [24, 10], [25, 11], [24, 13], [25, 14], [24, 16]]);
+        pts(L("#1b8f86", { flat: true }), [[26, 4], [26, 6], [26, 9], [26, 12], [26, 15], [26, 18]]);
+        const g = L(GOLD); rect(g, 20, 20, 8, 2); pts(g, [[20, 19], [27, 19], [19, 19], [20, 18]]);
+        pts(L("#2ee6c2", { flat: true }), [[24, 21], [25, 21]]);
+        rect(L(DK, { flat: true }), 24, 22, 2, 3); rect(L(GOLD, { flat: true }), 24, 25, 2, 2);
+      } else if (id === "flame") {
+        // flame blade: orange blade with a rippling edge, a bright core and a tongue of fire at the tip
+        rect(L(w.w), 24, 6, 3, 15);
+        const fl = L("#ff5a2a");
+        pts(fl, [[23, 8], [27, 10], [23, 12], [27, 14], [23, 16], [27, 18], [24, 5], [26, 5], [25, 4], [25, 3], [26, 4]]);
+        rect(L("#ffe27a", { flat: true }), 25, 8, 1, 11);
+        const g = L("#c9454f"); rect(g, 21, 21, 7, 1); pts(g, [[21, 20], [27, 20]]);
+        pts(L(GOLD, { flat: true }), [[24, 21], [25, 21], [26, 21]]);
+        rect(L(DK, { flat: true }), 25, 22, 1, 3); rect(L("#c9454f", { flat: true }), 24, 25, 3, 1);
+      } else if (id === "steel") {
+        // steel sword: long blade with a fuller, a tapered point, a gold guard and a gem
+        rect(L(w.w), 24, 5, 3, 16); pts(L(w.w), [[25, 4], [25, 3]]);
+        rect(L("#9aa8c6", { flat: true }), 25, 7, 1, 12);
+        const g = L(GOLD); rect(g, 22, 21, 7, 1); pts(g, [[22, 20], [28, 20]]);
+        pts(L("#4f7cf0", { flat: true }), [[25, 21]]);
+        rect(L(DK, { flat: true }), 25, 22, 1, 3); rect(L(GOLD, { flat: true }), 24, 25, 3, 1);
       } else {
-        rect(L(w.w), 24, 7, 2, 14);
-        rect(L(GOLD), 22, 21, 6, 1);
-        rect(L("#6a4630", { flat: true }), 24, 22, 2, 3); rect(L(GOLD, { flat: true }), 24, 25, 2, 1);
+        // practice sword: plain wood, simple guard
+        rect(L(w.w), 24, 8, 2, 13); pts(L(w.w), [[24, 7]]);
+        rect(L("#8a5a2f", { flat: true }), 22, 21, 6, 1);
+        rect(L(DK, { flat: true }), 24, 22, 2, 3); rect(L("#8a5a2f", { flat: true }), 24, 25, 2, 1);
       }
     }
     return layers;

@@ -106,11 +106,12 @@ NDC.codeBlock = function codeBlock(code, lang) {
   return pre;
 };
 
-/* Rich-ish text: `backticks` become inline code. */
+/* Rich-ish text: `backticks` become inline code and **double stars** become bold. */
 NDC.rich = function rich(text) {
   const frag = document.createDocumentFragment();
-  String(text).split(/(`[^`]+`)/).forEach((part) => {
+  String(text).split(/(`[^`]+`|\*\*[^*]+\*\*)/).forEach((part) => {
     if (part.startsWith("`") && part.endsWith("`") && part.length > 2) frag.append(NDC.h("code", { class: "inline" }, part.slice(1, -1)));
+    else if (part.startsWith("**") && part.endsWith("**") && part.length > 4) frag.append(NDC.h("strong", null, part.slice(2, -2)));
     else if (part) frag.append(document.createTextNode(part));
   });
   return frag;

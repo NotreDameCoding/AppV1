@@ -39,18 +39,26 @@
     function teardown() { if (rend && rend.destroy) rend.destroy(); rend = null; }
 
     /* ---- intro ---- */
-    function showIntro() {
+    /* the teaching comes first: the lesson's intro, then any extra cards from NDC.more[lesson.id], one at a time */
+    function showIntro(pi) {
+      pi = pi || 0;
       state = "intro"; teardown(); NDC.clear(col); col.className = "player-col";
-      const intro = lesson.intro;
+      const intro = lesson.intro, more = (NDC.more && NDC.more[lesson.id]) || [];
+      const pages = [intro ? { head: lesson.blurb, text: intro.text, code: intro.code } : { head: lesson.blurb }].concat(more);
+      const pg = pages[pi], last = pi === pages.length - 1;
       col.append(h("div", { class: "intro-card px" },
-        h("p", { class: "muted", style: { marginBottom: "0.4rem" } }, `${course.name} · ${lesson.title}`),
-        h("h2", null, lesson.blurb),
-        intro ? h("p", null, NDC.rich(intro.text)) : null,
-        intro && intro.code ? NDC.codeBlock(intro.code, course.lang) : null,
-        h("p", { class: "muted", style: { marginBottom: 0 } }, `${total} questions. A wrong answer comes back later, so you can fix it.`)));
+        h("p", { class: "muted", style: { marginBottom: "0.4rem" } }, `${course.name} · ${lesson.title}` + (pages.length > 1 ? ` · ${pi + 1} of ${pages.length}` : "")),
+        h("h2", null, pg.head || lesson.blurb),
+        pg.text ? h("p", null, NDC.rich(pg.text)) : null,
+        pg.code ? NDC.codeBlock(pg.code, course.lang) : null,
+        pg.after ? h("p", null, NDC.rich(pg.after)) : null,
+        last ? h("p", { class: "muted", style: { marginBottom: 0 } }, `${total} questions. A wrong answer comes back later, so you can fix it.`) : null));
       setFoot("", "", "");
-      setPrimary("Start", false);
-      secondary.hidden = true;
+      setPrimary(last ? "Start" : "Next", false);
+      primary.dataset.page = String(pi);
+      primary.dataset.last = last ? "1" : "";
+      secondary.hidden = pi === 0;
+      if (pi > 0) { secondary.textContent = "Back"; secondary.dataset.back = "1"; }
     }
 
     /* ---- question ---- */
@@ -90,7 +98,7 @@
         state = "retry";
         setFoot("no", "Not quite", "Look at the checks, change your code, and run it again.");
         setPrimary("Check again", false, "bad");
-        secondary.hidden = false;
+        secondary.hidden = false; secondary.textContent = "Skip this one";
         return;
       }
       state = "wrong";
@@ -110,13 +118,13 @@
     function skipThis() { completed++; progress(); pos++; if (pos >= queue.length) finish(); else showQuestion(); }
 
     primary.addEventListener("click", () => {
-      if (state === "intro") { showQuestion(); return; }
+      if (state === "intro") { if (primary.dataset.last) { delete secondary.dataset.back; showQuestion(); } else showIntro(+primary.dataset.page + 1); return; }
       if (state === "asking") return doCheck();
       if (state === "retry") { state = "asking"; setFoot("", "", ""); secondary.hidden = true; setPrimary("Check", false); return doCheck(); }
       if (state === "ok" || state === "wrong") return next();
       if (state === "done-next") { const to = primary.dataset.to; location.hash = to ? "#/lesson/" + to : "#/learn/" + course.id; }
     });
-    secondary.addEventListener("click", () => { if (state === "retry") skipThis(); });
+    secondary.addEventListener("click", () => { if (state === "intro") showIntro(Math.max(0, +primary.dataset.page - 1)); else if (state === "retry") skipThis(); });
 
     /* ---- finish ---- */
     function finish() {

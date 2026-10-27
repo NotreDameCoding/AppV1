@@ -1,0 +1,74 @@
+/* Extra teaching cards: HTML and JavaScript. */
+Object.assign(NDC.more, {
+  "ht-1": [
+    { head: "What HTML is", text: "HTML is the language that describes what is on a web page: headings, paragraphs, links, images. You write it with **tags**. Most tags come in pairs: an opening tag like `<p>` and a closing tag like `</p>` with a slash. Everything between them is the **content**.", code: "<p>This is a paragraph.</p>", after: "The whole thing, opening tag plus content plus closing tag, is called an **element**." },
+    { head: "Headings and paragraphs", text: "`<h1>` is the biggest, most important heading. Down through `<h6>`, the headings get smaller. `<p>` is for normal paragraphs of text. Browsers ignore extra spaces and blank lines in your code, so use a new tag for each block.", code: "<h1>My Page</h1>\n<h2>About me</h2>\n<p>I like to code.</p>", after: "Use only one `h1` per page. Use `h2` for sections and `h3` for parts inside them." },
+    { head: "Common mistakes", text: "The most common mistakes are forgetting the closing tag, forgetting the slash in it, and mismatching the names (opening `<p>` but closing `</h1>`). Tags also nest: if you open one tag inside another, close the inner one first.", code: "<!-- good -->\n<p>Hello <strong>world</strong></p>\n\n<!-- bad: closed in the wrong order -->\n<p>Hello <strong>world</p></strong>", after: "A tag with no content, like `<img>`, has no closing tag. You'll meet those soon." },
+  ],
+  "ht-2": [
+    { head: "The skeleton of a page", text: "Every complete page has the same skeleton. `<!DOCTYPE html>` tells the browser it's modern HTML. The `<html>` tag wraps everything. Inside, the `<head>` holds information about the page, and the `<body>` holds what people see.", code: "<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <title>My Page</title>\n  </head>\n  <body>\n    <h1>Hello</h1>\n  </body>\n</html>", after: "Indentation (the spaces at the start of lines) isn't required, but it makes the nesting easy to see." },
+    { head: "Head versus body", text: "The `<title>` in the head is the text on the browser tab. It's not shown on the page itself. Everything visible, like headings, paragraphs and images, goes in the body. The `lang=\"en\"` attribute tells screen readers which language to use.", code: "<head>\n  <title>My Page</title>\n</head>\n<body>\n  <h1>Visible heading</h1>\n</body>", after: "A common mistake is putting visible content in the head. It must go in the body." },
+  ],
+  "ht-3": [
+    { head: "Lists", text: "Use `<ul>` for a bulleted list and `<ol>` for a numbered one. Each item inside is an `<li>`. Never put text directly inside a `ul` without an `li`.", code: "<ul>\n  <li>HTML</li>\n  <li>CSS</li>\n</ul>\n\n<ol>\n  <li>Wake up</li>\n  <li>Code</li>\n</ol>", after: "`ul` stands for unordered list and `ol` for ordered list." },
+    { head: "Emphasis", text: "`<strong>` marks text as important. Browsers show it in bold. `<em>` marks emphasis and is shown in italics. They go inside a paragraph, around the words they apply to.", code: "<p>This is <strong>very important</strong>\nand this is <em>emphasized</em>.</p>", after: "Pick these tags for meaning, not just for looks. You'll control appearance with CSS later." },
+  ],
+  "ht-4": [
+    { head: "Attributes", text: "An **attribute** gives a tag extra information. It goes inside the opening tag as `name=\"value\"`. A link needs the `href` attribute, which is where it goes.", code: "<a href=\"https://example.com\">Visit the site</a>", after: "The words between the tags (`Visit the site`) are what people click. The `href` is the address they go to." },
+    { head: "Images", text: "`<img>` shows a picture. It has no closing tag. `src` is the picture's file or address. `alt` is a short text description for people who can't see the image, and it shows if the image fails to load.", code: "<img src=\"knight.png\" alt=\"A pixel knight\">", after: "Always write alt text that describes what's in the picture. Screen readers read it out loud." },
+  ],
+  "ht-5": [
+    { head: "Dividing a page into sections", text: "Pages have parts: a top area, navigation, main content, and a bottom. HTML has tags for each, so the structure is clear. `<header>`, `<nav>`, `<main>`, `<section>` and `<footer>` look the same as plain boxes. They just carry meaning.", code: "<header><h1>Club</h1></header>\n<main>\n  <section>\n    <h2>About</h2>\n    <p>We code.</p>\n  </section>\n</main>\n<footer>Made at NDHS</footer>", after: "A `<section>` groups related content under a heading. `<div>` is a plain box for when no meaningful tag fits." },
+  ],
+  "ht-6": [
+    { head: "Forms collect information", text: "A `<form>` wraps the inputs. `<input>` makes a box to type in. Its `type` changes how it behaves: `text`, `email`, `password`, `number`. A `<button>` sends the form.", code: "<form>\n  <label for=\"name\">Name</label>\n  <input type=\"text\" id=\"name\">\n  <button>Send</button>\n</form>", after: "The `label`'s `for` matches the input's `id`. That links them, so clicking the label focuses the input." },
+  ],
+  "js-1": [
+    { head: "Running code and seeing results", text: "JavaScript runs line by line, top to bottom. To see what a line produces, print it with `console.log()`. In the exercises, the output shows below the editor. Text (a **string**) goes in quotes. Numbers don't.", code: "console.log(\"Hello\");\nconsole.log(42);\nconsole.log(2 + 3);", after: "This prints `Hello`, then `42`, then `5` on separate lines. JavaScript does the math before printing." },
+    { head: "Common mistakes", text: "Every statement should end with a semicolon. Quotes must match: if you start with a double quote, end with one. Spelling and capitals matter: `console.log`, not `Console.Log`.", code: "// good\nconsole.log(\"Hi\");\n\n// bad: missing closing quote\nconsole.log(\"Hi);", after: "If you get an error, read the message. It usually names the line and the problem." },
+  ],
+  "js-2": [
+    { head: "Variables", text: "A **variable** is a name that holds a value, so you can use it again. `const` creates a name that can't change. `let` creates one you can change later. Pick `const` unless you need to change the value.", code: "const name = \"Ari\";\nlet score = 10;\nscore = score + 5;\nconsole.log(name, score);", after: "This prints `Ari 15`. The `=` here means store a value, not equal to." },
+    { head: "Mixing values into text", text: "A **template string** uses backticks and `${}` to place values inside text. It's easier than joining strings with `+`.", code: "const name = \"Ari\";\nconsole.log(`Hi ${name}!`);", after: "That prints `Hi Ari!`. Whatever is inside `${ }` is calculated and inserted." },
+  ],
+  "js-3": [
+    { head: "Making choices with if", text: "An `if` statement runs code only when its condition is true. Add `else` for what to do otherwise. The condition goes in parentheses and the code in curly braces.", code: "const age = 17;\nif (age >= 18) {\n  console.log(\"adult\");\n} else {\n  console.log(\"minor\");\n}", after: "17 is not 18 or more, so this prints `minor`." },
+    { head: "Comparing", text: "Use `===` to check if two values are equal. A single `=` stores a value, so it can't be used for comparing. Other comparisons: `>`, `<`, `>=`, `<=`, and `!==` for not equal. Combine tests with `&&` (and) and `||` (or).", code: "if (age >= 13 && age < 20) {\n  console.log(\"teen\");\n}", after: "Both sides of `&&` must be true. With `||`, only one needs to be." },
+  ],
+  "js-4": [
+    { head: "Repeating with loops", text: "A loop runs the same code many times. A `for` loop has three parts in the parentheses: where to start, when to keep going, and how to step. `i++` means add 1 to `i`.", code: "for (let i = 0; i < 3; i++) {\n  console.log(i);\n}", after: "This prints `0`, `1`, `2`. It starts at 0, keeps going while `i < 3`, and adds 1 each time." },
+    { head: "Counting and totals", text: "To count from 1 to 5, start at 1 and use `i <= 5`. To add things up, make a variable before the loop and add to it inside.", code: "let total = 0;\nfor (let i = 1; i <= 5; i++) {\n  total = total + i;\n}\nconsole.log(total);", after: "That prints `15`. A `while` loop is similar, but only has the condition." },
+  ],
+  "js-5": [
+    { head: "Functions", text: "A **function** is a named recipe you can run whenever you want. It can take **parameters** (inputs) and hand back a result with `return`. Define it once, then call it by name with parentheses.", code: "function double(n) {\n  return n * 2;\n}\nconsole.log(double(4));", after: "`n` is a parameter. When you call `double(4)`, `n` becomes 4, and `return` sends back 8." },
+    { head: "Arrow functions", text: "An **arrow function** is a shorter way to write a function. `(n) => n * 3` takes `n` and returns `n * 3`. You'll see these a lot with arrays.", code: "const triple = (n) => n * 3;\nconsole.log(triple(4));", after: "This prints `12`. Remember: a function that doesn't `return` gives back `undefined`." },
+  ],
+  "js-6": [
+    { head: "Arrays", text: "An **array** holds several values in order, written in square brackets. Counting starts at **0**, so the first item is `[0]`. `.length` tells you how many items there are, and `.push()` adds one at the end.", code: "const fruits = [\"apple\", \"pear\"];\nfruits.push(\"plum\");\nconsole.log(fruits[0]);\nconsole.log(fruits.length);", after: "This prints `apple` and then `3`. Mistake to avoid: expecting the first item to be `[1]`." },
+    { head: "Transforming arrays", text: "`.map()` builds a new array by running a function on every item. `.filter()` builds a new array with only the items that pass a test. The original array stays the same.", code: "const nums = [1, 2, 3, 4];\nconsole.log(nums.map(n => n * 2));\nconsole.log(nums.filter(n => n > 2));", after: "The first prints `[2, 4, 6, 8]` and the second prints `[3, 4]`." },
+  ],
+  "js-7": [
+    { head: "Strings are objects with tools", text: "A string is text. Each string has built-in tools you call with a dot. `.length` is how many characters. `.toUpperCase()` and `.toLowerCase()` change the case. `.includes(\"x\")` is true if it contains `x`. `.slice(a, b)` takes a piece from index `a` up to but not including `b`.", code: "const word = \"python\";\nconsole.log(word.length);\nconsole.log(word.slice(0, 3));", after: "This prints `6` and `pyt`. Counting starts at 0, so `slice(0, 3)` takes characters 0, 1 and 2." },
+    { head: "Join strings", text: "You can join strings with `+`, or put values in a backtick template. Methods don't change the original string. They return a new one, so you have to use or print the result.", code: "const name = \"ada\";\nconsole.log(name.toUpperCase());\nconsole.log(name);", after: "The first prints `ADA`, but `name` is still `ada` afterward." },
+  ],
+  "js-8": [
+    { head: "Objects", text: "An **object** groups related values under names, called properties. Write it in curly braces as `name: value` pairs separated by commas. Read a property with a dot.", code: "const player = { name: \"Mia\", score: 10 };\nconsole.log(player.name);\nplayer.score = 25;\nplayer.level = 2;", after: "Reading `player.name` gives `Mia`. You can change a value or add a new property by assigning to it." },
+    { head: "Missing properties", text: "Reading a property that doesn't exist gives `undefined`, not an error. `Object.keys(obj)` gives an array of the property names.", code: "const p = { a: 1 };\nconsole.log(p.b);\nconsole.log(Object.keys(p));", after: "That prints `undefined` and then `[\"a\"]`." },
+  ],
+  "js-9": [
+    { head: "map builds a new array", text: "`.map(fn)` calls your function on each item and collects the results into a new array of the same length. The arrow function `n => n * 10` takes one item and returns what it becomes.", code: "const nums = [1, 2, 3];\nconst tens = nums.map(n => n * 10);\nconsole.log(tens);", after: "This prints `[10, 20, 30]`." },
+    { head: "filter keeps some items", text: "`.filter(fn)` keeps only the items where your function returns true. The new array can be shorter. Use `.length` to count how many passed. `.join(\"-\")` glues an array into one string.", code: "const nums = [4, 12, 30];\nconst big = nums.filter(n => n > 10);\nconsole.log(big.length);\nconsole.log(big.join(\"-\"));", after: "This prints `2` and `12-30`." },
+  ],
+  "js-10": [
+    { head: "for...of", text: "`for (const x of list)` runs once per item, giving you each item as `x`. It's easier than counting with an index when you only need the items.", code: "const names = [\"ada\", \"bo\"];\nfor (const n of names) {\n  console.log(n);\n}", after: "This prints `ada` then `bo`." },
+    { head: "Math", text: "The `Math` object has useful functions. `Math.max(a, b, c)` returns the biggest. `Math.round()` rounds to the nearest whole number. `Math.floor()` rounds down. To use an array with `Math.max`, spread it with three dots.", code: "const nums = [3, 9, 4];\nconsole.log(Math.max(...nums));\nconsole.log(Math.round(4.6));", after: "This prints `9` and `5`." },
+  ],
+  "js-11": [
+    { head: "The page as objects", text: "When a browser loads HTML, it builds a tree of objects called the **DOM**. JavaScript can find those objects, read them, and change them, which is how pages react to people. `document.querySelector()` finds an element using a CSS selector.", code: "const title = document.querySelector(\"#title\");\ntitle.textContent = \"Welcome!\";", after: "This finds the element with id `title` and replaces its text. `#` means id, `.` means class, just like CSS." },
+    { head: "Reacting to clicks", text: "`addEventListener` waits for something to happen, like a click, and then runs a function. The first value is the event name and the second is the function.", code: "const btn = document.querySelector(\"button\");\nbtn.addEventListener(\"click\", () => {\n  btn.textContent = \"Clicked!\";\n});", after: "Nothing happens until the click, then the function runs. Find the element first, then listen." },
+  ],
+  "js-12": [
+    { head: "Solving a problem in steps", text: "Before writing code, write the steps in plain words. For counting vowels: go through each letter, check if it's a vowel, add one to a counter if so, print the counter at the end. Then turn each step into code.", code: "let count = 0;\nfor (const c of \"education\") {\n  if (\"aeiou\".includes(c)) {\n    count++;\n  }\n}\nconsole.log(count);", after: "`count++` adds 1. Each part of the plan became a line of code." },
+    { head: "When it goes wrong", text: "If the answer is wrong, add `console.log` lines to see what the values really are at each step. Compare them to what you expected. The place where they differ is where the bug is.", code: "for (let i = 1; i <= 15; i++) {\n  console.log(i, i % 3);\n}", after: "A remainder of 0 means the number divides evenly. That's how `i % 3 === 0` finds multiples of 3." },
+  ],
+});

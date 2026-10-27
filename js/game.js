@@ -133,7 +133,7 @@
     cape: [
       { id: "none", name: "No cape", ...P(0, "Plain", { speed: 0 }) },
       { id: "red", name: "Red cape", ...P(40, "Swift", { speed: 0.04 }) },
-      { id: "royal", name: "Royal cape", ...P(100, "Swift", { speed: 0.08 }) },
+      { id: "royal", name: "Black cape", ...P(100, "Swift", { speed: 0.08 }) },
       { id: "gold", name: "Gold cape", ...P(200, "Swift", { speed: 0.12 }) },
     ],
     armor: [
