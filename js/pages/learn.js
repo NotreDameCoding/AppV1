@@ -35,10 +35,7 @@
   }
 
   function pathFor(course, state) {
-    const path = h("div", { class: "path marble" });
-    const road = NDC.svg('<svg class="road" aria-hidden="true"></svg>');
-    path.append(road);
-    let knightSlot = null, lastSlot = null;
+    const path = h("div", { class: "path" });
     const all = NDC.allLessons(course);
     const nextId = (NDC.store.nextLesson(course) || {}).id;
     let n = 0;
@@ -56,44 +53,11 @@
         const glyph = isDone ? NDC.svg('<svg viewBox="0 0 9 7" shape-rendering="crispEdges" width="34" height="27"><path fill="#0b0e1a" d="M7 0h2v2H8v1H7v1H6v1H5v1H4v1H2V6H1V5H0V3h2v1h1v1h1V4h1V3h1V2h1z"/></svg>') : isSkipped ? ">>" : unlocked ? String(all.indexOf(lesson) + 1) : "#";
         const btn = h("button", { class: cls, type: "button", "aria-label": `${lesson.title}${isDone ? ", completed" : !unlocked ? ", locked" : ""}`, onclick: () => openLesson(course, unit, lesson, idx, state) },
           h("span", { class: "ic" }, glyph));
-        const slot = h("div", { class: "node-slot" + (unlocked || isDone ? "" : " locked-slot"), "data-state": isDone ? "done" : isCurrent ? "current" : "", style: { "--dx": DX[idx % DX.length] + "px", "--cc": course.hex } },
+        path.append(h("div", { class: "node-slot" + (unlocked || isDone ? "" : " locked-slot"), style: { "--dx": DX[idx % DX.length] + "px", "--cc": course.hex } },
           isCurrent ? h("span", { class: "start-flag px", style: { "--fill": "var(--gold)", "--edge": "var(--gold)" } }, "Start") : null,
-          btn, h("span", { class: "node-label" }, lesson.title));
-        if (isCurrent) knightSlot = slot;
-        lastSlot = slot;
-        path.append(slot);
+          btn, h("span", { class: "node-label" }, lesson.title)));
       });
     });
-    const finished = !knightSlot;
-    if (finished) knightSlot = lastSlot;
-    if (knightSlot) {
-      const dx = parseFloat(knightSlot.style.getPropertyValue("--dx")) || 0;
-      knightSlot.append(h("div", { class: "path-knight" + (dx > 0 ? " left" : " right") + (finished ? " cheer" : "") }, NDC.knight.node(NDC.store.equipped())));
-    }
-    path.append(h("div", { class: "path-end" + (finished ? " reached" : "") },
-      NDC.svg('<svg viewBox="0 0 24 20" width="120" height="100" shape-rendering="crispEdges"><path fill="currentColor" d="M2 6h2V3h2v3h2V3h2v3h4V3h2v3h2V3h2v3h2v14H2z"/><path fill="#0b0e1a" d="M10 20v-6a2 2 0 0 1 4 0v6zM5 9h2v3H5zM17 9h2v3h-2z"/><path fill="#f4b942" d="M12 0v3h4V2h-3V0z"/></svg>'),
-      h("b", null, finished ? "Course complete!" : "The finish"), h("span", null, finished ? "You made it to the castle." : "Finish every lesson to reach the castle.")));
-
-    /* draw the winding road behind the nodes */
-    function layout() {
-      const svg = path.querySelector(".road");
-      if (!svg || !path.isConnected) return;
-      const pr = path.getBoundingClientRect();
-      if (!pr.width) return;
-      const pts = [...path.querySelectorAll(".node")].map((n) => { const r = n.getBoundingClientRect(); return [r.left - pr.left + r.width / 2, r.top - pr.top + r.height / 2, n.classList.contains("done")]; });
-      if (pts.length < 2) return;
-      const seg = (a, b) => { const my = (a[1] + b[1]) / 2; return ` C ${a[0]} ${my}, ${b[0]} ${my}, ${b[0]} ${b[1]}`; };
-      let full = `M ${pts[0][0]} ${pts[0][1]}`, gold = full, lastDone = 0;
-      pts.forEach((p, i) => { if (p[2]) lastDone = i; });
-      for (let i = 1; i < pts.length; i++) { full += seg(pts[i - 1], pts[i]); if (i <= lastDone + 1 && pts[i - 1][2]) gold += seg(pts[i - 1], pts[i]); }
-      svg.setAttribute("viewBox", `0 0 ${pr.width} ${pr.height}`);
-      svg.setAttribute("width", pr.width); svg.setAttribute("height", pr.height);
-      svg.innerHTML = `<path d="${full}" class="r-edge"/><path d="${full}" class="r-stone"/><path d="${full}" class="r-dash"/>` + (lastDone >= 0 && pts[0][2] ? `<path d="${gold}" class="r-gold"/>` : "");
-    }
-    requestAnimationFrame(layout);
-    setTimeout(layout, 250);
-    window.addEventListener("resize", layout);
-    if (window.ResizeObserver) { const ro = new ResizeObserver(layout); ro.observe(path); }
     return path;
   }
 
