@@ -211,10 +211,12 @@
   /* ---------- run code (Python / JavaScript) ---------- */
   function run(ex, ctx) {
     const lang = ctx.lang; // "py" | "js"
+    const carried = ex.chain && ctx.carry ? ctx.carry() : null;
+    const st = carried != null ? carried : ex.starter;
     const consoleEl = h("pre", { class: "console" }, h("span", { class: "dim" }, "Output shows up here."));
     const rowsHost = h("div");
     let hintEl = null;
-    const ta = editor(ex.starter, { label: "Code editor", onInput: () => ctx.ready(ta.value.trim().length > 0 && ta.value !== ex.starter), onRun: doRun });
+    const ta = editor(st, { label: "Code editor", onInput: () => ctx.ready(ta.value.trim().length > 0 && ta.value !== st), onRun: doRun });
     if (lang === "py") NDC.run.warmPython();
     async function doRun() {
       NDC.clear(consoleEl); consoleEl.append(h("span", { class: "dim" }, lang === "py" && !NDC.run.pythonReady() ? "Starting Python (the first run takes a few seconds)…" : "Running…"));
@@ -225,15 +227,15 @@
       if (!r.out && !r.err) consoleEl.append(h("span", { class: "dim" }, "(nothing printed)"));
     }
     const runBtn = h("button", { class: "btn small px", type: "button", onclick: doRun }, "Run");
-    const resetBtn = h("button", { class: "link-btn", type: "button", onclick: () => { ta.value = ex.starter; ctx.ready(false); } }, "Reset");
+    const resetBtn = h("button", { class: "link-btn", type: "button", onclick: () => { ta.value = st; ctx.ready(false); } }, "Reset");
     const hintBtn = ex.hint ? h("button", { class: "link-btn", type: "button", onclick: () => { if (!hintEl) { hintEl = h("p", { class: "muted", style: { marginTop: "0.6rem" } }, "Hint: ", NDC.rich(ex.hint)); el.insertBefore(hintEl, ide); } } }, "Need a hint?") : null;
     const ide = h("div", { class: "ide two" },
       h("div", { class: "ed-wrap" }, h("div", { class: "ed-head" }, h("span", null, lang === "py" ? "main.py" : "script.js"), h("span", { class: "row", style: { gap: "0.9rem" } }, resetBtn, runBtn)), ta),
       h("div", null, consoleEl, rowsHost));
-    const el = h("div", null, promptEl(ex), hintBtn ? h("p", null, hintBtn) : null, ide);
+    const el = h("div", null, promptEl(ex), carried != null ? h("p", { class: "muted", style: { margin: "-0.8rem 0 0.8rem" } }, "Your code from the last question is already here. Build on it.") : null, hintBtn ? h("p", null, hintBtn) : null, ide);
     return {
       el,
-      canCheck: () => ta.value.trim().length > 0 && ta.value !== ex.starter,
+      canCheck: () => ta.value.trim().length > 0 && ta.value !== st,
       async check() {
         NDC.clear(rowsHost);
         rowsHost.append(h("p", { class: "muted", style: { marginTop: "0.8rem" } }, "Checking…"));
@@ -241,36 +243,38 @@
         NDC.clear(rowsHost); rowsHost.append(checkRows(rows));
         const ok = rows.length === ex.checks.length && rows.every((r) => r.ok);
         if (rows.some((r) => r.fatal)) return { ok: false, noPenalty: true, answer: "Python couldn't load. Check your connection, then try again." };
-        return { ok, retrySame: !ok, rows };
+        return { ok, retrySame: !ok, rows, code: ta.value };
       },
     };
   }
 
   /* ---------- web (HTML / CSS) ---------- */
   function web(ex, ctx) {
+    const carried = ex.chain && ctx.carry ? ctx.carry() : null;
+    const st = carried != null ? carried : ex.starter;
     const frame = h("iframe", { class: "preview", title: "Live preview", sandbox: "allow-same-origin" });
     const rowsHost = h("div");
     let t = null, hintEl = null;
-    const ta = editor(ex.starter, { label: "Code editor", onInput: () => { clearTimeout(t); t = setTimeout(draw, 160); ctx.ready(ta.value.trim().length > 0 && ta.value !== ex.starter); } });
+    const ta = editor(st, { label: "Code editor", onInput: () => { clearTimeout(t); t = setTimeout(draw, 160); ctx.ready(ta.value.trim().length > 0 && ta.value !== st); } });
     const wrapDoc = (code) => /<html|<!doctype/i.test(code) ? code : `<!doctype html><html><head><meta charset="utf-8"><style>body{font-family:system-ui,sans-serif;margin:16px;color:#111}</style></head><body>${code}</body></html>`;
     function draw() { frame.srcdoc = wrapDoc(ta.value); }
     draw();
-    const resetBtn = h("button", { class: "link-btn", type: "button", onclick: () => { ta.value = ex.starter; draw(); ctx.ready(false); } }, "Reset");
+    const resetBtn = h("button", { class: "link-btn", type: "button", onclick: () => { ta.value = st; draw(); ctx.ready(false); } }, "Reset");
     const hintBtn = ex.hint ? h("button", { class: "link-btn", type: "button", onclick: () => { if (!hintEl) { hintEl = h("p", { class: "muted", style: { marginTop: "0.6rem" } }, "Hint: ", NDC.rich(ex.hint)); el.insertBefore(hintEl, ide); } } }, "Need a hint?") : null;
     const ide = h("div", { class: "ide two" },
       h("div", { class: "ed-wrap" }, h("div", { class: "ed-head" }, h("span", null, "index.html"), resetBtn), ta),
       h("div", null, h("div", { class: "ed-wrap" }, h("div", { class: "ed-head" }, h("span", null, "Preview")), frame), rowsHost));
-    const el = h("div", null, promptEl(ex), hintBtn ? h("p", null, hintBtn) : null, ide);
+    const el = h("div", null, promptEl(ex), carried != null ? h("p", { class: "muted", style: { margin: "-0.8rem 0 0.8rem" } }, "Your code from the last question is already here. Build on it.") : null, hintBtn ? h("p", null, hintBtn) : null, ide);
     return {
       el,
-      canCheck: () => ta.value.trim().length > 0 && ta.value !== ex.starter,
+      canCheck: () => ta.value.trim().length > 0 && ta.value !== st,
       async check() {
         clearTimeout(t); draw();
         await new Promise((res) => { frame.onload = res; setTimeout(res, 600); });
         const rows = NDC.run.runWebChecks(frame, ex.checks);
         NDC.clear(rowsHost); rowsHost.append(checkRows(rows));
         const ok = rows.every((r) => r.ok);
-        return { ok, retrySame: !ok, rows };
+        return { ok, retrySame: !ok, rows, code: ta.value };
       },
     };
   }

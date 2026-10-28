@@ -11,6 +11,7 @@
 
     const queue = lesson.ex.map((ex, i) => ({ ex, tries: 0, key: i }));
     const total = queue.length;
+    let chainCode = null; // the code from the last coding question; the next one starts from it
     let pos = 0, completed = 0, firstTry = 0, wrongs = 0;
     let rend = null, state = "intro", item = null, ready = false;
 
@@ -67,7 +68,7 @@
       item = queue[pos];
       state = "asking";
       col.className = "player-col" + (WIDE.has(item.ex.type) ? " wide" : "");
-      rend = NDC.renderers[item.ex.type](item.ex, { lang: course.lang, ready: (v) => { ready = v; if (state === "asking") setPrimary("Check", !v); } });
+      rend = NDC.renderers[item.ex.type](item.ex, { lang: course.lang, carry: () => chainCode, ready: (v) => { ready = v; if (state === "asking") setPrimary("Check", !v); } });
       col.append(rend.el);
       ready = rend.canCheck();
       setFoot("", "", "");
@@ -83,6 +84,7 @@
       const r = await rend.check();
       if (r.noPenalty) { state = "asking"; setFoot("no", "Couldn't check that", r.answer); setPrimary("Check", false); return; }
       if (r.ok) {
+        if (r.code != null) chainCode = r.code;
         if (item.tries === 0 && r.firstTry !== false) firstTry++;
         completed++; progress();
         state = "ok";
@@ -115,7 +117,7 @@
       showQuestion();
     }
 
-    function skipThis() { completed++; progress(); pos++; if (pos >= queue.length) finish(); else showQuestion(); }
+    function skipThis() { if (item.ex.solution) chainCode = item.ex.solution; completed++; progress(); pos++; if (pos >= queue.length) finish(); else showQuestion(); }
 
     primary.addEventListener("click", () => {
       if (state === "intro") { if (primary.dataset.last) { delete secondary.dataset.back; showQuestion(); } else showIntro(+primary.dataset.page + 1); return; }
