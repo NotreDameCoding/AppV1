@@ -13,6 +13,22 @@
     return { helm: n % 3 === 0 ? "iron" : "squire", armor: ARMORS[n % ARMORS.length], cape: CAPES[(n >> 3) % CAPES.length], shield: SHIELDS[(n >> 5) % SHIELDS.length], weapon: WEAPONS[(n >> 7) % WEAPONS.length] };
   }
 
+  /* an officer's card shows their real equipped knight: their own copy if it's you, otherwise the look they've shared */
+  const norm = (n) => String(n || "").toLowerCase().replace(/[^a-z ]/g, "").trim();
+  const sameName = (a, b) => { a = norm(a); b = norm(b); return !!a && !!b && (a === b || a.startsWith(b + " ") || b.startsWith(a + " ")); };
+  const fullLook = (equipped) => Object.assign({}, NDC.game.defaults, equipped || {});
+  function officerSprite(m) {
+    const box = h("div", { class: "sprite" });
+    const me = NDC.store.get(), mine = NDC.auth && NDC.auth.user && NDC.auth.officer && (sameName(me.name, m.name) || sameName(NDC.auth.user.name, m.name));
+    const show = (eq) => { NDC.clear(box); box.append(NDC.knight.node(eq)); };
+    show(mine ? fullLook(NDC.store.equipped()) : looksFor(m));
+    if (!mine && NDC.auth && NDC.auth.looks) NDC.auth.looks().then((rows) => {
+      const row = rows.find((r) => sameName(r.name, m.name));
+      if (row) show(fullLook(row.equipped));
+    }).catch(() => {});
+    return box;
+  }
+
   /* ---------- members ---------- */
   NDC.pages.members = function () {
     const officers = NDC.members.filter((m) => m.role !== "Member");
@@ -31,7 +47,7 @@
     return h("div", { class: "page" }, h("div", { class: "wrap" },
       h("div", { class: "page-head" }, h("h1", null, "Members"), h("p", null, `${NDC.members.length} members`)),
       h("div", { class: "officers" }, officers.map((m) => h("div", { class: "officer px" },
-        h("div", { class: "sprite" }, NDC.knight.node(looksFor(m))),
+        officerSprite(m),
         h("h3", null, m.name), h("p", { class: "role" }, m.role), h("p", null, m.note)))),
       h("div", { class: "members-tools" }, h("h2", { class: "sec", style: { margin: 0 } }, "Everyone else"), search, count),
       list,

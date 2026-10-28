@@ -64,6 +64,19 @@
       return { rows: data };
     },
 
+    /* Officers' knights: an officer's equipped gear is shared so the Members page can show their real look. Names and gear only. */
+    async publishLook(state) {
+      if (!real || !sb || !A.user || !A.officer) return;
+      const name = (state.name || "").trim() || (A.user.name || "");
+      if (!name) return;
+      await sb.from("looks").upsert({ user_id: A.user.id, name, equipped: state.equipped || {}, updated_at: new Date().toISOString() });
+    },
+    async looks() {
+      if (!real || !sb) return [];
+      const { data, error } = await sb.from("looks").select("name,equipped");
+      return error ? [] : (data || []);
+    },
+
     /* officers only */
     async listProgress() {
       if (!real) return { demo: true, rows: [] };
@@ -111,7 +124,7 @@
   async function applySession(session) {
     if (!session || !session.user) { NDC.store.setRemote(null); setUser(null); return; }
     const u = session.user;
-    setUser({ email: u.email, id: u.id });
+    setUser({ email: u.email, id: u.id, name: (u.user_metadata && (u.user_metadata.full_name || u.user_metadata.name)) || "" });
     // pull the saved copy, merge it with whatever is on this device, then keep them in sync
     let remoteState = null;
     try {
@@ -124,8 +137,10 @@
         const xp = NDC.game.stats(state).xp;
         const { error } = await sb.from("progress").upsert({ user_id: u.id, email: u.email, display_name: state.name || null, data: state, xp, updated_at: new Date().toISOString() });
         if (error) throw error;
+        A.publishLook(state).catch(() => {});
       },
     });
     try { const { data } = await sb.rpc("is_officer"); A.officer = data === true; NDC.bus.emit("auth", A.user); } catch (e) {}
+    if (A.officer) A.publishLook(NDC.store.get()).catch(() => {});
   }
 })();

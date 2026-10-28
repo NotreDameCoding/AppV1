@@ -39,3 +39,17 @@ alter table public.leaderboard enable row level security;
 create policy "leaderboard: signed-in members read" on public.leaderboard for select to authenticated using (true);
 create policy "leaderboard: insert own" on public.leaderboard for insert to authenticated with check (auth.uid() = user_id);
 create policy "leaderboard: update own" on public.leaderboard for update to authenticated using (auth.uid() = user_id);
+
+
+-- Officers' knights (run this part once). Only an officer's display name and equipped gear are stored here,
+-- so the Members page can show each officer's real knight to everyone. Only officers can write to it.
+create table if not exists public.looks (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  name text not null,
+  equipped jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table public.looks enable row level security;
+create policy "looks: anyone can read" on public.looks for select to anon, authenticated using (true);
+create policy "looks: officers insert own" on public.looks for insert to authenticated with check (auth.uid() = user_id and public.is_officer());
+create policy "looks: officers update own" on public.looks for update to authenticated using (auth.uid() = user_id and public.is_officer());
