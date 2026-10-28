@@ -785,7 +785,12 @@
     async function loadBoard() {
       NDC.clear(boardEl); boardEl.append(h("h2", null, "Deepest floors"));
       let rows = null;
-      try { rows = (await NDC.auth.leaderboard()).rows; } catch (e) { boardEl.append(h("p", { class: "muted" }, "The leaderboard couldn't load right now.")); return; }
+      try { rows = (await NDC.auth.leaderboard()).rows; } catch (e) {
+        const missing = /schema cache|does not exist|relation|leaderboard/i.test(String(e && e.message));
+        boardEl.append(h("p", { class: "muted" }, missing ? "The leaderboard isn't set up yet. An officer needs to run the leaderboard part of supabase/schema.sql once." : "The leaderboard couldn't load right now."));
+        if (e && e.message) boardEl.append(h("p", { class: "muted", style: { fontSize: "0.8rem" } }, String(e.message)));
+        return;
+      }
       if (!alive) return;
       if (rows === null) { const me = G.gameStats(NDC.store.get()); boardEl.append(h("p", { class: "muted" }, "Sign in to put your name on the leaderboard."), h("p", null, `You: floor ${me.best || 0}, game level ${me.level}`)); return; }
       if (!rows.length) { boardEl.append(h("p", { class: "muted" }, "Nobody has cleared a floor yet.")); return; }
