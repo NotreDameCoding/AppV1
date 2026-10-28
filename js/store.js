@@ -50,6 +50,7 @@
     stats: () => NDC.game.stats(state),
     equipped() { return NDC.game.equippedFor(state); },
     setRemote(r) { remote = r; },
+    getRemote() { return remote || { push: async () => {} }; },
     /* switch to another person's save. If the person is new, they inherit what they did as a guest. */
     setIdentity(id, opts) {
       opts = opts || {};

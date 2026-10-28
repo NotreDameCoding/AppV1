@@ -20,7 +20,10 @@
 
     /* the name shown for the signed-in member: the one they chose, else their account's first and last name, else the start of their email */
     displayName(state) {
-      const chosen = ((state && state.name) || "").trim();
+      let chosen = ((state && state.name) || "").trim();
+      // a name that is just the member's email (or the start of it) was never really chosen
+      const em = A.user && A.user.email ? A.user.email.toLowerCase() : "";
+      if (em && (chosen.toLowerCase() === em || chosen.toLowerCase() === em.split("@")[0])) chosen = "";
       if (chosen) return chosen;
       if (A.user && A.user.name) return A.user.name;
       return A.user && A.user.email ? A.user.email.split("@")[0] : "";
@@ -150,5 +153,8 @@
     });
     try { const { data } = await sb.rpc("is_officer"); A.officer = data === true; NDC.bus.emit("auth", A.user); } catch (e) {}
     if (A.officer) A.publishLook(NDC.store.get()).catch(() => {});
+    // refresh the saved name and leaderboard entry now, so older rows stop showing an email or "Knight xxxx"
+    try { await NDC.store.getRemote().push(NDC.store.get()); } catch (e) {}
+    if (NDC.game.gameStats(NDC.store.get()).best > 0) A.postScore(NDC.store.get()).catch(() => {});
   }
 })();
