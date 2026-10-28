@@ -64,7 +64,7 @@
       return;
     }
     const menu = h("div", { class: "menu px", role: "menu", hidden: true },
-      h("div", { class: "who" }, user.email),
+      h("div", { class: "who" }, NDC.auth.displayName(NDC.store.get()) || user.email),
       h("a", { href: "#/account", role: "menuitem", onclick: () => (menu.hidden = true) }, "Account"),
       h("button", { type: "button", role: "menuitem", onclick: async () => { menu.hidden = true; await NDC.auth.signOut(); NDC.toast("Signed out"); } }, "Sign out"));
     const btn = h("button", { class: "avatar-btn", type: "button", "aria-haspopup": "true", "aria-label": "Account menu", onclick: (e) => { e.stopPropagation(); menu.hidden = !menu.hidden; } },

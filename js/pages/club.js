@@ -8,6 +8,7 @@
   /* members get a stable look from their name. It has nothing to do with progress. */
   function looksFor(m) {
     const n = NDC.hash(m.name);
+    if (m.name === "Arie Lee") return { helm: "plumed", armor: "cobalt", cape: "none", shield: "cobalt", weapon: "steel" };
     if (m.role === "President") return { helm: "crowned", armor: "gold", cape: "royal", shield: "starlight", weapon: "steel" };
     if (m.role !== "Member") return { helm: "plumed", armor: ARMORS[n % ARMORS.length], cape: "red", shield: SHIELDS[n % SHIELDS.length], weapon: "steel" };
     return { helm: n % 3 === 0 ? "iron" : "squire", armor: ARMORS[n % ARMORS.length], cape: CAPES[(n >> 3) % CAPES.length], shield: SHIELDS[(n >> 5) % SHIELDS.length], weapon: WEAPONS[(n >> 7) % WEAPONS.length] };
@@ -24,7 +25,7 @@
     show(mine ? fullLook(NDC.store.equipped()) : looksFor(m));
     if (!mine && NDC.auth && NDC.auth.looks) NDC.auth.looks().then((rows) => {
       const row = rows.find((r) => sameName(r.name, m.name));
-      if (row) show(fullLook(row.equipped));
+      if (row && row.equipped && Object.keys(row.equipped).length) show(fullLook(row.equipped));
     }).catch(() => {});
     return box;
   }

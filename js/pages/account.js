@@ -72,10 +72,11 @@
           h("button", { class: "btn primary", type: "button", onclick: NDC.openSignIn }, "Sign in"))));
     }
 
-    const name = state.name || user.email.split("@")[0];
+    const fallbackName = NDC.auth.displayName({ name: "" });
+    const name = NDC.auth.displayName(state);
     const titleEl = h("h1", null, name);
-    const nameInput = h("input", { class: "field", type: "text", maxlength: 40, value: state.name || "", placeholder: user.email.split("@")[0], "aria-label": "Display name",
-      oninput: () => { NDC.store.update((s) => { s.name = nameInput.value.trim(); }); titleEl.textContent = nameInput.value.trim() || user.email.split("@")[0]; } });
+    const nameInput = h("input", { class: "field", type: "text", maxlength: 40, value: state.name || "", placeholder: fallbackName, "aria-label": "Display name",
+      oninput: () => { NDC.store.update((s) => { s.name = nameInput.value.trim(); }); titleEl.textContent = nameInput.value.trim() || fallbackName; } });
 
     const top = h("div", { class: "acct-top" },
       h("div", null, titleEl,

@@ -18,6 +18,14 @@
       return A.ready;
     },
 
+    /* the name shown for the signed-in member: the one they chose, else their account's first and last name, else the start of their email */
+    displayName(state) {
+      const chosen = ((state && state.name) || "").trim();
+      if (chosen) return chosen;
+      if (A.user && A.user.name) return A.user.name;
+      return A.user && A.user.email ? A.user.email.split("@")[0] : "";
+    },
+
     validEmail: (e) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e),
 
     /* returns { signedIn: true } in demo mode, { emailSent: true } in real mode */
@@ -54,7 +62,7 @@
     async postScore(state) {
       if (!real || !sb || !A.user) return;
       const gs = NDC.game.gameStats(state);
-      const name = (state.name || "").trim() || "Knight " + String(A.user.id).slice(0, 4);
+      const name = A.displayName(state) || "Knight " + String(A.user.id).slice(0, 4);
       await sb.from("leaderboard").upsert({ user_id: A.user.id, name, best_floor: gs.best, game_level: gs.level, updated_at: new Date().toISOString() });
     },
     async leaderboard() {
@@ -67,8 +75,8 @@
     /* Officers' knights: an officer's equipped gear is shared so the Members page can show their real look. Names and gear only. */
     async publishLook(state) {
       if (!real || !sb || !A.user || !A.officer) return;
-      const name = (state.name || "").trim() || (A.user.name || "");
-      if (!name) return;
+      const name = A.displayName(state);
+      if (!name || !Object.keys(state.equipped || {}).length) return; // nothing chosen yet: keep the default look
       await sb.from("looks").upsert({ user_id: A.user.id, name, equipped: state.equipped || {}, updated_at: new Date().toISOString() });
     },
     async looks() {
@@ -135,7 +143,7 @@
     NDC.store.setRemote({
       push: async (state) => {
         const xp = NDC.game.stats(state).xp;
-        const { error } = await sb.from("progress").upsert({ user_id: u.id, email: u.email, display_name: state.name || null, data: state, xp, updated_at: new Date().toISOString() });
+        const { error } = await sb.from("progress").upsert({ user_id: u.id, email: u.email, display_name: A.displayName(state) || null, data: state, xp, updated_at: new Date().toISOString() });
         if (error) throw error;
         A.publishLook(state).catch(() => {});
       },
