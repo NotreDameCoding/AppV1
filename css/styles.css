@@ -527,3 +527,12 @@ footer.site .wrap { display: flex; justify-content: space-between; gap: 1rem; fl
 
 .g-btn { --fill: #fff; --edge: #cfd4e0; color: #1f2430; display: flex; align-items: center; justify-content: center; gap: 0.7rem; font-weight: 600; }
 .g-btn svg { flex: none; }
+
+/* Forge and the project viewer */
+.modal.wide { width: min(1040px, 100%); }
+.term { margin: 0; padding: 0.8rem 1rem; min-height: 200px; max-height: 420px; overflow: auto; font: 400 0.92rem/1.55 var(--f-code); white-space: pre-wrap; color: #cfd6ee; background: #05060c; border: 2px solid var(--line); }
+.term .prompt { color: var(--gold); }
+.term .err { color: var(--bad); }
+.term .dim { color: var(--faint); }
+.forge-frame { width: 100%; min-height: 300px; height: 100%; background: #fff; border: 2px solid var(--line); }
+.faint { color: var(--faint); }

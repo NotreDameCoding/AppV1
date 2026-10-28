@@ -101,7 +101,8 @@
           h("div", { class: "tags" }, (p.languages || []).map((id) => { const c = NDC.courseById(id); return c ? h("span", { class: "tag-l", style: { "--cc": c.hex } }, c.name) : null; })),
           h("div", { class: "row", style: { gap: "0.6rem" } },
             p.live ? h("a", { class: "btn small primary", href: p.live, target: "_blank", rel: "noopener" }, "Open") : null,
-            p.link ? h("a", { class: "btn small", href: p.link, target: "_blank", rel: "noopener" }, "Code") : null)))));
+            p.code ? h("button", { class: "btn small" + (p.live ? "" : " primary"), type: "button", onclick: () => NDC.viewProject(p) }, "View project") : null,
+            p.link ? h("a", { class: "btn small" + (p.live || p.code ? "" : " primary"), href: p.link, target: "_blank", rel: "noopener" }, "View project") : null)))));
       }
     }
     draw();
@@ -110,7 +111,7 @@
       h("ol", { class: "steps" },
         h("li", null, h("span", null, "Put your project on GitHub, and turn on GitHub Pages if it's a website so people can try it.")),
         h("li", null, h("span", null, "Open ", h("code", { class: "inline" }, "js/data-projects.js"), " in the club repo and copy the example at the top.")),
-        h("li", null, h("span", null, "Fill in the title, your name, the link, the languages and a sentence about it. Then open a pull request.")),
+        h("li", null, h("span", null, "Fill in the title, your name, the languages and a sentence about it. For a website add the link. For a program, paste your code into ", h("code", { class: "inline" }, "code"), " and set ", h("code", { class: "inline" }, "lang"), " (py, js, ht or cs) and visitors can run it right here. Then open a pull request.")),
         h("li", null, h("span", null, "An officer reviews it, and your project shows up here."))));
     return h("div", { class: "page" }, h("div", { class: "wrap" },
       h("div", { class: "page-head" }, h("h1", null, "Projects"), h("p", null, "Things club members have built.")),

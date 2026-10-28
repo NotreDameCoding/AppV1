@@ -10,6 +10,17 @@
      blurb: "One or two sentences about what it does.",
      date: "2026-12-01"
    },
+
+   Or submit a program people can run on this site (no link needed). Use lang "py", "js", "ht" or "cs":
+   {
+     title: "Dice Roller",
+     authors: ["Your Name"],
+     lang: "py",
+     code: "import random\nprint(random.randint(1, 6))",
+     languages: ["py"],
+     blurb: "Rolls a die.",
+     date: "2026-12-01"
+   },
 */
 NDC.projects = [
       {
