@@ -208,6 +208,18 @@
     return box;
   }
 
+  /* after two misses, offer the answer one line at a time */
+  let misses = new WeakMap();
+  function stuck(host, ex, base, lang, use) {
+    if (!ex.solution || !NDC.explain) return;
+    const n = (misses.get(ex) || 0) + 1; misses.set(ex, n);
+    if (n < 2) return;
+    const slot = h("div", { style: { marginTop: "0.8rem" } });
+    const btn = h("button", { class: "btn small", type: "button", onclick: () => { NDC.clear(slot); const p = NDC.explain.panel(ex, base, () => use(ex.solution), lang); if (p) slot.append(p); } }, "Stuck? Walk me through it line by line");
+    slot.append(btn);
+    host.append(slot);
+  }
+
   /* ---------- run code (Python / JavaScript) ---------- */
   function run(ex, ctx) {
     const lang = ctx.lang; // "py" | "js"
@@ -242,6 +254,7 @@
         const rows = await NDC.run.runChecks(lang, ta.value, ex.checks);
         NDC.clear(rowsHost); rowsHost.append(checkRows(rows));
         const ok = rows.length === ex.checks.length && rows.every((r) => r.ok);
+        if (!ok) stuck(rowsHost, ex, st, lang, (c) => { ta.value = c; ctx.ready(true); });
         if (rows.some((r) => r.fatal)) return { ok: false, noPenalty: true, answer: "Python couldn't load. Check your connection, then try again." };
         return { ok, retrySame: !ok, rows, code: ta.value };
       },
@@ -274,6 +287,7 @@
         const rows = NDC.run.runWebChecks(frame, ex.checks);
         NDC.clear(rowsHost); rowsHost.append(checkRows(rows));
         const ok = rows.every((r) => r.ok);
+        if (!ok) stuck(rowsHost, ex, st, "web", (c) => { ta.value = c; draw(); ctx.ready(true); });
         return { ok, retrySame: !ok, rows, code: ta.value };
       },
     };

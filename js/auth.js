@@ -61,20 +61,6 @@
       NDC.store.setIdentity("guest");
     },
 
-    /* Dungeon leaderboard: only a display name, best floor and game level are shared with other members. */
-    async postScore(state) {
-      if (!real || !sb || !A.user) return;
-      const gs = NDC.game.gameStats(state);
-      const name = A.displayName(state) || "Knight " + String(A.user.id).slice(0, 4);
-      await sb.from("leaderboard").upsert({ user_id: A.user.id, name, best_floor: gs.best, game_level: gs.level, updated_at: new Date().toISOString() });
-    },
-    async leaderboard() {
-      if (!real || !sb) return { rows: null };
-      const { data, error } = await sb.from("leaderboard").select("name,best_floor,game_level").order("best_floor", { ascending: false }).order("game_level", { ascending: false }).limit(15);
-      if (error) throw new Error(error.message);
-      return { rows: data };
-    },
-
     /* Officers' knights: an officer's equipped gear is shared so the Members page can show their real look. Names and gear only. */
     async publishLook(state) {
       if (!real || !sb || !A.user || !A.officer) return;
@@ -153,8 +139,7 @@
     });
     try { const { data } = await sb.rpc("is_officer"); A.officer = data === true; NDC.bus.emit("auth", A.user); } catch (e) {}
     if (A.officer) A.publishLook(NDC.store.get()).catch(() => {});
-    // refresh the saved name and leaderboard entry now, so older rows stop showing an email or "Knight xxxx"
+    // refresh the saved name now, so older rows stop showing an email
     try { await NDC.store.getRemote().push(NDC.store.get()); } catch (e) {}
-    if (NDC.game.gameStats(NDC.store.get()).best > 0) A.postScore(NDC.store.get()).catch(() => {});
   }
 })();

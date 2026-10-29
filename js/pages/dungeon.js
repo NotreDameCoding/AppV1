@@ -131,7 +131,7 @@
 
     const canvas = h("canvas", { width: W, height: H, class: "dg-canvas", tabindex: "0", "aria-label": "Dungeon game" });
     const ctx = canvas.getContext("2d");
-    const menuEl = h("div", { class: "dg-menu" }), boardEl = h("div"), statEl = h("div", { class: "dg-stat" });
+    const menuEl = h("div", { class: "dg-menu" }), statEl = h("div", { class: "dg-stat" });
     lightCv = document.createElement("canvas"); lightCv.width = W; lightCv.height = H;
     const lctx = lightCv.getContext("2d");
 
@@ -199,8 +199,7 @@
       commit();
       const after = G.gameStats(NDC.store.get());
       run.levelUp = after.level > before ? after.level : 0; run.totalXp = run.gained; run.win = win;
-      gs = after; drawStat(); loadBoard();
-      NDC.auth.postScore(NDC.store.get()).catch(() => {});
+      gs = after; drawStat();
       if (win) { run.banner = "Floor cleared!"; run.bannerT = 2; run.slow = 0.6; } else { run.banner = "Knocked out"; run.bannerT = 2; run.slow = 0.8; }
     }
 
@@ -782,21 +781,6 @@
         h("div", { class: "dg-pill px" }, h("span", null, "Health"), h("b", { class: "pixel" }, 100 + g.hpBonus + L.hp)),
         h("div", { class: "dg-pill px" }, h("span", null, "Stamina"), h("b", { class: "pixel" }, 100 + g.staminaBonus)));
     }
-    async function loadBoard() {
-      NDC.clear(boardEl); boardEl.append(h("h2", null, "Deepest floors"));
-      let rows = null;
-      try { rows = (await NDC.auth.leaderboard()).rows; } catch (e) {
-        const missing = /schema cache|does not exist|relation|leaderboard/i.test(String(e && e.message));
-        boardEl.append(h("p", { class: "muted" }, missing ? "The leaderboard isn't set up yet. An officer needs to run the leaderboard part of supabase/schema.sql once." : "The leaderboard couldn't load right now."));
-        if (e && e.message) boardEl.append(h("p", { class: "muted", style: { fontSize: "0.8rem" } }, String(e.message)));
-        return;
-      }
-      if (!alive) return;
-      if (rows === null) { const me = G.gameStats(NDC.store.get()); boardEl.append(h("p", { class: "muted" }, "Sign in to put your name on the leaderboard."), h("p", null, `You: floor ${me.best || 0}, game level ${me.level}`)); return; }
-      if (!rows.length) { boardEl.append(h("p", { class: "muted" }, "Nobody has cleared a floor yet.")); return; }
-      boardEl.append(h("ol", { class: "dg-board" }, rows.map((r, i) => h("li", null, h("span", { class: "rk pixel" }, i + 1), h("span", { class: "nm" }, r.name), h("span", { class: "muted" }, `Level ${r.game_level}`), h("b", { class: "pixel" }, `Floor ${r.best_floor}`)))));
-    }
-
     /* ---------- input ---------- */
     const onDown = (e) => {
       const tag = e.target && e.target.tagName;
@@ -826,7 +810,7 @@
     const soundBtn = h("button", { class: "link-btn", type: "button", onclick: () => { soundOn = !soundOn; soundBtn.textContent = soundOn ? "Sound: on" : "Sound: off"; if (soundOn) SFX.parry(); } }, "Sound: off");
 
     NDC._dg = { get run() { return run; }, get phase() { return phase; }, keys };
-    makeSprite(); drawStat(); drawMenu(); loadBoard();
+    makeSprite(); drawStat(); drawMenu();
     raf = requestAnimationFrame(loop);
 
     const root = h("div", { class: "page" }, h("div", { class: "wrap", style: { maxWidth: "1040px" } },
@@ -836,7 +820,6 @@
       h("div", { class: "dg-stage px" }, canvas, menuEl),
       h("div", { class: "row", style: { justifyContent: "flex-end", marginTop: "0.4rem" } }, soundBtn),
       pad,
-      h("section", { class: "card px", style: { marginTop: "1.4rem" } }, boardEl),
       h("p", { class: "muted", style: { marginTop: "1rem", fontSize: "0.92rem" } }, "Game XP is separate from lessons. It raises your health and stamina and opens deeper floors, and it never changes your coins or your knight's look. Gear you buy on the Knight page changes how you fight.")));
 
     return {
