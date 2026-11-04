@@ -68,10 +68,10 @@ NDC.projects = [
    
    {
      title: "",
-     authors: ["Aliya Sabripour"],
-     link: "https://www.figma.com/make/1SJGSTwV27zvk3plLE5LaE/Build-a-Colorful-Piano-Memory-Game?code-node-id=0-6&p=f&t=7UqVSbwpgtJ1PB3A-0&fullscreen=1",
+     authors: ["Gabriel Ho"],
+     link: "https://www.figma.com/proto/Fj32sTdhGuXHi9ROEaYgVL/Untitled?node-id=6-3&p=f&t=NzO5OXPVBNpvpKV2-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=6%3A3",
      languages: ["js", "ht", "cs"],                         // py, jv, js, ht, cs, ar
-     blurb: "Piano Memory Game",
+     blurb: "Last Orbit",
      date: "2026-11-04"
    },
    // add new projects above this line
