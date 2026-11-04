@@ -39,5 +39,13 @@ NDC.projects = [
      blurb: "Color memorization guessing game",
      date: "2026-11-04"
    },
+   {
+     title: "Maker Portfolio",
+     authors: ["Dani Arato"],
+     link: "https://www.figma.com/make/tJAKmnGkayeiTpINd0oUzz/Engineering-Portfolio-Website?code-node-id=0-6&p=f&t=7hrPm1iAAmgJGvPp-0&fullscreen=1",
+     languages: ["js", "ht", "cs"],                         // py, jv, js, ht, cs, ar
+     blurb: "Maker Portfolio Generator",
+     date: "2026-11-04"
+   },
    // add new projects above this line
 ];
