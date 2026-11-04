@@ -16,9 +16,18 @@ NDC.projects = [
    {
      title: "21325 Robotics Website",
      authors: ["Jake gozen"],
-     link: "https://cyberknights.sirkorgo.com", // Filler link
+     link: "https://cyberknights.sirkorgo.com",
      languages: ["js", "ht", "cs"],                         // py, jv, js, ht, cs, ar
      blurb: "Dedicated website for Cyberknights Robotics",
-     date: "2026-12-01"
+     date: "2026-10-15"
+   },
+   
+   {
+     title: "21325 Robotics Website",
+     authors: ["Jake gozen"],
+     link: "https://www.figma.com/make/1Mlc1J1fmpjh1OaI8aVed4/Interactive-Color-Guessing-Game?code-node-id=0-6&p=f&t=or0H4a2BIpCgo91t-0&fullscreen=1",
+     languages: ["js", "ht", "cs"],                         // py, jv, js, ht, cs, ar
+     blurb: "Dedicated website for Cyberknights Robotics",
+     date: "2026-11-04"
    },
 ];
