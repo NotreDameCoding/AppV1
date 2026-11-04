@@ -67,11 +67,11 @@ NDC.projects = [
    },
    
    {
-     title: "",
+     title: "Last Orbit",
      authors: ["Gabriel Ho"],
      link: "https://www.figma.com/proto/Fj32sTdhGuXHi9ROEaYgVL/Untitled?node-id=6-3&p=f&t=NzO5OXPVBNpvpKV2-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=6%3A3",
      languages: ["js", "ht", "cs"],                         // py, jv, js, ht, cs, ar
-     blurb: "Last Orbit",
+     blurb: "Alien Turret Defense",
      date: "2026-11-04"
    },
    // add new projects above this line
