@@ -56,6 +56,24 @@ NDC.projects = [
      blurb: "Piano Memory Game",
      date: "2026-11-04"
    },
+   
+   {
+     title: "Core and Kind",
+     authors: ["Charlie Williams"],
+     link: "https://www.figma.com/make/LXOcHMvylgFVzjHtAYw3M4/Sort-Apples-by-Condition?code-node-id=0-6&p=f&t=nYSMiPchHRkJBpca-0&fullscreen=1",
+     languages: ["js", "ht", "cs"],                         // py, jv, js, ht, cs, ar
+     blurb: "Piano Memory Game",
+     date: "2026-11-04"
+   },
+   
+   {
+     title: "",
+     authors: ["Aliya Sabripour"],
+     link: "https://www.figma.com/make/1SJGSTwV27zvk3plLE5LaE/Build-a-Colorful-Piano-Memory-Game?code-node-id=0-6&p=f&t=7UqVSbwpgtJ1PB3A-0&fullscreen=1",
+     languages: ["js", "ht", "cs"],                         // py, jv, js, ht, cs, ar
+     blurb: "Piano Memory Game",
+     date: "2026-11-04"
+   },
    // add new projects above this line
    // https://www.figma.com/make/1SJGSTwV27zvk3plLE5LaE/Build-a-Colorful-Piano-Memory-Game?code-node-id=0-6&p=f&t=7UqVSbwpgtJ1PB3A-0&fullscreen=1
 
