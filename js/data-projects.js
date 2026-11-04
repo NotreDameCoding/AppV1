@@ -27,7 +27,7 @@ NDC.projects = [
      authors: ["Jake gozen"],
      link: "https://www.figma.com/make/1Mlc1J1fmpjh1OaI8aVed4/Interactive-Color-Guessing-Game?code-node-id=0-6&p=f&t=or0H4a2BIpCgo91t-0&fullscreen=1",
      languages: ["js", "ht", "cs"],                         // py, jv, js, ht, cs, ar
-     blurb: "Dedicated website for Cyberknights Robotics",
+     blurb: "Website for Cyberknights Robotics",
      date: "2026-11-04"
    },
 ];
