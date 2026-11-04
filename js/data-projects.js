@@ -31,5 +31,13 @@ NDC.projects = [
      blurb: "Dedicated website for Cyberknights Robotics",
      date: "2026-12-01"
    },
+      {
+     title: "Chroma",
+     authors: ["Blake Westin"],
+     link: "https://www.figma.com/make/1Mlc1J1fmpjh1OaI8aVed4/Interactive-Color-Guessing-Game?code-node-id=0-6&p=f&t=or0H4a2BIpCgo91t-0&fullscreen=1",
+     languages: ["js", "ht", "cs"],                         // py, jv, js, ht, cs, ar
+     blurb: "Color memorization guessing game",
+     date: "2026-11-04"
+   },
    // add new projects above this line
 ];
