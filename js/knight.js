@@ -29,10 +29,10 @@
     royal: { c: "#2a2a36", C: "#14141c" },
     gold:  { c: "#f4b942", C: "#b67f1d" },
   };
-  const LIGHT_ARMOR = { a: "#cdd5e1", h: "#f8fafd", b: "#7a859b" };
-  const LIGHT_CAPE = { c: "#68728a", C: "#434b5f" };
-  const LIGHT_SHIELD = { m: "#5f6b82", n: "#eef2f9" };
-  const OUT = "#0a0c16", LIGHT_OUT = "#3c4458", LIGHT_SEAM = "#566078", GOLD = "#f4b942", DARK_INK = "#16182b", SKIN = "#f1c9a1", BROWN = "#5a4636";
+  const LIGHT_ARMOR = { a: "#bcc5d3", h: "#f0f4fa", b: "#6f7a8f" };
+  const LIGHT_CAPE = { c: "#7c8597", C: "#4f5668" };
+  const LIGHT_SHIELD = { m: "#8691a6", n: "#e2e8f2" };
+  const OUT = "#0a0c16", LIGHT_OUT = "#0a0c16", GOLD = "#f4b942", DARK_INK = "#16182b", SKIN = "#f1c9a1", BROWN = "#5a4636";
 
   const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.substr(i, 2), 16));
   const hexOf = (r, g, b) => "#" + [r, g, b].map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0")).join("");
@@ -180,13 +180,17 @@
     const edge = [];
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (!grid[y][x] && (filled(x - 1, y) || filled(x + 1, y) || filled(x, y - 1) || filled(x, y + 1))) edge.push([x, y]);
     if (eq.light) {
-      /* silver knight: no outline round the outside. Instead a dark seam is drawn where one piece of gear sits in front of another, which is what keeps the shield, arm and body apart */
-      const seam = [];
+      /* silver knight: a black outline that runs unbroken round the whole figure, diagonals included */
+      const out = [];
       for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-        const o = owner[y][x]; if (o < 0) continue;
-        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy; if (nx >= 0 && ny >= 0 && nx < W && ny < H && owner[ny][nx] >= built.gearFrom && owner[ny][nx] > o && grid[ny][nx]) { seam.push([x, y]); break; } }
+        if (grid[y][x]) continue;
+        let touch = false;
+        for (let dy = -1; dy <= 1 && !touch; dy++) for (let dx = -1; dx <= 1; dx++) if ((dx || dy) && filled(x + dx, y + dy)) { touch = true; break; }
+        if (touch) out.push([x, y]);
       }
-      seam.forEach(([x, y]) => { grid[y][x] = LIGHT_SEAM; });
+      out.forEach(([x, y]) => { grid[y][x] = LIGHT_OUT; });
+      // the crown touches the top row, so its outline needs one extra row above the sprite
+      grid.top = grid[0].map((c, x) => x).filter((x) => grid[0][x] && grid[0][x] !== LIGHT_OUT);
     } else {
       edge.forEach(([x, y]) => { grid[y][x] = OUT; });
     }
@@ -195,7 +199,12 @@
 
   function toSvg(grid, opts) {
     opts = opts || {};
-    const crop = opts.crop || [0, 0, W, H];
+    let crop = (opts.crop || [0, 0, W, H]).slice();
+    let extra = "";
+    if (grid.top && grid.top.length && crop[1] === 0) {
+      grid.top.forEach((x) => { if (x >= crop[0] && x < crop[0] + crop[2]) extra += `<rect x="${x}" y="-1" width="1" height="1" fill="${LIGHT_OUT}"/>`; });
+      crop = [crop[0], -1, crop[2], crop[3] + 1];
+    }
     let rects = "";
     for (let y = 0; y < H; y++) {
       let x = 0;
@@ -208,7 +217,7 @@
         x = x2;
       }
     }
-    return `<svg class="kn" xmlns="http://www.w3.org/2000/svg" viewBox="${crop.join(" ")}" shape-rendering="crispEdges" role="img" aria-label="${opts.label || "Pixel knight"}">${rects}</svg>`;
+    return `<svg class="kn" xmlns="http://www.w3.org/2000/svg" viewBox="${crop.join(" ")}" shape-rendering="crispEdges" role="img" aria-label="${opts.label || "Pixel knight"}">${extra}${rects}</svg>`;
   }
 
   NDC.knight = {

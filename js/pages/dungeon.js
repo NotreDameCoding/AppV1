@@ -610,7 +610,7 @@
       ctx.save(); ctx.translate(Math.round(p.x), Math.round(y));
       if (flip) ctx.scale(-1, 1);
       if (p.flash > 0 && Math.floor(run.t * 40) % 2) ctx.filter = "brightness(2.2)";
-      if (sprite) ctx.drawImage(sprite, -11, -22, 22, 25); else R("#9fb0d0", -6, -14, 12, 16);
+      if (sprite) ctx.drawImage(sprite, -11, day() ? -23 : -22, 22, day() ? 26 : 25); else R("#9fb0d0", -6, -14, 12, 16);
       ctx.restore(); ctx.filter = "none";
       if (!behind) { drawShield(); drawWeapon(); }
       if (p.stun > 0) { R("#f4cf5a", p.x - 7, p.y - 28 + Math.sin(run.t * 14) * 1.5, 3, 3); R("#f4cf5a", p.x + 4, p.y - 28 - Math.sin(run.t * 14) * 1.5, 3, 3); }
@@ -623,7 +623,7 @@
       const sx = p.x + Math.cos(a) * dd, sy = p.y - 8 + Math.sin(a) * dd * 0.8;
       ctx.save(); ctx.translate(Math.round(sx), Math.round(sy)); ctx.rotate(a);
       const hgt = 8 + arc * 8;
-      if (!day()) { ctx.fillStyle = "#0a0c16"; ctx.fillRect(-3, -hgt / 2 - 1, 8, hgt + 2); }
+      ctx.fillStyle = "#0a0c16"; ctx.fillRect(-3, -hgt / 2 - 1, 8, hgt + 2);
       ctx.fillStyle = sh.m; ctx.fillRect(-2, -hgt / 2, 6, hgt);
       ctx.fillStyle = "rgba(255,255,255,0.25)"; ctx.fillRect(-2, -hgt / 2, 2, hgt);
       ctx.fillStyle = sh.n; ctx.fillRect(0, -2, 2, 4);
@@ -633,7 +633,7 @@
     function drawShieldIdle() { // carried on the arm when not blocking
       const p = run.p, sh = day() ? NDC.knight.LIGHT_SHIELD : NDC.knight.SHIELDS[p.L.eq.shield] || NDC.knight.SHIELDS.oak, f = Math.cos(p.dir) < -0.25 ? 1 : -1;
       const x = p.x + f * 9, y = p.y - 9;
-      if (!day()) R("#0a0c16", x - 4, y - 5, 8, 12); R(sh.m, x - 3, y - 4, 6, 10); R("rgba(255,255,255,0.22)", x - 3, y - 4, 2, 10); R(sh.n, x - 1, y - 1, 2, 3);
+      R("#0a0c16", x - 4, y - 5, 8, 12); R(sh.m, x - 3, y - 4, 6, 10); R("rgba(255,255,255,0.22)", x - 3, y - 4, 2, 10); R(sh.n, x - 1, y - 1, 2, 3);
     }
     function drawWeapon() {
       const p = run.p, w = p.L.weapon, wp = NDC.knight.WEAPONS[p.L.eq.weapon] || NDC.knight.WEAPONS.wood;
@@ -742,7 +742,7 @@
       list.push({ y: run.p.y, f: drawPlayer });
       run.enemies.forEach((e) => list.push({ y: e.y, f: () => drawEnemy(e) }));
       run.pillars.forEach((q) => list.push({ y: q.y, f: () => drawPillar(q) }));
-      for (const g of run.fx) if (g.k === "ghost") list.push({ y: g.y - 1, f: () => { ctx.globalAlpha = g.t * 3; ctx.save(); ctx.translate(Math.round(g.x), Math.round(g.y)); if (g.f) ctx.scale(-1, 1); if (sprite) ctx.drawImage(sprite, -11, -22, 22, 25); ctx.restore(); ctx.globalAlpha = 1; } });
+      for (const g of run.fx) if (g.k === "ghost") list.push({ y: g.y - 1, f: () => { ctx.globalAlpha = g.t * 3; ctx.save(); ctx.translate(Math.round(g.x), Math.round(g.y)); if (g.f) ctx.scale(-1, 1); if (sprite) ctx.drawImage(sprite, -11, day() ? -23 : -22, 22, day() ? 26 : 25); ctx.restore(); ctx.globalAlpha = 1; } });
       list.sort((a, b) => a.y - b.y).forEach((o) => o.f());
       for (const a of run.arrows) { ctx.save(); ctx.translate(Math.round(a.x), Math.round(a.y)); ctx.rotate(Math.atan2(a.vy, a.vx)); R("#0a0c16", -6, -2, 14, 4); R("#c8b080", -5, -1, 10, 2); R("#dfe6f7", 4, -2, 3, 4); R("#e5484d", -6, -2, 2, 4); ctx.restore(); }
       drawTorches();
