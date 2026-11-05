@@ -127,17 +127,10 @@ p { margin: 0; }
 .nav .wrap { height: 100%; display: flex; align-items: center; gap: 1.5rem; }
 .brand { display: flex; align-items: center; gap: 0.7rem; text-decoration: none; font-family: var(--f-display); font-size: 1.55rem; line-height: 1; white-space: nowrap; }
 .brand svg { width: 34px; height: 34px; image-rendering: pixelated; }
-.nav-links { display: flex; gap: 0.25rem; margin-left: 0.5rem; }
-.nav-links a {
-  text-decoration: none; padding: 0.5rem 0.8rem; color: var(--dim); font-weight: 600; font-size: 0.97rem;
-  position: relative;
-}
-.nav-links a:hover { color: var(--text); }
-.nav-links a[aria-current="page"] { color: var(--text); }
-.nav-links a[aria-current="page"]::after {
-  content: ""; position: absolute; left: 0.8rem; right: 0.8rem; bottom: 0; height: 4px; background: var(--gold);
-}
-.nav-right { margin-left: auto; display: flex; align-items: center; gap: 0.7rem; }
+.nav-links { display: flex; flex: 1; justify-content: space-evenly; gap: 0.6rem; padding-inline: 1rem; }
+.nav-links .nav-btn { padding: 0.55rem 1.7rem 0.7rem; font-size: 0.98rem; min-width: 7.5rem; }
+.nav-links .nav-btn[aria-current="page"] { --fill: var(--gold); --edge: #ffd98a; --lip: var(--gold-lip); color: #20160a; }
+.nav-right { display: flex; align-items: center; gap: 0.7rem; }
 .chip { white-space: nowrap;
   display: inline-flex; align-items: center; gap: 0.4rem;
   font-family: var(--f-pixel); font-size: 1.05rem; color: var(--gold);
@@ -162,12 +155,13 @@ p { margin: 0; }
   .nav .wrap { gap: 0.8rem; }
   .nav-toggle { display: inline-block; margin-left: auto; }
   .nav-right { margin-left: 0; }
+  .nav-links { padding-inline: 0; gap: 0.5rem; }
   .nav-links {
     display: none; position: absolute; left: 0; right: 0; top: var(--nav-h);
     flex-direction: column; background: var(--bg); border-bottom: 2px solid var(--line); padding: 0.5rem 1rem 1rem;
   }
   .nav.open .nav-links { display: flex; }
-  .nav-links a[aria-current="page"]::after { left: 0.8rem; right: auto; width: 24px; bottom: 4px; }
+  .nav-links .nav-btn { width: 100%; }
   .nav .wrap { flex-wrap: wrap; height: auto; min-height: var(--nav-h); padding-block: 0.5rem; }
   .nav { height: auto; }
   .nav-links { top: 100%; }
@@ -587,3 +581,7 @@ footer.site .wrap { display: flex; justify-content: space-between; gap: 1rem; fl
 .dg-floors .fl-t { font-weight: 700; }
 .dg-floors .fl-ok { margin-left: auto; font-size: 0.8rem; color: var(--good); font-weight: 700; }
 .next-line { margin-top: 1.4rem; }
+
+/* the knight, lightened for the light theme: softer outline, brighter metal */
+:root[data-theme="light"] { --k-out: #3d4668; }
+:root[data-theme="light"] svg.kn { filter: brightness(1.38) saturate(1.1); }

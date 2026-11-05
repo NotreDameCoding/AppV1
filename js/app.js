@@ -89,7 +89,7 @@
   function renderNav() {
     const active = (location.hash.replace(/^#\/?/, "").split("/")[0]) || "";
     NDC.clear(navEl);
-    const links = h("nav", { class: "nav-links", "aria-label": "Main" }, LINKS.map(([k, label]) => h("a", { href: "#/" + k, "aria-current": active === k ? "page" : null, onclick: () => navEl.classList.remove("open") }, label)));
+    const links = h("nav", { class: "nav-links", "aria-label": "Main" }, LINKS.map(([k, label]) => h("a", { class: "btn nav-btn", href: "#/" + k, "aria-current": active === k ? "page" : null, onclick: () => navEl.classList.remove("open") }, label)));
     rightEl = h("div", { class: "nav-right" });
     navEl.append(h("div", { class: "wrap" },
       h("a", { class: "brand", href: "#/" }, NDC.knight.head({ helm: "iron" }), h("span", null, cfg.clubName)),

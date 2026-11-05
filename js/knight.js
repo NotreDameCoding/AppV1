@@ -29,7 +29,7 @@
     royal: { c: "#2a2a36", C: "#14141c" },
     gold:  { c: "#f4b942", C: "#b67f1d" },
   };
-  const OUT = "#0a0c16", GOLD = "#f4b942", DARK = "#16182b", SKIN = "#f1c9a1", BROWN = "#5a4636";
+  const OUT = "var(--k-out,#0a0c16)", GOLD = "#f4b942", DARK = "#16182b", SKIN = "#f1c9a1", BROWN = "#5a4636";
 
   const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.substr(i, 2), 16));
   const hexOf = (r, g, b) => "#" + [r, g, b].map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0")).join("");
@@ -183,11 +183,11 @@
         if (!c) { x++; continue; }
         let x2 = x + 1;
         while (x2 < W && grid[y][x2] === c) x2++;
-        rects += `<rect x="${x}" y="${y}" width="${x2 - x}" height="1" fill="${c}"/>`;
+        rects += `<rect x="${x}" y="${y}" width="${x2 - x}" height="1" ${c.charAt(0) === "v" ? `style="fill:${c}"` : `fill="${c}"`}/>`;
         x = x2;
       }
     }
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${crop.join(" ")}" shape-rendering="crispEdges" role="img" aria-label="${opts.label || "Pixel knight"}">${rects}</svg>`;
+    return `<svg class="kn" xmlns="http://www.w3.org/2000/svg" viewBox="${crop.join(" ")}" shape-rendering="crispEdges" role="img" aria-label="${opts.label || "Pixel knight"}">${rects}</svg>`;
   }
 
   NDC.knight = {
