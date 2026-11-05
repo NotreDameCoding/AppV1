@@ -55,7 +55,11 @@
           h("span", { class: "ic" }, glyph));
         path.append(h("div", { class: "node-slot" + (unlocked || isDone ? "" : " locked-slot"), style: { "--dx": DX[idx % DX.length] + "px", "--cc": course.color } },
           isCurrent ? h("span", { class: "start-flag px", style: { "--fill": "var(--gold)", "--edge": "var(--gold)" } }, "Start") : null,
-          btn, h("span", { class: "node-label" }, lesson.title)));
+          btn, h("span", { class: "node-label" }, lesson.title),
+          h("div", { class: "node-note " + (DX[idx % DX.length] > 0 ? "on-left" : "on-right"), "aria-hidden": "true" },
+            h("p", { class: "st pixel" }, isDone ? "Done" : isSkipped ? "Skipped" : isCurrent ? "Up next" : unlocked ? "Open" : "Locked"),
+            lesson.blurb ? h("p", null, lesson.blurb) : null,
+            h("p", { class: "q" }, `${lesson.ex.length} questions`))));
       });
     });
     return path;
@@ -74,7 +78,15 @@
     }));
 
         const today = (state.days[NDC.dayKey()] || {}).lessons || 0;
-    const side = h("aside", { class: "side-card" },
+    const next = NDC.store.nextLesson(course);
+    const nextUnit = next ? course.units.find((u) => u.lessons.includes(next)) : null;
+    const upNext = next ? h("div", { class: "card px up-next", style: { "--cc": course.color } },
+      h("p", { class: "eyebrow pixel" }, "Up next"),
+      h("h3", null, next.title),
+      next.blurb ? h("p", { class: "muted" }, next.blurb) : null,
+      h("button", { class: "btn primary block", type: "button", onclick: () => openLesson(course, nextUnit, next, NDC.allLessons(course).indexOf(next), state) }, "Start lesson"))
+      : h("div", { class: "card px up-next" }, h("p", { class: "eyebrow pixel" }, "Path complete"), h("h3", null, `${course.name} is done`), h("p", { class: "muted" }, "Pick another language on the left."));
+    const side = h("aside", { class: "side-card" }, upNext,
       h("div", { class: "card px", style: { textAlign: "center" } },
         h("div", { class: "knight-mini" }, NDC.knight.node(NDC.store.equipped())),
         h("p", { style: { font: "700 1.2rem/1.2 var(--f-display)", marginTop: "0.5rem" } }, `Level ${stats.level} ${G.title(stats.level)}`),
