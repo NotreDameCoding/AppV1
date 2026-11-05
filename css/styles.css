@@ -829,3 +829,12 @@ h2.sec { font-size: clamp(1.9rem, 3.6vw, 2.6rem); letter-spacing: -0.015em; }
 }
 :root[data-theme="light"] .embers i { background: #e2a020; box-shadow: 0 0 5px rgba(196, 130, 10, 0.6); }
 @media (prefers-reduced-motion: reduce) { .embers { display: none; } }
+
+/* light mode only: language colors stay as thin details so gold owns the accent */
+:root[data-theme="light"] .unit-banner { --fill: var(--panel); --edge: var(--line); }
+:root[data-theme="light"] .unit-banner::after { content: ""; position: absolute; left: 2px; top: 2px; bottom: 2px; width: 5px; background: var(--cc); }
+:root[data-theme="light"] .unit-banner .u { color: color-mix(in srgb, var(--cc) 72%, var(--text)); }
+:root[data-theme="light"] .node:not(.locked):not(.done):not(.skipped) { --fill: var(--panel); --edge: var(--cc); }
+:root[data-theme="light"] .node:not(.locked):not(.done):not(.skipped)::before { background: linear-gradient(var(--panel) calc(100% - 7px), var(--line-2) 0); }
+:root[data-theme="light"] .node:not(.locked):not(.done):not(.skipped) .ic { color: color-mix(in srgb, var(--cc) 72%, var(--text)); }
+:root[data-theme="light"] .tag-l { background: var(--panel-2); }
