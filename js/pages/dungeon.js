@@ -149,7 +149,7 @@
       const eq = Object.assign({}, NDC.store.equipped(), { shield: "none", weapon: "none", light: day() });
       const img = new Image();
       img.onload = () => { sprite = img; };
-      img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(NDC.knight.svg(eq, { crop: day() ? [-1, -1, 30, 34] : [0, 0, 28, 32] }));
+      img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(NDC.knight.svg(eq, { crop: [0, 0, 28, 32] }));
     }
 
     /* ---------- starting ---------- */
@@ -610,7 +610,7 @@
       ctx.save(); ctx.translate(Math.round(p.x), Math.round(y));
       if (flip) ctx.scale(-1, 1);
       if (p.flash > 0 && Math.floor(run.t * 40) % 2) ctx.filter = "brightness(2.2)";
-      if (sprite) if (day()) ctx.drawImage(sprite, -11.8, -22.8, 23.6, 26.6); else ctx.drawImage(sprite, -11, -22, 22, 25); else R("#9fb0d0", -6, -14, 12, 16);
+      if (sprite) ctx.drawImage(sprite, -11, -22, 22, 25); else R("#9fb0d0", -6, -14, 12, 16);
       ctx.restore(); ctx.filter = "none";
       if (!behind) { drawShield(); drawWeapon(); }
       if (p.stun > 0) { R("#f4cf5a", p.x - 7, p.y - 28 + Math.sin(run.t * 14) * 1.5, 3, 3); R("#f4cf5a", p.x + 4, p.y - 28 - Math.sin(run.t * 14) * 1.5, 3, 3); }
@@ -742,7 +742,7 @@
       list.push({ y: run.p.y, f: drawPlayer });
       run.enemies.forEach((e) => list.push({ y: e.y, f: () => drawEnemy(e) }));
       run.pillars.forEach((q) => list.push({ y: q.y, f: () => drawPillar(q) }));
-      for (const g of run.fx) if (g.k === "ghost") list.push({ y: g.y - 1, f: () => { ctx.globalAlpha = g.t * 3; ctx.save(); ctx.translate(Math.round(g.x), Math.round(g.y)); if (g.f) ctx.scale(-1, 1); if (sprite) if (day()) ctx.drawImage(sprite, -11.8, -22.8, 23.6, 26.6); else ctx.drawImage(sprite, -11, -22, 22, 25); ctx.restore(); ctx.globalAlpha = 1; } });
+      for (const g of run.fx) if (g.k === "ghost") list.push({ y: g.y - 1, f: () => { ctx.globalAlpha = g.t * 3; ctx.save(); ctx.translate(Math.round(g.x), Math.round(g.y)); if (g.f) ctx.scale(-1, 1); if (sprite) ctx.drawImage(sprite, -11, -22, 22, 25); ctx.restore(); ctx.globalAlpha = 1; } });
       list.sort((a, b) => a.y - b.y).forEach((o) => o.f());
       for (const a of run.arrows) { ctx.save(); ctx.translate(Math.round(a.x), Math.round(a.y)); ctx.rotate(Math.atan2(a.vy, a.vx)); R("#0a0c16", -6, -2, 14, 4); R("#c8b080", -5, -1, 10, 2); R("#dfe6f7", 4, -2, 3, 4); R("#e5484d", -6, -2, 2, 4); ctx.restore(); }
       drawTorches();

@@ -47,6 +47,7 @@
   const pts = (L, list) => { list.forEach(([x, y]) => add(L, x, y)); return L; };
 
   function build(eq) {
+    eq = Object.assign({}, eq, { light: false }); // the light page uses the same black knight
     eq = eq || {};
     /* light version: the same knight in polished silver, so it stands out on a pale page */
     const A = eq.light ? LIGHT_ARMOR : ARMOR[eq.armor || "steel"] || ARMOR.steel;
@@ -158,6 +159,7 @@
   }
 
   function compose(eq) {
+    eq = Object.assign({}, eq, { light: false });
     eq = eq || {};
     const grid = Array.from({ length: H }, () => Array(W).fill(null));
     const owner = Array.from({ length: H }, () => Array(W).fill(-1));
