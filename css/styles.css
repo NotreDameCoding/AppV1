@@ -34,7 +34,7 @@
   --flame: #ff9a57;
   color-scheme: dark;
 
-  --f-display: "NDC Digits", "Pixelify Sans", "Press Start 2P", ui-monospace, monospace;
+  --f-display: "Fredoka", "Nunito", "Trebuchet MS", system-ui, sans-serif;
   --f-body: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-code: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --f-pixel: "NDC Digits", "Pixelify Sans", "Press Start 2P", ui-monospace, monospace;
@@ -593,16 +593,12 @@ footer.site .wrap { display: flex; justify-content: space-between; gap: 1rem; fl
 :root[data-theme="light"] .dg-stage { --fill: #8a6a46; }
 :root[data-theme="light"] .dg-canvas { background: #7cc4f2; }
 
-/* big headings are set in the pixel face, to match the knight and the buttons; question text stays in the plain body face so it reads easily */
-h1 { font-weight: 700; }
-h2, h3 { font-weight: 500; }
-.hero h1 { font-size: clamp(2.2rem, 5vw, 3.8rem); line-height: 1.08; letter-spacing: 0; }
-.page-head h1, .course-head h1, .acct-top h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); line-height: 1.05; letter-spacing: 0; }
-h2.sec { font-size: clamp(1.7rem, 3.2vw, 2.3rem); letter-spacing: 0; }
-.finish h2 { font-size: clamp(2.2rem, 6vw, 3.8rem); font-weight: 700; }
-.brand { font-size: 1.25rem; letter-spacing: 0; }
-.lang-tile h3 { font-size: 1.55rem; } .unit-banner h3 { font-size: 1.45rem; } .modal h3 { font-size: 1.8rem; }
-.intro-card h2 { font-size: 1.9rem; } .card h2 { font-size: 1.5rem; } .proj h3, .meet h3, .officer h3 { font-size: 1.45rem; }
-.empty h2 { font-size: 1.9rem; } .signed-out h1 { font-size: 2.3rem; } .dg-menu h2 { font-size: 1.8rem; }
-.q-prompt { font-family: var(--f-body); font-weight: 700; font-size: clamp(1.4rem, 3.2vw, 1.95rem); line-height: 1.25; letter-spacing: 0; }
-.foot-msg .t { font-family: var(--f-body); font-weight: 700; font-size: 1.3rem; }
+/* big headings: Fredoka, a round and friendly face that sits well next to the pixel knight without being pixelated */
+h1, h2, h3 { font-weight: 600; letter-spacing: -0.005em; }
+.hero h1 { font-size: clamp(2.5rem, 6vw, 4.6rem); line-height: 1.02; letter-spacing: -0.02em; }
+.page-head h1, .course-head h1, .acct-top h1 { font-size: clamp(2.4rem, 5.5vw, 3.8rem); line-height: 1.02; letter-spacing: -0.02em; }
+h2.sec { font-size: clamp(1.9rem, 3.6vw, 2.6rem); letter-spacing: -0.015em; }
+.finish h2 { font-size: clamp(2.6rem, 7vw, 4.2rem); font-weight: 700; }
+.brand { font-size: 1.4rem; font-weight: 600; letter-spacing: -0.01em; }
+.q-prompt { font-weight: 600; letter-spacing: 0; }
+.foot-msg .t { font-weight: 600; }

@@ -181,25 +181,18 @@
     const edge = [];
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (!grid[y][x] && (filled(x - 1, y) || filled(x + 1, y) || filled(x, y - 1) || filled(x, y + 1))) edge.push([x, y]);
     if (eq.light) {
-      /* silver knight: a black outline that runs unbroken round the whole figure, diagonals included */
-      const out = [];
-      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-        if (grid[y][x]) continue;
+      /* silver knight: a black outline that runs unbroken round the whole figure, diagonals included.
+         Parts of the figure touch the edge of the sprite (the crown, the left of the shield), so the outline cells that fall outside it are kept in grid.ext and the picture is widened to fit them */
+      const out = [], ext = [];
+      for (let y = -1; y <= H; y++) for (let x = -1; x <= W; x++) {
+        if (filled(x, y)) continue;
         let touch = false;
         for (let dy = -1; dy <= 1 && !touch; dy++) for (let dx = -1; dx <= 1; dx++) if ((dx || dy) && filled(x + dx, y + dy)) { touch = true; break; }
-        if (touch) out.push([x, y]);
+        if (!touch) continue;
+        if (x < 0 || y < 0 || x >= W || y >= H) ext.push([x, y]); else out.push([x, y]);
       }
       out.forEach(([x, y]) => { grid[y][x] = LIGHT_OUT; });
-      // and black where the shield sits against the body, so the shield is outlined all the way round
-      const isShield = (x, y) => x >= 0 && y >= 0 && x < W && y < H && owner[y][x] >= built.gearFrom && owner[y][x] < built.weaponFrom;
-      const inner = [];
-      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-        if (!grid[y][x] || grid[y][x] === LIGHT_OUT || isShield(x, y)) continue;
-        if (isShield(x + 1, y) || isShield(x - 1, y) || isShield(x, y + 1) || isShield(x, y - 1)) inner.push([x, y]);
-      }
-      inner.forEach(([x, y]) => { grid[y][x] = LIGHT_OUT; });
-      // the crown touches the top row, so its outline needs one extra row above the sprite
-      grid.top = grid[0].map((c, x) => x).filter((x) => grid[0][x] && grid[0][x] !== LIGHT_OUT);
+      grid.ext = ext;
     } else {
       edge.forEach(([x, y]) => { grid[y][x] = OUT; });
     }
@@ -210,9 +203,14 @@
     opts = opts || {};
     let crop = (opts.crop || [0, 0, W, H]).slice();
     let extra = "";
-    if (grid.top && grid.top.length && crop[1] === 0) {
-      grid.top.forEach((x) => { if (x >= crop[0] && x < crop[0] + crop[2]) extra += `<rect x="${x}" y="-1" width="1" height="1" fill="${LIGHT_OUT}"/>`; });
-      crop = [crop[0], -1, crop[2], crop[3] + 1];
+    if (grid.ext && grid.ext.length) {
+      let x0 = crop[0], y0 = crop[1], x1 = crop[0] + crop[2], y1 = crop[1] + crop[3];
+      if (x0 === 0 && grid.ext.some(([x]) => x < 0)) x0 = -1;
+      if (y0 === 0 && grid.ext.some(([, y]) => y < 0)) y0 = -1;
+      if (x1 === W && grid.ext.some(([x]) => x >= W)) x1 = W + 1;
+      if (y1 === H && grid.ext.some(([, y]) => y >= H)) y1 = H + 1;
+      crop = [x0, y0, x1 - x0, y1 - y0];
+      grid.ext.forEach(([x, y]) => { if (x >= x0 && x < x1 && y >= y0 && y < y1) extra += `<rect x="${x}" y="${y}" width="1" height="1" fill="${LIGHT_OUT}"/>`; });
     }
     let rects = "";
     for (let y = 0; y < H; y++) {
