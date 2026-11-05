@@ -2,14 +2,25 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Notre Dame Coding</title>
   <meta name="description" content="Notre Dame High School's coding club. Learn Python, Java, JavaScript, HTML, CSS and Arduino, and level up your knight.">
   <meta name="theme-color" content="#090b13">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect x='3' y='2' width='10' height='11' fill='%23f4b942'/%3E%3Crect x='5' y='6' width='6' height='2' fill='%23090b13'/%3E%3C/svg%3E">
   <script>
-    /* remembered theme: dark is the default look, light is opt-in from the top bar */
-    try { if (localStorage.getItem("ndc.theme") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}
+    /* theme: a choice made with the top-bar toggle wins; otherwise follow the device's light/dark setting */
+    (function () {
+      var saved = null;
+      try { saved = localStorage.getItem("ndc.theme"); } catch (e) {}
+      var mq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: light)") : null;
+      function apply() {
+        var s = null; try { s = localStorage.getItem("ndc.theme"); } catch (e) {}
+        var light = s ? s === "light" : !!(mq && mq.matches);
+        if (light) document.documentElement.dataset.theme = "light"; else delete document.documentElement.dataset.theme;
+      }
+      apply();
+      if (mq && mq.addEventListener) mq.addEventListener("change", function () { apply(); document.dispatchEvent(new Event("ndc-theme")); });
+    })();
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,6 +32,7 @@
   <header id="nav" class="nav"></header>
   <main id="app" tabindex="-1"></main>
   <div id="foot"></div>
+  <nav id="tabbar" class="tabbar" aria-label="Main"></nav>
   <noscript><p style="padding:2rem">This site needs JavaScript turned on.</p></noscript>
 
   <!-- Plain scripts, no build step. Order matters: each file uses the ones above it. -->

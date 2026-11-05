@@ -87,6 +87,20 @@
     document.addEventListener("click", () => { menu.hidden = true; }, { once: true });
   }
 
+  const TAB_ICONS = {
+    learn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5C6.5 4 9.5 4 12 5.5v14C9.5 18 6.5 18 4 19.5z"/><path d="M20 5.5C17.5 4 14.5 4 12 5.5v14c2.5-1.5 5.5-1.5 8 0z"/></svg>',
+    projects: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7"/><rect x="13.5" y="3.5" width="7" height="7"/><rect x="3.5" y="13.5" width="7" height="7"/><rect x="13.5" y="13.5" width="7" height="7"/></svg>',
+    dungeon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 3.5H20.5V9.5L9 21L3 15z"/><path d="M5 13l6 6"/><path d="M3 21l2.5-2.5"/></svg>',
+    account: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20.5c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>',
+  };
+  function renderTabbar(active) {
+    const bar = document.getElementById("tabbar");
+    if (!bar) return;
+    NDC.clear(bar);
+    LINKS.forEach(([k, label]) => bar.append(h("a", { class: "tab", href: "#/" + k, "aria-current": active === k ? "page" : null },
+      NDC.svg(TAB_ICONS[k]), h("span", null, label))));
+  }
+
   function renderNav() {
     const active = (location.hash.replace(/^#\/?/, "").split("/")[0]) || "";
     NDC.clear(navEl);
@@ -97,6 +111,7 @@
       links, rightEl,
       h("button", { class: "nav-toggle", type: "button", "aria-label": "Menu", onclick: () => navEl.classList.toggle("open") }, "Menu")));
     renderRight();
+    renderTabbar(active);
   }
 
   /* ---------- router ---------- */

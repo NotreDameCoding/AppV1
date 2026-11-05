@@ -50,7 +50,7 @@
         const isCurrent = lesson.id === nextId;
         const cls = "node px" + (isDone ? " done" : isSkipped ? " skipped" : !unlocked ? " locked" : "") + (isCurrent ? " current" : "");
         const idx = n++;
-        const glyph = isDone ? NDC.svg('<svg viewBox="0 0 9 7" shape-rendering="crispEdges" width="34" height="27"><path fill="#0b0e1a" d="M7 0h2v2H8v1H7v1H6v1H5v1H4v1H2V6H1V5H0V3h2v1h1v1h1V4h1V3h1V2h1z"/></svg>') : isSkipped ? ">>" : unlocked ? String(all.indexOf(lesson) + 1) : "#";
+        const glyph = isDone ? NDC.svg('<svg viewBox="0 0 9 7" shape-rendering="crispEdges" width="34" height="27"><path fill="#0b0e1a" d="M7 0h2v2H8v1H7v1H6v1H5v1H4v1H2V6H1V5H0V3h2v1h1v1h1V4h1V3h1V2h1z"/></svg>') : isSkipped ? ">>" : unlocked ? String(all.indexOf(lesson) + 1) : NDC.svg('<svg viewBox="0 0 8 9" shape-rendering="crispEdges" width="26" height="29" aria-hidden="true"><path fill="currentColor" d="M2 0h4v1h1v3h1v5H0V4h1V1h1zm0 1v3h4V1zM3 5v2h2V5z"/></svg>');
         const btn = h("button", { class: cls, type: "button", "aria-label": `${lesson.title}${isDone ? ", completed" : !unlocked ? ", locked" : ""}`, onclick: () => openLesson(course, unit, lesson, idx, state) },
           h("span", { class: "ic" }, glyph));
         path.append(h("div", { class: "node-slot" + (unlocked || isDone ? "" : " locked-slot"), style: { "--dx": DX[idx % DX.length] + "px", "--cc": course.color } },

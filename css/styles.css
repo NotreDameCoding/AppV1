@@ -165,7 +165,7 @@ p { margin: 0; }
   .nav .wrap { flex-wrap: wrap; height: auto; min-height: var(--nav-h); padding-block: 0.5rem; }
   .nav { height: auto; }
   .nav-links { top: 100%; }
-  .brand span { display: none; }
+  .brand > span:last-child { display: none; }
 }
 
 /* ---------- layout bits ---------- */
@@ -628,3 +628,88 @@ h2.sec { font-size: clamp(1.9rem, 3.6vw, 2.6rem); letter-spacing: -0.015em; }
 .home .page.projects { padding: 1.8rem 0 3rem; }
 .home .projects h2.sec { margin-bottom: 0.3rem; }
 @media (max-width: 880px) { .home .hero .wrap { padding: 2rem 0; } }
+
+/* =====================================================================
+   Apple Human Interface Guidelines pass
+   - contrast: every text color meets 4.5:1 on the surfaces it sits on
+   - touch: controls are at least 44x44 on touch screens
+   - hierarchy: one prominent (gold) action per view
+   - familiarity: tab bar for the main sections on phones, quieter top nav on desktop
+   - flexibility: follows the device's light/dark setting until you pick one
+   ===================================================================== */
+:root { --faint: #8a93b0; }
+:root[data-theme="light"] {
+  --dim: #4a5067; --faint: #5c6279;
+  --c-py: #2257b5; --c-jv: #9c420c; --c-js: #6e6100; --c-ht: #b0263c; --c-cs: #5a3bc9; --c-ar: #0a7060;
+}
+:root[data-theme="light"] .chip, :root[data-theme="light"] .rank-line, :root[data-theme="light"] .pixel,
+:root[data-theme="light"] .dg-floors .fl-n { color: #7a4f00; }
+
+/* desktop top nav: plain tabs instead of a row of raised buttons; the current section stays gold */
+.nav-links .nav-btn { --fill: transparent; --edge: transparent; --lip: transparent; min-width: 0; padding: 0.6rem 1.1rem; color: var(--dim); }
+.nav-links .nav-btn:hover { --fill: var(--panel-2); color: var(--text); }
+.nav-links .nav-btn[aria-current="page"] { --fill: var(--gold-soft); --edge: transparent; --lip: transparent; color: var(--text); box-shadow: inset 0 -3px 0 var(--gold); }
+:root[data-theme="light"] .nav-links .nav-btn[aria-current="page"] { color: var(--text); }
+.theme-btn { min-width: 44px; min-height: 44px; }
+
+/* segmented filter (projects) */
+.seg { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; margin-bottom: 1.4rem; background: var(--line); }
+.seg-btn { border: 0; background: var(--panel); color: var(--dim); font-weight: 700; font-size: 0.95rem; padding: 0.55rem 1rem; min-height: 40px; }
+.seg-btn:hover { color: var(--text); background: var(--panel-2); }
+.seg-btn[aria-pressed="true"] { background: var(--gold); color: #20160a; }
+
+/* locked lesson nodes: lock glyph */
+.node.locked .ic svg { display: block; }
+
+/* bottom tab bar on phones */
+.tabbar { display: none; }
+@media (max-width: 880px) {
+  .tabbar {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 55;
+    background: var(--nav-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-top: 2px solid var(--line);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 56px; text-decoration: none; color: var(--dim); font-size: 0.78rem; font-weight: 700; }
+  .tab svg { width: 24px; height: 24px; }
+  .tab[aria-current="page"] { color: var(--gold); }
+  :root[data-theme="light"] .tab[aria-current="page"] { color: #7a4f00; }
+  body { padding-bottom: calc(60px + env(safe-area-inset-bottom)); }
+  body.in-lesson .tabbar { display: none; }
+  body.in-lesson { padding-bottom: 0; }
+  /* the tab bar replaces the Menu dropdown */
+  .nav-toggle, .nav-links { display: none !important; }
+  .nav .wrap { flex-wrap: nowrap; }
+  .nav-right { margin-left: auto; }
+}
+
+/* 44x44 touch targets */
+@media (max-width: 880px), (pointer: coarse) {
+  .btn.small { min-height: 44px; }
+  .seg-btn { min-height: 44px; }
+  .link-btn { min-height: 44px; display: inline-flex; align-items: center; }
+  footer.site a { display: inline-flex; align-items: center; min-height: 44px; }
+  .avatar-btn .face { width: 44px; height: 44px; }
+}
+
+/* language-colored text on tinted chips: pull the color toward the text color so it stays readable in both themes */
+.tag-l { color: color-mix(in srgb, var(--cc) 72%, var(--text)); }
+.ring .glyph { color: color-mix(in srgb, var(--gc, var(--text)) 72%, var(--text)); }
+:root[data-theme="light"] .pixel { color: #6e4700; }
+/* light theme: course colors are darker here, so numbers on open lesson nodes go white */
+:root[data-theme="light"] .node:not(.locked):not(.done) .ic { color: #fff; }
+@media (max-width: 880px) {
+  /* keep the logo visible as the way back to Home */
+  .brand { flex: none; min-width: 44px; min-height: 44px; }
+  .brand svg { flex: none; }
+}
+/* segmented filter: separate pills so a wrapped second row doesn't leave a gray gap */
+.seg { background: none; padding: 0; gap: 0.4rem; }
+.seg-btn { border: 2px solid var(--line); }
+.seg-btn[aria-pressed="true"] { border-color: var(--gold); }
+@media (max-width: 880px) {
+  /* toasts sit above the tab bar instead of covering it */
+  .toasts { bottom: calc(68px + env(safe-area-inset-bottom)); left: 1rem; }
+  body.in-lesson .toasts { bottom: 1rem; }
+}

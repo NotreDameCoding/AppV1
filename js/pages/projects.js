@@ -5,10 +5,10 @@
   NDC.pages.projects = function () {
     let filter = "all";
     const grid = h("div");
-    const chips = h("div", { class: "row", style: { gap: "0.5rem", marginBottom: "1.4rem" } });
+    const chips = h("div", { class: "seg", role: "group", "aria-label": "Filter by language" });
     function draw() {
       NDC.clear(grid); NDC.clear(chips);
-      [["all", "All"], ...NDC.courses.map((c) => [c.id, c.name])].forEach(([id, label]) => chips.append(h("button", { class: "btn small" + (filter === id ? " primary" : ""), type: "button", "aria-pressed": String(filter === id), onclick: () => { filter = id; draw(); } }, label)));
+      [["all", "All"], ...NDC.courses.map((c) => [c.id, c.name])].forEach(([id, label]) => chips.append(h("button", { class: "seg-btn", type: "button", "aria-pressed": String(filter === id), onclick: () => { filter = id; draw(); } }, label)));
       const list = NDC.projects.filter((p) => filter === "all" || (p.languages || []).includes(filter));
       if (!NDC.projects.length) {
         grid.append(h("div", { class: "empty px" },
@@ -25,9 +25,9 @@
           h("p", null, p.blurb),
           h("div", { class: "tags" }, (p.languages || []).map((id) => { const c = NDC.courseById(id); return c ? h("span", { class: "tag-l", style: { "--cc": c.color } }, c.name) : null; })),
           h("div", { class: "row", style: { gap: "0.6rem" } },
-            p.live ? h("a", { class: "btn small primary", href: p.live, target: "_blank", rel: "noopener" }, "Open") : null,
-            p.code ? h("button", { class: "btn small" + (p.live ? "" : " primary"), type: "button", onclick: () => NDC.viewProject(p) }, "View project") : null,
-            p.link ? h("a", { class: "btn small" + (p.live || p.code ? "" : " primary"), href: p.link, target: "_blank", rel: "noopener" }, "View project") : null)))));
+            p.live ? h("a", { class: "btn small", href: p.live, target: "_blank", rel: "noopener" }, "Open") : null,
+            p.code ? h("button", { class: "btn small", type: "button", onclick: () => NDC.viewProject(p) }, "View project") : null,
+            p.link ? h("a", { class: "btn small", href: p.link, target: "_blank", rel: "noopener" }, "View project") : null)))));
       }
     }
     draw();
