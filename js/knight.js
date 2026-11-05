@@ -117,6 +117,7 @@
         if (i > 0 && i < rows.length - 1) for (let x = a + 1; x <= b - 1; x++) add(body, x, y);
       });
     }
+    layers.weaponFrom = layers.length + 1;
     if (eq.weapon !== "none") {
       const w = WEAPONS[eq.weapon || "wood"] || WEAPONS.wood;
       rect(armor(tint(A.a, 0.05)), 21, 21, 4, 4);
@@ -189,6 +190,14 @@
         if (touch) out.push([x, y]);
       }
       out.forEach(([x, y]) => { grid[y][x] = LIGHT_OUT; });
+      // and black where the shield sits against the body, so the shield is outlined all the way round
+      const isShield = (x, y) => x >= 0 && y >= 0 && x < W && y < H && owner[y][x] >= built.gearFrom && owner[y][x] < built.weaponFrom;
+      const inner = [];
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        if (!grid[y][x] || grid[y][x] === LIGHT_OUT || isShield(x, y)) continue;
+        if (isShield(x + 1, y) || isShield(x - 1, y) || isShield(x, y + 1) || isShield(x, y - 1)) inner.push([x, y]);
+      }
+      inner.forEach(([x, y]) => { grid[y][x] = LIGHT_OUT; });
       // the crown touches the top row, so its outline needs one extra row above the sprite
       grid.top = grid[0].map((c, x) => x).filter((x) => grid[0][x] && grid[0][x] !== LIGHT_OUT);
     } else {
