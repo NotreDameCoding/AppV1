@@ -608,9 +608,7 @@ h2.sec { font-size: clamp(1.9rem, 3.6vw, 2.6rem); letter-spacing: -0.015em; }
 
 /* ---------- home page: a bit bigger, a bit more compact ---------- */
 .home .hero .wrap { gap: 1.5rem; padding: 2.8rem 0 3rem; }
-.home .hero h1 { font-size: clamp(2.5rem, 4.7vw, 4.5rem); line-height: 1.02; text-wrap: initial; }
-.home .hero h1 .l1, .home .hero h1 .l2 { display: block; }
-.home .hero h1 .l1 { white-space: nowrap; }
+.home .hero h1 { font-size: clamp(2.5rem, 4.7vw, 4.5rem); line-height: 1.02; }
 .home .hero .lede { font-size: 1.35rem; margin-top: 1rem; max-width: 36rem; }
 .home .hero .cta { margin-top: 1.4rem; }
 .home .hero .btn { font-size: 1.05rem; }
@@ -629,15 +627,4 @@ h2.sec { font-size: clamp(1.9rem, 3.6vw, 2.6rem); letter-spacing: -0.015em; }
 .home .home-meet p, .home .projects p { font-size: 1.1rem; }
 .home .page.projects { padding: 1.8rem 0 3rem; }
 .home .projects h2.sec { margin-bottom: 0.3rem; }
-@media (max-width: 880px) { .home .hero .wrap { padding: 2rem 0; } .home .hero h1 { font-size: clamp(1.8rem, 8.6vw, 3.4rem); } }
-/* home hero: divider between the intro text and the knight */
-.home .hero .wrap { gap: 3rem; grid-template-columns: 1.25fr 0.75fr; }
-.home .stage::before {
-  content: ""; position: absolute; left: calc(-1.5rem - 1px); top: 8%; bottom: 8%;
-  width: 2px; background: var(--line-2);
-}
-@media (max-width: 880px) {
-  .home .hero .wrap { gap: 1.6rem; }
-  .home .stage { padding-bottom: 1.6rem; }
-  .home .stage::before { left: 10%; right: 10%; top: auto; bottom: -0.8rem; width: auto; height: 2px; }
-}
+@media (max-width: 880px) { .home .hero .wrap { padding: 2rem 0; } }

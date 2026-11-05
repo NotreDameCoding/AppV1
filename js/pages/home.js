@@ -23,7 +23,7 @@
 
     const hero = h("section", { class: "hero" }, h("div", { class: "wrap" },
       h("div", null,
-        h("h1", null, h("span", { class: "l1" }, "Notre Dame High School"), " ", h("span", { class: "l2" }, "Coding Club")),
+        h("h1", null, "Notre Dame High School Coding Club"),
         h("p", { class: "lede" }, `We meet to learn and build with Python, Java, JavaScript, HTML, CSS and Arduino. ${NDC.config.meetingInfo}.`),
         h("div", { class: "cta" },
           resumeLesson
