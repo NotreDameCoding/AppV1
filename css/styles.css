@@ -211,6 +211,9 @@ h2.sec { font-family: var(--f-display); font-size: clamp(1.9rem, 3.6vw, 2.7rem);
 /* ---------- home sections ---------- */
 .shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.1rem; }
 .lang-tile { --fill: var(--panel); display: grid; grid-template-columns: auto 1fr; gap: 1.1rem; align-items: center; padding: 1.2rem 1.3rem; text-decoration: none; transition: transform 0.08s; }
+/* path tabs: real rounded corners instead of pixel notches */
+.lang-tile { clip-path: none; border-radius: 16px; border: 2px solid var(--edge); background: var(--fill); }
+.lang-tile::before { display: none; }
 .lang-tile:hover { --fill: var(--panel-2); transform: translateY(-2px); }
 .lang-tile h3 { font-family: var(--f-display); font-size: 1.9rem; line-height: 1; }
 .lang-tile p { color: var(--dim); font-size: 0.95rem; margin-top: 0.3rem; }
