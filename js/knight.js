@@ -29,10 +29,10 @@
     royal: { c: "#2a2a36", C: "#14141c" },
     gold:  { c: "#f4b942", C: "#b67f1d" },
   };
-  const LIGHT_ARMOR = { a: "#f4f6fb", h: "#ffffff", b: "#c4cbdc" };
-  const LIGHT_CAPE = { c: "#e9ecf5", C: "#b9c1d6" };
-  const LIGHT_SHIELD = { m: "#f4f6fb", n: "#e0a823" };
-  const OUT = "#0a0c16", LIGHT_OUT = "#d9a21b", GOLD = "#f4b942", DARK_INK = "#16182b", SKIN = "#f1c9a1", BROWN = "#5a4636";
+  const LIGHT_ARMOR = { a: "#bcc5d3", h: "#f0f4fa", b: "#6f7a8f" };
+  const LIGHT_CAPE = { c: "#7c8597", C: "#4f5668" };
+  const LIGHT_SHIELD = { m: "#8691a6", n: "#e2e8f2" };
+  const OUT = "#0a0c16", LIGHT_OUT = "#0a0c16", GOLD = "#f4b942", DARK_INK = "#16182b", SKIN = "#f1c9a1", BROWN = "#5a4636";
 
   const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.substr(i, 2), 16));
   const hexOf = (r, g, b) => "#" + [r, g, b].map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0")).join("");
@@ -48,9 +48,9 @@
 
   function build(eq) {
     eq = eq || {};
-    /* light version: white armor and shield trimmed in gold, drawn over a gold outline (see compose) */
+    /* light version: the same knight in polished silver, so it stands out on a pale page */
     const A = eq.light ? LIGHT_ARMOR : ARMOR[eq.armor || "steel"] || ARMOR.steel;
-    const DARK = eq.light ? "#8e97b4" : DARK_INK;
+    const DARK = DARK_INK;
     const layers = [];
     const L = (c, o) => { const l = new Layer(c, o); layers.push(l); return l; };
     const armor = (c) => L(c || A.a, { hi: A.h, sh: A.b });
