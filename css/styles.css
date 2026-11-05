@@ -630,3 +630,14 @@ h2.sec { font-size: clamp(1.9rem, 3.6vw, 2.6rem); letter-spacing: -0.015em; }
 .home .page.projects { padding: 1.8rem 0 3rem; }
 .home .projects h2.sec { margin-bottom: 0.3rem; }
 @media (max-width: 880px) { .home .hero .wrap { padding: 2rem 0; } .home .hero h1 { font-size: clamp(1.8rem, 8.6vw, 3.4rem); } }
+/* home hero: divider between the intro text and the knight */
+.home .hero .wrap { gap: 3rem; grid-template-columns: 1.25fr 0.75fr; }
+.home .stage::before {
+  content: ""; position: absolute; left: calc(-1.5rem - 1px); top: 8%; bottom: 8%;
+  width: 2px; background: var(--line-2);
+}
+@media (max-width: 880px) {
+  .home .hero .wrap { gap: 1.6rem; }
+  .home .stage { padding-bottom: 1.6rem; }
+  .home .stage::before { left: 10%; right: 10%; top: auto; bottom: -0.8rem; width: auto; height: 2px; }
+}
