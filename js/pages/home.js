@@ -23,7 +23,7 @@
 
     const hero = h("section", { class: "hero" }, h("div", { class: "wrap" },
       h("div", null,
-        h("h1", null, "Notre Dame High School Coding Club"),
+        h("h1", null, h("span", { class: "l1" }, "Notre Dame High School"), " ", h("span", { class: "l2" }, "Coding Club")),
         h("p", { class: "lede" }, `We meet to learn and build with Python, Java, JavaScript, HTML, CSS and Arduino. ${NDC.config.meetingInfo}.`),
         h("div", { class: "cta" },
           resumeLesson
@@ -39,14 +39,14 @@
       ? h("p", { class: "muted" }, `${NDC.projects.length} project${NDC.projects.length === 1 ? "" : "s"} shared so far.`)
       : h("p", { class: "muted" }, "No projects yet.");
 
-    return h("div", null,
+    return h("div", { class: "home" },
       hero,
-      h("section", { class: "page", style: { paddingBottom: "3.5rem" } }, h("div", { class: "wrap" },
+      h("section", { class: "page paths" }, h("div", { class: "wrap" },
         h("h2", { class: "sec" }, "Pick a path"),
         h("div", { class: "shelf" }, NDC.courses.map((c) => pathTile(c, st))))),
-      h("section", { class: "band" }, h("div", { class: "wrap", style: { padding: "2.6rem 0" } },
+      h("section", { class: "band" }, h("div", { class: "wrap home-meet" },
         h("h2", { class: "sec", style: { marginBottom: "0.6rem" } }, "When we meet"), h("p", { class: "muted" }, NDC.config.meetingInfo + "."))),
-      h("section", { class: "page", style: { paddingTop: "2.6rem" } }, h("div", { class: "wrap row", style: { justifyContent: "space-between", gap: "1.5rem" } },
+      h("section", { class: "page projects" }, h("div", { class: "wrap row", style: { justifyContent: "space-between", gap: "1.5rem" } },
         h("div", null, h("h2", { class: "sec", style: { marginBottom: "0.5rem" } }, "Club projects"), projects),
         h("a", { class: "btn", href: "#/projects" }, "Open the project board"))));
   };
