@@ -34,7 +34,7 @@
   --flame: #ff9a57;
   color-scheme: dark;
 
-  --f-display: "Redaction 10", "Instrument Serif", Georgia, serif;
+  --f-display: "Fredoka", "Nunito", "Trebuchet MS", system-ui, sans-serif;
   --f-body: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-code: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --f-pixel: "NDC Digits", "Pixelify Sans", "Press Start 2P", ui-monospace, monospace;
@@ -593,12 +593,12 @@ footer.site .wrap { display: flex; justify-content: space-between; gap: 1rem; fl
 :root[data-theme="light"] .dg-stage { --fill: #8a6a46; }
 :root[data-theme="light"] .dg-canvas { background: #7cc4f2; }
 
-/* big headings: Redaction 10, a worn, typewriter-ish serif */
-h1, h2, h3 { font-weight: 400; letter-spacing: -0.005em; }
+/* big headings: Fredoka, a round and friendly face that sits well next to the pixel knight without being pixelated */
+h1, h2, h3 { font-weight: 600; letter-spacing: -0.005em; }
 .hero h1 { font-size: clamp(2.5rem, 6vw, 4.6rem); line-height: 1.02; letter-spacing: -0.02em; }
 .page-head h1, .course-head h1, .acct-top h1 { font-size: clamp(2.4rem, 5.5vw, 3.8rem); line-height: 1.02; letter-spacing: -0.02em; }
 h2.sec { font-size: clamp(1.9rem, 3.6vw, 2.6rem); letter-spacing: -0.015em; }
 .finish h2 { font-size: clamp(2.6rem, 7vw, 4.2rem); font-weight: 700; }
-.brand { font-size: 1.4rem; font-weight: 400; letter-spacing: -0.01em; }
-.q-prompt { font-weight: 400; letter-spacing: 0; }
-.foot-msg .t { font-weight: 400; }
+.brand { font-size: 1.4rem; font-weight: 600; letter-spacing: -0.01em; }
+.q-prompt { font-weight: 600; letter-spacing: 0; }
+.foot-msg .t { font-weight: 600; }
