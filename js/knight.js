@@ -174,7 +174,7 @@
     const filled = (x, y) => x >= 0 && y >= 0 && x < W && y < H && grid[y][x];
     const edge = [];
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (!grid[y][x] && (filled(x - 1, y) || filled(x + 1, y) || filled(x, y - 1) || filled(x, y + 1))) edge.push([x, y]);
-    edge.forEach(([x, y]) => { grid[y][x] = eq && eq.light ? LIGHT_OUT : OUT; });
+    if (!(eq && eq.light)) edge.forEach(([x, y]) => { grid[y][x] = OUT; }); // the silver knight has no outline
     return grid;
   }
 
