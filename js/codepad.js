@@ -1,4 +1,4 @@
-/* The Forge: a place to write and run code. Also the code viewer used by the Projects page.
+/* Code pad: an editor with a terminal or live preview. Used by the Projects page viewer.
    Limits keep it safe and quick: code length, run time (set in runner.js), output size and how fast you can press Run. */
 (function () {
   const h = NDC.h;
@@ -100,34 +100,5 @@
       pad.el,
       h("p", { class: "muted", style: { fontSize: "0.85rem", marginTop: "0.8rem" } }, "You can change the code and run it here. Your changes aren't saved.")));
     document.body.append(scrim);
-  };
-
-  /* the page */
-  const KEY = (l) => "ndc.forge." + l;
-  const read = (l) => { try { return localStorage.getItem(KEY(l)); } catch (e) { return null; } };
-  const write = (l, v) => { try { localStorage.setItem(KEY(l), v); } catch (e) {} };
-  const LASTK = "ndc.forge.lang";
-
-  NDC.pages.forge = function () {
-    let lang = "py";
-    try { const l = localStorage.getItem(LASTK); if (LANGS[l]) lang = l; } catch (e) {}
-    const host = h("div"), tabs = h("div", { class: "row", style: { gap: "0.5rem", margin: "1.2rem 0" } });
-    function draw() {
-      NDC.clear(tabs); NDC.clear(host);
-      Object.keys(LANGS).forEach((id) => tabs.append(h("button", { class: "btn small" + (lang === id ? " primary" : ""), type: "button", "aria-pressed": String(lang === id), onclick: () => { lang = id; try { localStorage.setItem(LASTK, id); } catch (e) {} draw(); } }, LANGS[id].name)));
-      const saved = read(lang);
-      const pad = NDC.codePad({ lang, code: saved != null ? saved : LANGS[lang].start, rows: 18, onChange: (v) => write(lang, v) });
-      host.append(pad.el);
-      const k = LANGS[lang].kind;
-      host.append(h("p", { class: "muted", style: { fontSize: "0.9rem", marginTop: "0.9rem" } },
-        k === "run" ? `Runs in your browser. Code is limited to ${MAX_CODE} characters, a run stops after a few seconds, and long output is cut off.`
-          : k === "web" ? "The preview updates when you press Run. Code is limited to " + MAX_CODE + " characters."
-            : `${LANGS[lang].name} can't run in the browser yet. You can still write and keep it here.`,
-        " Your code is saved in this browser."));
-    }
-    draw();
-    return h("div", { class: "page" }, h("div", { class: "wrap" },
-      h("div", { class: "page-head" }, h("h1", null, "Forge"), h("p", null, "Write and run code in any language. Press Ctrl+Enter to run.")),
-      tabs, host));
   };
 })();

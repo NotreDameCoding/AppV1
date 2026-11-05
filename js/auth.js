@@ -61,19 +61,6 @@
       NDC.store.setIdentity("guest");
     },
 
-    /* Officers' knights: an officer's equipped gear is shared so the Members page can show their real look. Names and gear only. */
-    async publishLook(state) {
-      if (!real || !sb || !A.user || !A.officer) return;
-      const name = A.displayName(state);
-      if (!name || !Object.keys(state.equipped || {}).length) return; // nothing chosen yet: keep the default look
-      await sb.from("looks").upsert({ user_id: A.user.id, name, equipped: state.equipped || {}, updated_at: new Date().toISOString() });
-    },
-    async looks() {
-      if (!real || !sb) return [];
-      const { data, error } = await sb.from("looks").select("name,equipped");
-      return error ? [] : (data || []);
-    },
-
     /* officers only */
     async listProgress() {
       if (!real) return { demo: true, rows: [] };
@@ -134,11 +121,9 @@
         const xp = NDC.game.stats(state).xp;
         const { error } = await sb.from("progress").upsert({ user_id: u.id, email: u.email, display_name: A.displayName(state) || null, data: state, xp, updated_at: new Date().toISOString() });
         if (error) throw error;
-        A.publishLook(state).catch(() => {});
       },
     });
     try { const { data } = await sb.rpc("is_officer"); A.officer = data === true; NDC.bus.emit("auth", A.user); } catch (e) {}
-    if (A.officer) A.publishLook(NDC.store.get()).catch(() => {});
     // refresh the saved name now, so older rows stop showing an email
     try { await NDC.store.getRemote().push(NDC.store.get()); } catch (e) {}
   }

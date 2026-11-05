@@ -1,6 +1,6 @@
 /* The Dungeon: a top-down fighting game for the knight, drawn at a low resolution in an angled overhead view.
    Move: WASD / arrows. Swing: J or Space (or left click). Block: hold K or Shift (or right click). Dash: L or E.
-   Game XP lives in state.game and is fully separate from lessons, coins and looks. */
+   Everyone plays the same knight (see NDC.game.KIT). Only the best floor and kill count are saved. */
 (function () {
   const h = NDC.h, G = NDC.game;
   const W = 480, H = 300, LEFT = 28, RIGHT = 452, TOP = 62, BOT = 284;
@@ -12,11 +12,11 @@
 
   /* ---------- floors ---------- */
   const THEMES = [null,
-    { name: "Slime Cellar", a: "#1b2a30", b: "#17242a", crack: "#0d161a", wall: "#243842", wallHi: "#34505c", glow: "#5fe0c8", deco: "slime", torch: [90, 200, 280, 390] },
-    { name: "Mossy Halls", a: "#1d2b22", b: "#18261d", crack: "#0e1912", wall: "#2a3d2e", wallHi: "#3d5a44", glow: "#9bff7a", deco: "moss", torch: [70, 170, 310, 410] },
-    { name: "Goblin Camp", a: "#2b2118", b: "#251c14", crack: "#150f0a", wall: "#3d2c1e", wallHi: "#58412c", glow: "#ff9a3d", deco: "camp", torch: [100, 190, 290, 380] },
-    { name: "Deep Warrens", a: "#221a33", b: "#1d162c", crack: "#0f0a1a", wall: "#30244a", wallHi: "#46346b", glow: "#c07dff", deco: "crystal", torch: [80, 160, 320, 400] },
-    { name: "The Goblin King", a: "#2a1a1a", b: "#241616", crack: "#140a0a", wall: "#42262a", wallHi: "#603840", glow: "#ffcf5a", deco: "throne", torch: [90, 170, 310, 390] },
+    { name: G.FLOOR_NAMES[0], a: "#1b2a30", b: "#17242a", crack: "#0d161a", wall: "#243842", wallHi: "#34505c", glow: "#5fe0c8", deco: "slime", torch: [90, 200, 280, 390] },
+    { name: G.FLOOR_NAMES[1], a: "#1d2b22", b: "#18261d", crack: "#0e1912", wall: "#2a3d2e", wallHi: "#3d5a44", glow: "#9bff7a", deco: "moss", torch: [70, 170, 310, 410] },
+    { name: G.FLOOR_NAMES[2], a: "#2b2118", b: "#251c14", crack: "#150f0a", wall: "#3d2c1e", wallHi: "#58412c", glow: "#ff9a3d", deco: "camp", torch: [100, 190, 290, 380] },
+    { name: G.FLOOR_NAMES[3], a: "#221a33", b: "#1d162c", crack: "#0f0a1a", wall: "#30244a", wallHi: "#46346b", glow: "#c07dff", deco: "crystal", torch: [80, 160, 320, 400] },
+    { name: G.FLOOR_NAMES[4], a: "#2a1a1a", b: "#241616", crack: "#140a0a", wall: "#42262a", wallHi: "#603840", glow: "#ffcf5a", deco: "throne", torch: [90, 170, 310, 390] },
   ];
   const FLOORS = [null,
     { waves: [["s", "s", "s"], ["s", "s", "g"], ["S", "g", "g"]], pillars: [[130, 150], [350, 150]] },
@@ -147,7 +147,7 @@
     function start(floor) {
       gs = G.gameStats(NDC.store.get());
       const L = loadout();
-      const maxHp = 100 + gs.hpBonus + L.hp, maxSt = 100 + gs.staminaBonus;
+      const maxHp = G.BASE_HP + L.hp, maxSt = G.BASE_STAMINA;
       const p = {
         x: W / 2, y: BOT - 36, vx: 0, vy: 0, kx: 0, ky: 0, r: 7, dir: -Math.PI / 2, hp: maxHp, maxHp, st: maxSt, maxSt, stWait: 0,
         speed: 100 * (1 + L.speed), swing: null, combo: 0, comboT: 0, queued: false, block: 0, blocking: false, blockT: 0, shieldKick: 0,
@@ -186,20 +186,19 @@
 
     /* ---------- finishing ---------- */
     function commit() {
-      if (!pendingXp && !pendingKills) return;
-      const xp = pendingXp, kills = pendingKills; pendingXp = 0; pendingKills = 0;
-      NDC.store.update((s) => { const g = s.game || {}; s.game = { xp: (g.xp || 0) + xp, best: g.best || 0, kills: (g.kills || 0) + kills }; });
+      pendingXp = 0;
+      if (!pendingKills) return;
+      const kills = pendingKills; pendingKills = 0;
+      NDC.store.update((s) => { const g = s.game || {}; s.game = { xp: 0, best: g.best || 0, kills: (g.kills || 0) + kills }; });
     }
-    function setBest(f) { NDC.store.update((s) => { const g = s.game || { xp: 0, best: 0, kills: 0 }; s.game = { xp: g.xp, kills: g.kills, best: Math.max(g.best || 0, f) }; }); }
+    function setBest(f) { NDC.store.update((s) => { const g = s.game || { xp: 0, best: 0, kills: 0 }; s.game = { xp: 0, kills: g.kills, best: Math.max(g.best || 0, f) }; }); }
     function finish(win) {
       if (run.over) return;
       run.over = true; run.endT = win ? 1.6 : 1.1;
-      const before = G.gameStats(NDC.store.get()).level;
-      if (win) { pendingXp += 15 * run.floor; run.gained += 15 * run.floor; setBest(run.floor); }
+      if (win) setBest(run.floor);
       commit();
-      const after = G.gameStats(NDC.store.get());
-      run.levelUp = after.level > before ? after.level : 0; run.totalXp = run.gained; run.win = win;
-      gs = after; drawStat();
+      run.win = win;
+      gs = G.gameStats(NDC.store.get()); drawStat();
       if (win) { run.banner = "Floor cleared!"; run.bannerT = 2; run.slow = 0.6; } else { run.banner = "Knocked out"; run.bannerT = 2; run.slow = 0.8; }
     }
 
@@ -365,7 +364,7 @@
         }
         if (p.swing && down("swing") && p.swing.t / p.swing.dur > 0.2) p.queued = true;
         p.swingHeld = down("swing");
-        if (p.stWait <= 0 && !p.blocking) p.st = Math.min(p.maxSt, p.st + 32 * dt);
+        if (p.stWait <= 0 && !p.blocking) p.st = Math.min(p.maxSt, p.st + G.STAMINA_REGEN * dt);
       }
 
       // pickups
@@ -748,38 +747,35 @@
 
     /* ---------- menus ---------- */
     function floorBtn(f) {
-      const open = gs.floorOpen(f);
-      return h("button", { class: "btn" + (open ? "" : " locked"), type: "button", disabled: !open, onclick: () => start(f) },
-        open ? `Floor ${f}: ${THEMES[f].name}` : `Floor ${f}: reach game level ${f}`);
+      const cleared = gs.best >= f;
+      return h("button", { class: "btn" + (cleared ? " cleared" : ""), type: "button", onclick: () => start(f) },
+        h("span", { class: "fl-n" }, f), h("span", { class: "fl-t" }, THEMES[f].name), cleared ? h("span", { class: "fl-ok" }, "Cleared") : null);
     }
     function drawMenu() {
       NDC.clear(menuEl); menuEl.hidden = false;
       const L = loadout();
       if (phase === "clear" || phase === "dead") {
-        const win = phase === "clear", nextF = run.floor + 1, hasNext = win && nextF <= G.FLOORS && gs.floorOpen(nextF);
+        const win = phase === "clear", nextF = run.floor + 1, hasNext = win && nextF <= G.FLOORS;
         menuEl.append(h("h2", null, win ? `Floor ${run.floor} cleared` : "You were knocked out"),
-          h("p", { class: "muted" }, `+${run.totalXp} game XP · ${run.kills} defeated` + (run.levelUp ? ` · Game level ${run.levelUp}!` : "")),
+          h("p", { class: "muted" }, `${run.kills} defeated`),
           h("div", { class: "row", style: { gap: "0.7rem", justifyContent: "center", marginTop: "1rem" } },
             hasNext ? h("button", { class: "btn primary", type: "button", onclick: () => start(nextF) }, `Go to floor ${nextF}`) : null,
             h("button", { class: "btn" + (hasNext ? "" : " primary"), type: "button", onclick: () => start(run.floor) }, win ? "Replay this floor" : "Try again"),
             h("button", { class: "btn", type: "button", onclick: () => { phase = "menu"; run = null; drawMenu(); } }, "Floor list")));
-        if (win && nextF <= G.FLOORS && !gs.floorOpen(nextF)) menuEl.append(h("p", { class: "muted", style: { marginTop: "0.8rem" } }, `Floor ${nextF} opens at game level ${nextF}.`));
         if (win && nextF > G.FLOORS) menuEl.append(h("p", { class: "muted", style: { marginTop: "0.8rem" } }, "You beat the Goblin King. Nobody's deeper than you."));
         return;
       }
       menuEl.append(h("h2", null, "Choose a floor"),
-        h("div", { class: "dg-floors" }, THEMES.slice(1).map((_, i) => floorBtn(i + 1))),
-        h("p", { class: "muted", style: { marginTop: "0.9rem", fontSize: "0.92rem" } }, `${L.weapon.dmg} damage · swing ${L.weapon.swing} ms · shield blocks ${Math.round(L.shield.block * 100)}%`));
+        h("div", { class: "dg-floors" }, THEMES.slice(1).map((_, i) => floorBtn(i + 1))));
     }
     function drawStat() {
       NDC.clear(statEl);
-      const g = gs, L = loadout();
+      const g = gs;
       statEl.append(
-        h("div", { class: "dg-pill px" }, h("span", null, "Game level"), h("b", { class: "pixel" }, g.level)),
         h("div", { class: "dg-pill px" }, h("span", null, "Best floor"), h("b", { class: "pixel" }, g.best || "-")),
-        h("div", { class: "dg-pill px wide" }, h("span", null, `${g.into} / ${g.span} XP to level ${g.level + 1}`), h("div", { class: "bar px", style: { margin: "0.3rem 0 0" } }, h("i", { style: { width: Math.round(g.pct * 100) + "%" } }))),
-        h("div", { class: "dg-pill px" }, h("span", null, "Health"), h("b", { class: "pixel" }, 100 + g.hpBonus + L.hp)),
-        h("div", { class: "dg-pill px" }, h("span", null, "Stamina"), h("b", { class: "pixel" }, 100 + g.staminaBonus)));
+        h("div", { class: "dg-pill px" }, h("span", null, "Defeated"), h("b", { class: "pixel" }, g.kills)),
+        h("div", { class: "dg-pill px" }, h("span", null, "Health"), h("b", { class: "pixel" }, G.BASE_HP + G.KIT.helm.hp)),
+        h("div", { class: "dg-pill px" }, h("span", null, "Stamina"), h("b", { class: "pixel" }, G.BASE_STAMINA)));
     }
     /* ---------- input ---------- */
     const onDown = (e) => {
@@ -814,13 +810,13 @@
     raf = requestAnimationFrame(loop);
 
     const root = h("div", { class: "page" }, h("div", { class: "wrap", style: { maxWidth: "1040px" } },
-      h("div", { class: "page-head" }, h("h1", null, "Dungeon"),
-        h("p", null, "Move: WASD or arrows. Swing: J or Space (chain three for a finisher). Block: hold K or Shift. Dash: L or E. Or use the mouse: aim, click to swing, right-click to block.")),
+      h("div", { class: "page-head", "data-reveal": "" }, h("h1", null, "Dungeon"),
+        h("p", null, "Move WASD or arrows. Swing J or Space. Block K or Shift. Dash L or E. Mouse: click to swing, right-click to block.")),
       statEl,
       h("div", { class: "dg-stage px" }, canvas, menuEl),
       h("div", { class: "row", style: { justifyContent: "flex-end", marginTop: "0.4rem" } }, soundBtn),
       pad,
-      h("p", { class: "muted", style: { marginTop: "1rem", fontSize: "0.92rem" } }, "Game XP is separate from lessons. It raises your health and stamina and opens deeper floors, and it never changes your coins or your knight's look. Gear you buy on the Knight page changes how you fight.")));
+      null));
 
     return {
       el: root,

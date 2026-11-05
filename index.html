@@ -4,15 +4,24 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Notre Dame Coding</title>
-  <meta name="description" content="Notre Dame High School's coding club. Learn Python, Java, JavaScript, HTML, CSS and Arduino, and level up your knight.">
-  <meta name="theme-color" content="#090b13">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect x='3' y='2' width='10' height='11' fill='%23f4b942'/%3E%3Crect x='5' y='6' width='6' height='2' fill='%23090b13'/%3E%3C/svg%3E">
+  <meta name="description" content="Notre Dame High School's coding club. Learn Python, Java, JavaScript, HTML, CSS and Arduino.">
+  <meta name="theme-color" content="#f6f6f2">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none' stroke='%232845d6' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 3l11 4v8c0 7-4.6 11.6-11 14C9.6 26.6 5 22 5 15V7z'/%3E%3Cpath d='M13 12l-3.5 4 3.5 4M19 12l3.5 4-3.5 4'/%3E%3C/svg%3E">
+  <script>
+    /* before first paint: remembered theme (light unless chosen), and hide animated bits only if the motion script can run */
+    try { if (localStorage.getItem("ndc.theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      document.documentElement.classList.add("m-pending");
+      setTimeout(function () { document.documentElement.classList.remove("m-pending"); }, 3500);
+    }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Instrument+Serif&family=JetBrains+Mono:wght@400;500;700&family=Pixelify+Sans:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&family=Pixelify+Sans:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+  <canvas id="backdrop" aria-hidden="true"></canvas>
   <a class="sr" href="#app">Skip to content</a>
   <header id="nav" class="nav"></header>
   <main id="app" tabindex="-1"></main>
@@ -20,12 +29,15 @@
   <noscript><p style="padding:2rem">This site needs JavaScript turned on.</p></noscript>
 
   <!-- Plain scripts, no build step. Order matters: each file uses the ones above it. -->
+  <script src="js/backdrop.js"></script>
+  <script src="js/motion.js"></script>
   <script src="js/util.js"></script>
   <script src="js/config.js"></script>
   <script src="js/knight.js"></script>
   <script src="js/game.js"></script>
   <script src="js/exercises.js"></script>
   <script src="js/explain.js"></script>
+  <script src="js/codepad.js"></script>
   <script src="js/runner.js"></script>
   <script src="js/courses/python.js"></script>
   <script src="js/courses/java.js"></script>
@@ -38,18 +50,14 @@
   <script src="js/courses/more-3.js"></script>
   <script src="js/courses/frq.js"></script>
   <script src="js/courses/frq-web.js"></script>
-  <script src="js/data-members.js"></script>
-  <script src="js/data-meetings.js"></script>
   <script src="js/data-projects.js"></script>
   <script src="js/store.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/pages/home.js"></script>
   <script src="js/pages/learn.js"></script>
   <script src="js/pages/lesson.js"></script>
-  <script src="js/pages/club.js"></script>
-  <script src="js/pages/knight.js"></script>
+  <script src="js/pages/projects.js"></script>
   <script src="js/pages/dungeon.js"></script>
-  <script src="js/pages/forge.js"></script>
   <script src="js/pages/account.js"></script>
   <script src="js/app.js"></script>
   <script>NDC.boot();</script>

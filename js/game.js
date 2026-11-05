@@ -71,9 +71,6 @@
       activeDays: Object.keys(state.days).length,
       answers: state.answers || { total: 0, correct: 0 },
     };
-    base.coinsEarned = G.coinsEarned(state, base.level);
-    base.coinsSpent = Object.keys(state.bought || {}).reduce((s, k) => s + (G.findGear(k).price || 0), 0);
-    base.coins = Math.max(0, base.coinsEarned - base.coinsSpent);
     base.badges = G.badges.filter((b) => b.test(base)).map((b) => b.id);
     return base;
   };
@@ -94,98 +91,29 @@
     { id: "all", glyph: "ALL", name: "Grand master", desc: "Finish all six languages", test: (s) => s.coursesDone.length >= NDC.courses.length && NDC.courses.length > 0 },
   ];
 
-  /* ---- coins ----
-     Coins are derived too: a small drop for each lesson, a bigger payout for each level reached, minus what you spent.
-     Game XP from the Dungeon never touches any of this. */
-  G.lessonCoins = (acc) => 3 + (acc >= 0.8 ? 2 : 0) + (acc >= 1 ? 5 : 0);
-  G.levelCoins = (L) => (L >= 2 ? 30 + 15 * L : 0);
-  G.coinsEarned = (state, level) => {
-    let c = Object.values(state.done).reduce((s, d) => s + G.lessonCoins(d.acc || 0), 0);
-    for (let L = 2; L <= level; L++) c += G.levelCoins(L);
-    return c;
+  /* ---- the knight ----
+     Everyone gets the same knight. There is no shop and nothing to level up in the Dungeon: these numbers are
+     the whole kit, and Floor 5 is tuned (see tools/dungeon-sim.py) so a player who dodges, blocks and chains
+     swings can beat it with exactly this. */
+  G.KIT = {
+    helm:   { id: "crowned",   name: "Crown",            hp: 150 },
+    shield: { id: "starlight", name: "Starlight shield", block: 0.8, cost: 22, arc: 110, parry: 180 },
+    weapon: { id: "steel",     name: "Steel sword",      dmg: 4, swing: 260, reach: 1.1 },
+    cape:   { id: "royal",     name: "Black cape",       speed: 0.08 },
+    armor:  { id: "obsidian",  name: "Obsidian armor",   def: 0.2 },
   };
-
-  /* ---- gear ----
-     price: coins to buy. feel: a short word for how it plays in the Dungeon.
-     Weapons: dmg, swing (ms per swing), reach (tiles). Shields: block (share of damage stopped), cost (stamina per blocked hit),
-     arc (degrees covered), parry (ms of perfect-block window). Armor: def. Helm: hp. */
-  const P = (price, feel, stats) => ({ price, feel, stats });
-  G.gear = {
-    helm: [
-      { id: "squire", name: "Squire's cap", ...P(0, "Plain", { hp: 0 }) },
-      { id: "iron", name: "Iron helm", ...P(50, "Sturdy", { hp: 10 }) },
-      { id: "plumed", name: "Plumed helm", ...P(100, "Sturdy", { hp: 20 }) },
-      { id: "horned", name: "Horned helm", ...P(160, "Tough", { hp: 30 }) },
-      { id: "crowned", name: "Crown", ...P(250, "Mighty", { hp: 45 }) },
-    ],
-    shield: [
-      { id: "oak", name: "Oak shield", ...P(0, "Basic", { block: 0.5, cost: 20, arc: 100, parry: 0 }) },
-      { id: "cobalt", name: "Cobalt shield", ...P(60, "Sturdy", { block: 0.7, cost: 26, arc: 100, parry: 0 }) },
-      { id: "crimson", name: "Crimson shield", ...P(120, "Wide", { block: 0.55, cost: 16, arc: 180, parry: 0 }) },
-      { id: "starlight", name: "Starlight shield", ...P(200, "Parry", { block: 0.8, cost: 22, arc: 110, parry: 180 }) },
-    ],
-    weapon: [
-      { id: "wood", name: "Practice sword", ...P(0, "Balanced", { dmg: 1, swing: 380, reach: 1.0 }) },
-      { id: "steel", name: "Steel sword", ...P(70, "Fast", { dmg: 2, swing: 260, reach: 1.1 }) },
-      { id: "flame", name: "Flame blade", ...P(140, "Heavy", { dmg: 5, swing: 560, reach: 1.2 }) },
-      { id: "spark", name: "Storm blade", ...P(220, "Quick", { dmg: 3, swing: 300, reach: 1.3 }) },
-    ],
-    cape: [
-      { id: "none", name: "No cape", ...P(0, "Plain", { speed: 0 }) },
-      { id: "red", name: "Red cape", ...P(40, "Swift", { speed: 0.04 }) },
-      { id: "royal", name: "Black cape", ...P(100, "Swift", { speed: 0.08 }) },
-      { id: "gold", name: "Gold cape", ...P(200, "Swift", { speed: 0.12 }) },
-    ],
-    armor: [
-      { id: "steel", name: "Steel", ...P(0, "Plain", { def: 0 }) },
-      { id: "cobalt", name: "Cobalt", ...P(50, "Light", { def: 0.05 }) },
-      { id: "emerald", name: "Emerald", ...P(90, "Light", { def: 0.1 }) },
-      { id: "crimson", name: "Crimson", ...P(140, "Solid", { def: 0.15 }) },
-      { id: "obsidian", name: "Obsidian", ...P(200, "Solid", { def: 0.2 }) },
-      { id: "gold", name: "Gold", ...P(280, "Heavy", { def: 0.25 }) },
-    ],
-  };
-  G.SLOTS = [
-    { id: "helm", label: "Helmet" }, { id: "shield", label: "Shield" }, { id: "weapon", label: "Weapon" },
-    { id: "cape", label: "Cape" }, { id: "armor", label: "Armor" },
-  ];
-  G.findGear = (key) => { const [slot, id] = key.split(":"); return { slot, ...G.gear[slot].find((g) => g.id === id) }; };
-  /* officers can wear any gear and enter every floor without spending coins (not announced anywhere) */
+  G.BASE_HP = 170; G.BASE_STAMINA = 240; G.STAMINA_REGEN = 70; // regen is per second, and only starts half a second after you last swing, block or dash
+  G.LOOK = { helm: "crowned", shield: "starlight", weapon: "steel", cape: "royal", armor: "obsidian" };
+  G.loadout = () => ({ eq: G.LOOK, weapon: G.KIT.weapon, shield: G.KIT.shield, hp: G.KIT.helm.hp, def: G.KIT.armor.def, speed: G.KIT.cape.speed });
   G.isOfficer = () => !!(NDC.auth && NDC.auth.officer);
-  G.owned = function (state) {
-    const bought = state.bought || {}, o = {}, all = G.isOfficer();
-    for (const slot of Object.keys(G.gear)) G.gear[slot].forEach((g) => { if (all || g.price === 0 || bought[slot + ":" + g.id]) (o[slot] = o[slot] || []).push(g.id); });
-    return o;
-  };
-  G.defaults = { helm: "squire", shield: "oak", weapon: "wood", cape: "none", armor: "steel" };
-  G.equippedFor = function (state) {
-    const own = G.owned(state), eq = {};
-    for (const slot of Object.keys(G.defaults)) {
-      const want = state.equipped && state.equipped[slot];
-      eq[slot] = want && own[slot] && own[slot].includes(want) ? want : G.defaults[slot];
-    }
-    return eq;
-  };
-  /* what the equipped set adds up to in the Dungeon */
-  G.loadout = function (state) {
-    const eq = G.equippedFor(state), f = (slot) => G.gear[slot].find((g) => g.id === eq[slot]).stats;
-    return { eq, weapon: f("weapon"), shield: f("shield"), hp: f("helm").hp, def: f("armor").def, speed: f("cape").speed };
-  };
-  /* unowned gear, cheapest first */
-  G.nextGoals = function (state) {
-    const own = G.owned(state), out = [];
-    for (const slot of Object.keys(G.gear)) G.gear[slot].forEach((g) => { if (!(own[slot] || []).includes(g.id)) out.push({ slot, gear: g }); });
-    return out.sort((a, b) => a.gear.price - b.gear.price);
-  };
-  /* ---- Dungeon (game) levels. Fully separate from lessons: they never touch coins or looks. ---- */
+
+  /* ---- Dungeon ---- */
   G.FLOORS = 5;
-  G.gameXpFor = (L) => 20 * (L - 1) * L; // L2 = 40, L3 = 120, L4 = 240, L5 = 400 ...
+  G.FLOOR_NAMES = ["Slime Cellar", "Mossy Halls", "Goblin Camp", "Deep Warrens", "The Goblin King"];
+  G.FLOOR_GLOW = ["#5fe0c8", "#9bff7a", "#ff9a3d", "#c07dff", "#ffcf5a"];
   G.gameStats = function (state) {
-    const gm = state.game || {}, xp = gm.xp || 0;
-    let L = 1; while (xp >= G.gameXpFor(L + 1)) L++;
-    const a = G.gameXpFor(L), b = G.gameXpFor(L + 1);
-    return { xp, level: L, into: xp - a, span: b - a, pct: (xp - a) / (b - a), best: gm.best || 0, kills: gm.kills || 0,
-      hpBonus: (L - 1) * 10, staminaBonus: (L - 1) * 8, floorOpen: (f) => L >= f || G.isOfficer() };
+    const gm = state.game || {};
+    return { best: gm.best || 0, kills: gm.kills || 0 };
   };
   NDC.courseById = (id) => NDC.courses.find((c) => c.id === id);
 

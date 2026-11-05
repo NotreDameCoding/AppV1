@@ -25,7 +25,7 @@
     const footIn = h("div", { class: "foot-in" }, msg, h("div", { class: "row", style: { gap: "1.2rem", flexWrap: "nowrap" } }, secondary, primary));
     const foot = h("div", { class: "player-foot" }, footIn);
     const closeBtn = h("button", { class: "x", type: "button", "aria-label": "Leave lesson", onclick: confirmLeave }, "×");
-    const root = h("div", { class: "player", style: { "--cc": course.hex }, role: "main" },
+    const root = h("div", { class: "player", style: { "--cc": course.color }, role: "main" },
       h("div", { class: "player-top" }, closeBtn, h("div", { class: "bar px" }, barFill)), body, foot);
 
     function setPrimary(label, disabled, cls) { primary.textContent = label; primary.disabled = !!disabled; primary.className = "btn " + (cls || "primary"); }
@@ -136,7 +136,6 @@
       const acc = Math.round(res.acc * 100);
       const nextL = NDC.store.nextLesson(course);
       const unlocks = [];
-      if (res.coinsGained) unlocks.push(h("div", { class: "unlock px" }, h("span", { class: "pixel", style: { fontSize: "1.4rem", color: "var(--gold)", minWidth: "40px", textAlign: "center" } }, "$"), h("span", null, h("b", null, "+" + res.coinsGained + " coins"), ` (you have ${res.stats.coins})`)));
       res.newBadges.forEach((b) => { const bd = G.badges.find((x) => x.id === b); unlocks.push(h("div", { class: "unlock px" }, h("span", { class: "pixel", style: { fontSize: "1.4rem", color: "var(--gold)", minWidth: "40px", textAlign: "center" } }, bd.glyph), h("span", null, h("b", null, "Badge: "), bd.name))); });
       if (res.levelUp) unlocks.unshift(h("div", { class: "unlock px" }, h("span", { class: "pixel", style: { fontSize: "1.4rem", color: "var(--gold)", minWidth: "40px", textAlign: "center" } }, "L" + res.levelUp), h("span", null, h("b", null, "Level up! "), `You are now a ${G.title(res.levelUp)}.`)));
       col.append(h("div", { class: "finish" },
@@ -149,7 +148,7 @@
         unlocks.length ? h("div", { class: "unlock-list" }, unlocks) : null,
         !res.first ? h("p", { class: "muted", style: { marginBottom: "1rem" } }, "Replays only raise your best score. XP is earned once per lesson.") : null,
         !NDC.auth.user ? h("div", { class: "card px", style: { maxWidth: "30rem", margin: "0 auto 1rem", textAlign: "left" } },
-          h("p", null, "Your progress is saved on this device. Sign in to keep it everywhere and show up on the club's roster."),
+          h("p", null, "Your progress is saved on this device. Sign in to keep it everywhere."),
           h("button", { class: "btn small", type: "button", style: { marginTop: "0.8rem" }, onclick: NDC.openSignIn }, "Sign in")) : null));
       setFoot("", "", "");
       secondary.hidden = false;

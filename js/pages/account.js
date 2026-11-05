@@ -21,8 +21,8 @@
       const cs = G.courseStats(state, c);
       return h("div", { style: { padding: "0.6rem 0", borderBottom: "1px dashed var(--line)" } },
         h("div", { class: "prof-row", style: { padding: 0 } },
-          h("span", { class: "nm", style: { color: c.hex } }, c.name),
-          h("div", { class: "bar px", style: { "--n": "2px" } }, h("i", { style: { width: Math.round(cs.pct * 100) + "%", background: c.hex } })),
+          h("span", { class: "nm", style: { color: c.color } }, c.name),
+          h("div", { class: "bar px", style: { "--n": "2px" } }, h("i", { style: { width: Math.round(cs.pct * 100) + "%", background: c.color } })),
           h("span", { class: "pct" }, Math.round(cs.pct * 100) + "%")),
         h("p", { class: "muted", style: { fontSize: "0.88rem", marginTop: "0.3rem" } },
           `${cs.rank} · ${cs.done}/${cs.total} lessons` + (cs.done ? ` · ${Math.round(cs.acc * 100)}% right first try` : "") + (cs.skipped ? ` · ${cs.skipped} skipped` : "")));
@@ -49,7 +49,7 @@
       const table = h("table", { class: "officer-table" }, h("thead", null, h("tr", null, ["Member", "Level", "XP", "Lessons", "Streak", "Last active"].map((t) => h("th", null, t)))));
       const tb = h("tbody");
       r.rows.forEach((row) => {
-        const st = G.stats(Object.assign({ done: {}, skipped: {}, days: {}, equipped: {}, answers: { total: 0, correct: 0 } }, row.data || {}));
+        const st = G.stats(Object.assign({ done: {}, skipped: {}, days: {}, answers: { total: 0, correct: 0 } }, row.data || {}));
         tb.append(h("tr", null, h("td", null, row.display_name || row.email), h("td", null, st.level), h("td", null, st.xp), h("td", null, st.lessons), h("td", null, st.streak), h("td", null, row.updated_at ? new Date(row.updated_at).toLocaleDateString() : "-")));
       });
       table.append(tb); host.append(h("div", { style: { overflowX: "auto" } }, table));
@@ -78,15 +78,18 @@
     const nameInput = h("input", { class: "field", type: "text", maxlength: 40, value: state.name || "", placeholder: fallbackName, "aria-label": "Display name",
       oninput: () => { NDC.store.update((s) => { s.name = nameInput.value.trim(); }); titleEl.textContent = nameInput.value.trim() || fallbackName; } });
 
-    const top = h("div", { class: "acct-top" },
+    const kitCard = h("div", { class: "acct-knight px" },
+      h("div", { class: "sprite" }, NDC.knight.node(NDC.store.equipped())));
+    const top = h("div", { class: "acct-top", "data-reveal": "" },
+      kitCard,
       h("div", null, titleEl,
         h("p", { class: "rank-line" }, `Level ${stats.level} ${G.title(stats.level)} · ${stats.xp} XP`),
         h("div", { class: "bar px", style: { maxWidth: "26rem" } }, h("i", { style: { width: Math.round(stats.levelPct * 100) + "%" } })),
         h("p", { class: "muted", style: { marginTop: "0.5rem" } }, `${stats.levelSpan - stats.levelInto} XP to level ${stats.level + 1}`),
         h("div", { class: "row", style: { marginTop: "1rem", gap: "0.7rem" } },
-          h("span", { class: "chip flame px" }, `${stats.streak} day streak`),
-          h("span", { class: "chip px" }, `${stats.lessons} lessons`),
-          h("span", { class: "chip px" }, `${stats.badges.length}/${G.badges.length} badges`))));
+          h("span", { class: "chip flame" }, `${stats.streak} day streak`),
+          h("span", { class: "chip" }, `${stats.lessons} lessons`),
+          h("span", { class: "chip" }, `${stats.badges.length}/${G.badges.length} badges`))));
 
     const settings = h("div", null,
       h("div", { class: "form-row" }, h("label", { for: "dn" }, "Display name"), nameInput),
@@ -100,16 +103,17 @@
         h("button", { class: "btn small bad", type: "button", onclick: () => {
           const scrim = h("div", { class: "scrim", onclick: (e) => { if (e.target === scrim) scrim.remove(); } },
             h("div", { class: "modal px", role: "dialog", "aria-modal": "true" }, h("h3", null, "Reset all progress?"),
-              h("p", { class: "muted", style: { margin: "0.7rem 0 1.4rem" } }, "This erases your XP, lessons, streak and gear on this account. It can't be undone."),
+              h("p", { class: "muted", style: { margin: "0.7rem 0 1.4rem" } }, "This erases your XP, lessons and streak on this account. It can't be undone."),
               h("div", { class: "actions" }, h("button", { class: "btn bad block", type: "button", onclick: () => { NDC.store.reset(); scrim.remove(); NDC.route(); } }, "Erase everything"), h("button", { class: "btn block", type: "button", onclick: () => scrim.remove() }, "Cancel"))));
           document.body.append(scrim);
         } }, "Reset progress")));
 
     const card = (cls, title, content) => h("section", { class: "card px " + cls }, h("h2", null, title), content);
     return h("div", { class: "page" }, h("div", { class: "wrap" }, top,
-      h("div", { class: "acct-grid" },
-        card("c7", "Proficiency", proficiency(state)),
-        card("c5", "Badges", badgesGrid(stats)),
+      h("div", { class: "acct-grid", "data-stagger": "" },
+        card("c4", "Your knight", h("ul", { class: "kit-list" }, [["Crown", "Helm"], ["Starlight shield", "Shield"], ["Steel sword", "Weapon"], ["Black cape", "Cape"], ["Obsidian armor", "Armor"]].map(([n, s]) => h("li", null, h("span", null, n), h("span", null, s))))),
+        card("c8", "Proficiency", proficiency(state)),
+        card("c12", "Badges", badgesGrid(stats)),
         card("c12", "Activity", h("div", null, heat(state.days), h("p", { class: "muted", style: { marginTop: "0.6rem", fontSize: "0.9rem" } }, `${stats.activeDays} active days · longest streak ${stats.bestStreak}`))),
         card(NDC.auth.officer ? "c6" : "c12", "Settings", settings),
         NDC.auth.officer ? card("c6", "Officer view", officerPanel()) : null)));

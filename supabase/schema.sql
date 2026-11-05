@@ -31,6 +31,7 @@ create policy "officers read all"    on public.progress for select using (public
 
 -- Officers' knights (run this part once). Only an officer's display name and equipped gear are stored here,
 -- so the Members page can show each officer's real knight to everyone. Only officers can write to it.
+-- No longer used: the Members page and per-person gear are gone. Safe to run `drop table if exists public.looks;` once nothing needs it.
 create table if not exists public.looks (
   user_id uuid primary key references auth.users(id) on delete cascade,
   name text not null,

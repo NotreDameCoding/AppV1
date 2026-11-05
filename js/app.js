@@ -1,8 +1,8 @@
-/* App shell: top bar, sign-in, and a tiny hash router (#/learn, #/members, ...). */
+/* App shell: top bar, sign-in, and a tiny hash router (#/learn, #/projects, ...). */
 (function () {
   const h = NDC.h;
   const cfg = NDC.config;
-  const LINKS = [["learn", "Learn"], ["members", "Members"], ["knight", "Knight"], ["dungeon", "Dungeon"], ["forge", "Forge"], ["meetings", "Meetings"], ["projects", "Projects"], ["account", "Account"]];
+  const LINKS = [["learn", "Learn"], ["projects", "Projects"], ["dungeon", "Dungeon"], ["account", "Account"]];
   let current = null; // { destroy }
   let navEl, rightEl, appEl;
 
@@ -52,13 +52,28 @@
   NDC.openSignIn = openSignIn;
 
   /* ---------- top bar ---------- */
+  const MARK = '<svg class="mark" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3l11 4v8c0 7-4.6 11.6-11 14C9.6 26.6 5 22 5 15V7z"/><path d="M13 12l-3.5 4 3.5 4M19 12l3.5 4-3.5 4"/></svg>';
+  const SUN_MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="moon" d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/><g class="sun"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></svg>';
+  function themeBtn() {
+    const dark = () => document.documentElement.dataset.theme === "dark";
+    const b = h("button", { class: "theme-btn", type: "button", onclick: () => {
+      const next = dark() ? "light" : "dark";
+      if (next === "dark") document.documentElement.dataset.theme = "dark"; else delete document.documentElement.dataset.theme;
+      try { localStorage.setItem("ndc.theme", next); } catch (e) {}
+      b.setAttribute("aria-label", next === "dark" ? "Switch to light theme" : "Switch to dark theme");
+      if (NDC.backdrop) NDC.backdrop.refresh();
+    } }, NDC.svg(SUN_MOON));
+    b.setAttribute("aria-label", dark() ? "Switch to light theme" : "Switch to dark theme");
+    return b;
+  }
+
   function renderRight() {
     NDC.clear(rightEl);
     const st = NDC.store.stats();
     const user = NDC.auth.user;
-    if (st.streak > 0) rightEl.append(h("span", { class: "chip flame px", title: "Day streak" }, st.streak + "d"));
-    rightEl.append(h("span", { class: "chip px", title: "Experience points" }, st.xp + " XP"));
-    rightEl.append(h("span", { class: "chip px", title: "Coins" }, st.coins + " coins"));
+    if (st.streak > 0) rightEl.append(h("span", { class: "chip flame", title: "Day streak" }, st.streak + "d"));
+    rightEl.append(h("span", { class: "chip xp-chip", title: "Experience points" }, st.xp + " XP"));
+    rightEl.append(themeBtn());
     if (!user) {
       rightEl.append(h("button", { class: "btn primary small", type: "button", onclick: openSignIn }, "Sign in"));
       return;
@@ -79,7 +94,7 @@
     const links = h("nav", { class: "nav-links", "aria-label": "Main" }, LINKS.map(([k, label]) => h("a", { href: "#/" + k, "aria-current": active === k ? "page" : null, onclick: () => navEl.classList.remove("open") }, label)));
     rightEl = h("div", { class: "nav-right" });
     navEl.append(h("div", { class: "wrap" },
-      h("a", { class: "brand", href: "#/" }, NDC.knight.head({ helm: "iron" }), h("span", null, cfg.clubName)),
+      h("a", { class: "brand", href: "#/", "aria-label": cfg.clubName + " home" }, NDC.svg(MARK), h("span", null, cfg.clubName)),
       links, rightEl,
       h("button", { class: "nav-toggle", type: "button", "aria-label": "Menu", onclick: () => navEl.classList.toggle("open") }, "Menu")));
     renderRight();
@@ -90,20 +105,17 @@
     "": () => NDC.pages.home(),
     learn: (a) => NDC.pages.learn(a[0]),
     lesson: (a) => NDC.pages.lesson(a[0]),
-    members: () => NDC.pages.members(),
-    knight: () => NDC.pages.knight(),
     dungeon: () => NDC.pages.dungeon(),
-    forge: () => NDC.pages.forge(),
-    meetings: () => NDC.pages.meetings(),
     projects: () => NDC.pages.projects(),
     account: () => NDC.pages.account(),
   };
-  const TITLES = { "": "", learn: "Learn", lesson: "Lesson", members: "Members", knight: "Knight", dungeon: "Dungeon", forge: "Forge", meetings: "Meetings", projects: "Projects", account: "Account" };
+  const TITLES = { "": "", learn: "Learn", lesson: "Lesson",  dungeon: "Dungeon",  projects: "Projects", account: "Account" };
 
   function route() {
     const parts = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
     const key = parts[0] || "";
     const fn = ROUTES[key] || ROUTES[""];
+    if (NDC.motion) NDC.motion.teardown();
     if (current && current.destroy) { try { current.destroy(); } catch (e) {} }
     current = null;
     document.querySelectorAll(".scrim").forEach((s) => s.remove());
@@ -112,6 +124,7 @@
     const el = res && res.el ? res.el : res;
     current = res && res.el ? res : null;
     appEl.append(el);
+    if (NDC.motion) NDC.motion.apply(el);
     document.title = (TITLES[key] ? TITLES[key] + " · " : "") + cfg.clubName;
     document.body.classList.toggle("in-lesson", key === "lesson");
     renderNav();
@@ -136,6 +149,6 @@
     window.addEventListener("hashchange", route);
     // keep the top bar's XP and avatar fresh without redrawing the page
     NDC.bus.on("progress", () => { if (rightEl) renderRight(); });
-    NDC.bus.on("auth", () => { renderRight(); if (/^#\/(account|knight|dungeon)/.test(location.hash)) route(); });
+    NDC.bus.on("auth", () => { renderRight(); if (/^#\/(account|dungeon)/.test(location.hash)) route(); });
   };
 })();

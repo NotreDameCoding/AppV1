@@ -3,7 +3,7 @@
 (function () {
   const KEY = "ndc.hub.v1.";
   const mem = {}; // fallback if localStorage is blocked
-  const blank = () => ({ v: 1, name: "", done: {}, skipped: {}, days: {}, equipped: {}, bought: {}, game: { xp: 0, best: 0, kills: 0 }, answers: { total: 0, correct: 0 }, updated: 0 });
+  const blank = () => ({ v: 1, name: "", done: {}, skipped: {}, days: {}, game: { xp: 0, best: 0, kills: 0 }, answers: { total: 0, correct: 0 }, updated: 0 });
 
   let identity = "guest";
   let state = blank();
@@ -33,10 +33,8 @@
       }
       Object.assign(out.skipped, src.skipped || {});
       for (const [k, v] of Object.entries(src.days || {})) out.days[k] = { lessons: Math.max(v.lessons || 0, (out.days[k] || {}).lessons || 0) };
-      Object.assign(out.equipped, src.equipped || {});
-      Object.assign(out.bought, src.bought || {});
       const sg = src.game || {};
-      out.game = { xp: Math.max(out.game.xp, sg.xp || 0), best: Math.max(out.game.best, sg.best || 0), kills: Math.max(out.game.kills, sg.kills || 0) };
+      out.game = { xp: 0, best: Math.max(out.game.best, sg.best || 0), kills: Math.max(out.game.kills, sg.kills || 0) };
       out.answers = { total: Math.max(out.answers.total, (src.answers || {}).total || 0), correct: Math.max(out.answers.correct, (src.answers || {}).correct || 0) };
     }
     for (const id of Object.keys(out.done)) delete out.skipped[id];
@@ -48,7 +46,7 @@
     get: () => state,
     identity: () => identity,
     stats: () => NDC.game.stats(state),
-    equipped() { return NDC.game.equippedFor(state); },
+    equipped() { return NDC.game.LOOK; },
     setRemote(r) { remote = r; },
     getRemote() { return remote || { push: async () => {} }; },
     /* switch to another person's save. If the person is new, they inherit what they did as a guest. */
@@ -89,16 +87,6 @@
       S.update((s) => { all.slice(0, i).forEach((l) => { if (!s.done[l.id]) s.skipped[l.id] = true; }); });
     },
 
-    /* spend coins on a piece of gear and wear it. Returns false if it can't be bought. */
-    buy(slot, id) {
-      const g = NDC.game.gear[slot].find((x) => x.id === id);
-      const key = slot + ":" + id;
-      if (!g || state.bought[key]) return false;
-      if (S.stats().coins < g.price) return false;
-      S.update((s) => { s.bought[key] = true; s.equipped = Object.assign({}, s.equipped, { [slot]: id }); });
-      return true;
-    },
-
     /* called when a lesson finishes. Returns what changed so the finish screen can celebrate it. */
     completeLesson(lessonId, result) {
       const before = S.stats();
@@ -117,7 +105,6 @@
       return {
         first, acc, xpGained: after.xp - before.xp,
         levelUp: after.level > before.level ? after.level : 0,
-        coinsGained: after.coinsEarned - before.coinsEarned,
         newBadges: after.badges.filter((b) => !before.badges.includes(b)),
         stats: after,
       };
