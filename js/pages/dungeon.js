@@ -1,7 +1,7 @@
 /* The Dungeon: a top-down fighting game for the knight, drawn at a low resolution in an angled overhead view.
-   Move: WASD / arrows. Swing: J or Space (or left click). Dash: L, E or Shift. Whirlwind (from floor 6): K or Q (or right click).
+   Move: WASD / arrows. Swing: J or Space (or left click). Dash: L, E or Shift. Sword Beam (floor 3+): I or R. Whirlwind (floor 6+): K or Q. Thunder (floor 9+): O or F.
    Ten floors: the castle (1-5, ending at the Goblin King) and under the castle (6-10, ending at Cinderwing the dragon).
-   Clearing a floor lets you pick a blessing that lasts for the rest of the run. Saved: best floor, kills, stars and
+   Clearing a floor lets you pick an enchant that lasts for the rest of the run. A new ability unlocks on floors 3, 6 and 9. Saved: best floor, kills, stars and
    best time per floor, and how many of each monster you've beaten (the bestiary). Room art is in dungeon-art.js. */
 (function () {
   const h = NDC.h, G = NDC.game, ART = NDC.dungeonArt;
@@ -9,9 +9,16 @@
   const TAU = Math.PI * 2;
   const KEYS = {
     left: ["a", "arrowleft"], right: ["d", "arrowright"], up: ["w", "arrowup"], down: ["s", "arrowdown"],
-    swing: [" ", "j"], spin: ["k", "q"], dash: ["l", "e", "shift"],
+    swing: [" ", "j"], dash: ["l", "e", "shift"], beam: ["i", "r"], spin: ["k", "q"], thunder: ["o", "f"],
   };
-  const SPIN_FLOOR = 6, SPIN_COST = 55, SPIN_CD = 3.6;
+  /* a new ability every three floors */
+  const ABILITIES = [
+    { id: "beam", floor: 3, cost: 24, cd: 1.3, name: "Sword Beam", key: "I", keys: "I or R", c: "#ffe08a", how: "fire a slash that flies through monsters" },
+    { id: "spin", floor: 6, cost: 55, cd: 3.6, name: "Whirlwind", key: "K", keys: "K or Q", c: "#6ef0e0", how: "spin and hit everything around you" },
+    { id: "thunder", floor: 9, cost: 60, cd: 8, name: "Thunder", key: "O", keys: "O or F", c: "#9fd8ff", how: "call lightning down on up to four monsters" },
+  ];
+  const ABIL = Object.fromEntries(ABILITIES.map((a) => [a.id, a]));
+  const SPIN_FLOOR = ABIL.spin.floor, SPIN_COST = ABIL.spin.cost, SPIN_CD = ABIL.spin.cd;
 
   /* ---------- floors ---------- */
   const day = () => NDC.isLight();
@@ -19,9 +26,9 @@
   const FLOORS = [null,
     { waves: [["s", "s", "s"], ["s", "s", "g"], ["S", "g", "g"]], pillars: [[130, 150], [350, 150]] },
     { waves: [["g", "g", "s", "s", "s"], ["a", "a", "g"], ["S", "S", "a", "g", "g"]], pillars: [[120, 140], [360, 140], [240, 210]] },
-    { waves: [["g", "g", "g", "a"], ["b", "b", "b", "g", "g"], ["a", "a", "g", "g", "g", "S"]], pillars: [[240, 190]], fire: true },
-    { waves: [["b", "b", "b", "b", "a", "a"], ["B", "g", "g", "g"], ["B", "a", "a", "b", "b", "b", "g", "g"]], pillars: [[110, 150], [370, 150]] },
-    { waves: [["g", "g", "g", "a", "a"], ["B", "b", "b", "b", "b"], ["K"]], pillars: [[100, 160], [380, 160]] },
+    { waves: [["g", "g", "g", "a"], ["b", "b", "b", "g", "n"], ["a", "a", "g", "g", "g", "S"]], pillars: [[240, 190]], fire: true },
+    { waves: [["b", "b", "b", "b", "a", "a"], ["B", "g", "g", "g"], ["B", "a", "n", "b", "b", "b", "g", "n"]], pillars: [[110, 150], [370, 150]] },
+    { waves: [["g", "g", "n", "a", "a"], ["B", "b", "b", "b", "n"], ["K"]], pillars: [[100, 160], [380, 160]] },
     { waves: [["z", "z", "z"], ["z", "z", "x", "x"], ["Z", "z", "z", "x"]], pillars: [[120, 150], [360, 150]] },
     { waves: [["z", "z", "x", "m"], ["Z", "Z", "x", "x"], ["m", "m", "Z", "z", "z", "x"]], pillars: [[110, 140], [370, 140], [240, 222]] },
     { waves: [["o", "o", "o", "o"], ["O", "p", "p", "o"], ["O", "O", "p", "z", "z"]], pillars: [[120, 128], [360, 128]] },
@@ -32,7 +39,7 @@
   const PAR = [0, 45, 55, 60, 70, 95, 55, 70, 70, 85, 170];
   const BASE = {
     s: { hp: 2, r: 6, xp: 3, name: "slime" }, S: { hp: 5, r: 9, xp: 6, name: "bigslime" }, g: { hp: 6, r: 7, xp: 10, name: "goblin" },
-    a: { hp: 4, r: 6, xp: 12, name: "archer" }, b: { hp: 2, r: 5, xp: 6, name: "bat" }, B: { hp: 20, r: 11, xp: 28, name: "brute" }, K: { hp: 120, r: 15, xp: 120, name: "king" },
+    a: { hp: 4, r: 6, xp: 12, name: "archer" }, n: { hp: 5, r: 7, xp: 14, name: "bomber" }, b: { hp: 2, r: 5, xp: 6, name: "bat" }, B: { hp: 20, r: 11, xp: 28, name: "brute" }, K: { hp: 120, r: 15, xp: 120, name: "king" },
     z: { hp: 7, r: 7, xp: 12, name: "skeleton" }, x: { hp: 5, r: 6, xp: 12, name: "bonethrower" }, Z: { hp: 22, r: 9, xp: 30, name: "knight" },
     m: { hp: 6, r: 6, xp: 18, name: "mage" }, o: { hp: 4, r: 7, xp: 6, name: "glob" }, O: { hp: 14, r: 12, xp: 20, name: "megaglob" },
     p: { hp: 7, r: 8, xp: 14, name: "spitter" }, i: { hp: 4, r: 5, xp: 10, name: "imp" }, w: { hp: 10, r: 8, xp: 16, name: "whelp" },
@@ -45,6 +52,7 @@
     ["bigslime", "S", "Big slime", "Splits in two when it pops."],
     ["goblin", "g", "Goblin", "Raises its club before it lunges. Dash sideways."],
     ["archer", "a", "Goblin archer", "A red line shows where the arrow will fly."],
+    ["bomber", "n", "Goblin bomber", "Lobs bombs at you. Get out of the red circle before the fuse runs out."],
     ["bat", "b", "Bat", "Circles, then dives. Swing as it comes in."],
     ["brute", "B", "Goblin brute", "Slow, but the slam covers the red circle."],
     ["king", "K", "The Goblin King", "Charges in a line and slams a shockwave. Dash through the ring."],
@@ -52,31 +60,223 @@
     ["bonethrower", "x", "Bone thrower", "Throws spinning bones from across the room."],
     ["knight", "Z", "Skeleton knight", "Its shield stops hits from the front. Hit it from behind, right after its slam, or with Whirlwind."],
     ["mage", "m", "Skeleton mage", "Its orbs follow you. When it flickers it's about to teleport. Hit it to stop it."],
-    ["glob", "o", "Glob", "Leaves acid where it lands. Don't stand in the green."],
+    ["glob", "o", "Glob", "Leaves hot orange goo where it lands. Don't stand in it."],
     ["megaglob", "O", "Mega glob", "Bursts into three globs."],
-    ["spitter", "p", "Spitter glob", "Lobs acid at where you're standing. Watch for the circle."],
+    ["spitter", "p", "Spitter glob", "Lobs goo at where you're standing. Watch for the circle."],
     ["imp", "i", "Fire imp", "Fast and small. Throws fireballs."],
     ["whelp", "w", "Dragon whelp", "A baby dragon. Dives like a bat, hits like a brute."],
     ["dragon", "D", "Cinderwing", "Breathes fire in a cone, takes to the sky, and comes down hard."],
   ];
 
-  /* ---------- blessings (picked after each floor, last for the rest of the run) ---------- */
+  /* ---------- enchants (pick one after each floor; they last for the rest of the run) ---------- */
   const PERKS = [
-    { id: "edge", name: "Sharpened edge", desc: "+20% sword damage", c: "#e5484d", g: "D" },
-    { id: "quick", name: "Quick hands", desc: "Swing 15% faster", c: "#ffd25a", g: "Q" },
-    { id: "heart", name: "Stout heart", desc: "+30 max health, and heal 30 now", c: "#ff7d8a", g: "H" },
-    { id: "wind", name: "Second wind", desc: "Stamina refills 35% faster", c: "#4f9cf0", g: "W" },
-    { id: "leech", name: "Leech blade", desc: "Heal 1 health every hit", c: "#b06aff", g: "L", once: true },
-    { id: "reach", name: "Long reach", desc: "+15% sword reach", c: "#9fd8ff", g: "R" },
-    { id: "boots", name: "Swift boots", desc: "Move 12% faster", c: "#6ad48a", g: "B" },
-    { id: "shadow", name: "Shadow step", desc: "Dash costs half the stamina", c: "#8a93b0", g: "S", once: true },
-    { id: "lucky", name: "Lucky find", desc: "Hearts drop twice as often", c: "#ff4d6a", g: "+", once: true },
-    { id: "thorns", name: "Thorn mail", desc: "Monsters that hit you take 8 damage", c: "#9bd05a", g: "T" },
-    { id: "exec", name: "Executioner", desc: "The third swing of a combo does +50% more", c: "#f4b942", g: "E" },
-    { id: "burn", name: "Ember edge", desc: "Hits set monsters on fire", c: "#ff8a3d", g: "F", once: true },
-    { id: "crit", name: "Keen eye", desc: "+12% chance of a double-damage hit", c: "#fff2a0", g: "C" },
-    { id: "storm", name: "Storm spin", desc: "Whirlwind recharges 35% faster and hits harder", c: "#6ef0e0", g: "*", spin: true },
+    { id: "edge", name: "Sharpened Edge", desc: "+20% sword damage", c: "#ff6a6a", r: "common" },
+    { id: "quick", name: "Quick Hands", desc: "Swing 15% faster", c: "#ffd25a", r: "common" },
+    { id: "heart", name: "Stout Heart", desc: "+30 max health, and heal 30 now", c: "#ff5d73", r: "common" },
+    { id: "wind", name: "Second Wind", desc: "Stamina refills 35% faster", c: "#6aaeff", r: "common" },
+    { id: "reach", name: "Long Reach", desc: "+15% sword reach", c: "#9fd8ff", r: "common" },
+    { id: "boots", name: "Swift Boots", desc: "Move 12% faster", c: "#6ad48a", r: "common" },
+    { id: "leech", name: "Vampire Blade", desc: "Heal 1 health every hit", c: "#e5304a", r: "rare", once: true },
+    { id: "shadow", name: "Shadow Step", desc: "Dashing costs half the stamina", c: "#a99ad8", r: "rare", once: true },
+    { id: "lucky", name: "Four-Leaf Luck", desc: "Hearts drop twice as often", c: "#4fd06a", r: "rare", once: true },
+    { id: "thorns", name: "Thorn Mail", desc: "Monsters that hit you take 8 damage", c: "#8ad04a", r: "rare" },
+    { id: "crit", name: "Hawk Eye", desc: "+12% chance to land a double-damage hit", c: "#ffb04a", r: "rare" },
+    { id: "exec", name: "Executioner", desc: "Your combo finisher does +50% damage", c: "#ff8a3d", r: "epic" },
+    { id: "burn", name: "Ember Edge", desc: "Every hit sets monsters on fire", c: "#ff7a1a", r: "epic", once: true },
+    { id: "storm", name: "Storm Spin", desc: "Whirlwind recharges 35% faster and hits harder", c: "#6ef0e0", r: "epic", spin: true },
   ];
+  const RARITY = { common: { label: "Common", c: "#b9c4dc", w: 1 }, rare: { label: "Rare", c: "#c08aff", w: 0.7 }, epic: { label: "Epic", c: "#ffcf5a", w: 0.4 } };
+  /* 12x12 pixel icons: k outline, a main color, b lighter, c highlight, d darker, s steel, g gold, w wood */
+  const ICONS = {"edge": ["..........kk",
+    ".........ksk",
+    "........kssk",
+    ".......kssk.",
+    "......kssk..",
+    ".....kssk...",
+    ".kk.kssk....",
+    ".kgkssk.....",
+    "..kgsk......",
+    ".kwkgk......",
+    "kwk.kk......",
+    "kk.........."],
+    "quick": ["......kkkk..",
+    ".....kaaak..",
+    "....kaaak...",
+    "...kabak....",
+    "..kaaakkkk..",
+    ".kaaaaaaak..",
+    ".kkkkaaak...",
+    "....kaak....",
+    "...kaak.....",
+    "..kaak......",
+    "..kak.......",
+    "..kk........"],
+    "heart": ["............",
+    ".kkkk..kkkk.",
+    "kaaaakkaaaak",
+    "kacaaaaaaaak",
+    "kacaaaaaaaak",
+    "kaaaaaaaaaak",
+    ".kaaaaaaaak.",
+    "..kaaaaaak..",
+    "...kaaaak...",
+    "....kaak....",
+    ".....kk.....",
+    "............"],
+    "wind": ["............",
+    "...kkkkkk...",
+    "..kaaaaaak..",
+    ".kak.kkkkak.",
+    ".kak....kak.",
+    ".kak.kk.kak.",
+    ".kak.kak.ak.",
+    ".kak..kaak..",
+    ".kaak..kk...",
+    "..kaaakkkk..",
+    "...kkaaaak..",
+    ".....kkkk..."],
+    "leech": [".....kk.....",
+    "....kaak....",
+    "....kaak....",
+    "...kaaaak...",
+    "...kaaaak...",
+    "..kaacaaak..",
+    "..kacaaaak..",
+    ".kacaaaaaak.",
+    ".kaaaaaaaak.",
+    ".kdaaaaaadk.",
+    "..kddaaddk..",
+    "...kkkkkk..."],
+    "reach": ["..........kk",
+    ".........kck",
+    "........kaak",
+    "........kak.",
+    ".......kwk..",
+    "......kwk...",
+    ".....kwk....",
+    "....kwk.....",
+    "...kwk......",
+    "..kwk.......",
+    ".kwk........",
+    ".kk........."],
+    "boots": ["............",
+    "...kkkkk....",
+    "...kaaak....",
+    "...kabak....",
+    "...kaaak....",
+    "...kaaak....",
+    "...kaaakkk..",
+    "..kaaaaaaak.",
+    "..kaaaaaaaak",
+    ".kddddddddk.",
+    "..kkkkkkkk..",
+    "............"],
+    "shadow": ["....kkkk....",
+    "...kaaaak...",
+    "..kaaaaaak..",
+    "..kacaacak..",
+    "..kaaaaaak..",
+    "..kaaaaaak..",
+    ".kaaaaaaaak.",
+    ".kaaaaaaaak.",
+    ".kaaaaaaaak.",
+    ".kaakaakaak.",
+    ".kk.kk.kk.k.",
+    "............"],
+    "lucky": ["............",
+    "..kk....kk..",
+    ".kaak..kaak.",
+    ".kaaakkaaak.",
+    "..kaaaaaak..",
+    "...kaaaak...",
+    "..kaaaaaak..",
+    ".kaaakkaaak.",
+    ".kaak.kkaak.",
+    "..kk.kd.kk..",
+    ".....kd.....",
+    ".....kk....."],
+    "thorns": [".....k......",
+    "..k..k..k...",
+    "...kkakk....",
+    ".kkaaaaakk..",
+    "...kaaaak...",
+    "kkkaaaaaakkk",
+    "...kaaaak...",
+    ".kkaaaaakk..",
+    "...kkakk....",
+    "..k..k..k...",
+    ".....k......",
+    "............"],
+    "exec": ["....kkkk....",
+    "...kssssk...",
+    "..ksssssk...",
+    "..kssssskk..",
+    "..ksssskwk..",
+    "...kkkkwk...",
+    ".....kwk....",
+    ".....kwk....",
+    "....kwk.....",
+    "....kwk.....",
+    "...kwk......",
+    "...kk......."],
+    "burn": ["......k.....",
+    ".....kak....",
+    "....kaak.k..",
+    "...kaabakak.",
+    "..kaabbaaak.",
+    "..kabbcbaak.",
+    ".kaabccbaak.",
+    ".kabccccbak.",
+    ".kabccccbak.",
+    "..kabccbak..",
+    "...kaaaak...",
+    "....kkkk...."],
+    "crit": ["............",
+    "....kkkk....",
+    "..kkcccckk..",
+    ".kccaaaacck.",
+    "kccakkkaacck",
+    "kcaakkkkaack",
+    "kcaakkkkaack",
+    "kccaakkaacck",
+    ".kccaaaacck.",
+    "..kkcccckk..",
+    "....kkkk....",
+    "............"],
+    "storm": ["kkkkkkkkkkk.",
+    "kaaaaaaaaak.",
+    ".kkkkkkkkk..",
+    "..kaaaaaak..",
+    "...kkkkkk...",
+    "...kaaaak...",
+    "....kkkk....",
+    "....kaak....",
+    "...kaak.....",
+    "...kak......",
+    "....kk......",
+    "............"],
+    "trophy": ["kkkkkkkkkkkk",
+    "kgcgggggggdk",
+    "kgcggggggdk.",
+    "kkgcgggggdkk",
+    "k.kgggggdk.k",
+    "kkkgggggdkkk",
+    "...kgggdk...",
+    "....kgdk....",
+    "....kgdk....",
+    "...kggggk...",
+    "..kgggggdk..",
+    "..kkkkkkkk.."]};
+  const iconCache = {};
+  function iconCanvas(id, scale, color) {
+    const key = id + scale + (color || ""); if (iconCache[key]) return iconCache[key];
+    const rows = ICONS[id] || ICONS.edge, q = PERKS.find((x) => x.id === id), base = color || (q ? q.c : "#f4b942");
+    const mix = NDC.dungeonArt.mix, pal = { k: "#14101c", a: base, b: mix(base, "#ffffff", 0.35), c: mix(base, "#ffffff", 0.8), d: mix(base, "#000000", 0.4), s: "#e8eef8", g: "#f4b942", w: "#8a5a2f" };
+    const cv = document.createElement("canvas"); cv.width = cv.height = 12 * scale; const c = cv.getContext("2d");
+    rows.forEach((row, y) => [...row].forEach((ch, x) => { if (pal[ch]) { c.fillStyle = pal[ch]; c.fillRect(x * scale, y * scale, scale, scale); } }));
+    return (iconCache[key] = cv);
+  }
+  const iconURL = (id, scale, color) => iconCanvas(id, scale, color).toDataURL();
   const perkById = (id) => PERKS.find((q) => q.id === id);
   function mods(perks) {
     const m = { dmg: 1, swing: 1, hp: 0, regen: 1, leech: 0, reach: 1, speed: 1, dash: 1, heart: 1, thorns: 0, fin: 1, burn: 0, crit: 0.06, spinCd: 1, spinDmg: 1 };
@@ -88,10 +288,14 @@
     }
     return m;
   }
-  function offerPerks(have, nextFloor) {
-    const pool = PERKS.filter((q) => !(q.once && have.includes(q.id)) && !(q.spin && nextFloor < SPIN_FLOOR));
-    for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
-    return pool.slice(0, 3);
+  function offerPerks(have, nextFloor) { // three different enchants; rarer ones turn up less often
+    const pool = PERKS.filter((q) => !(q.once && have.includes(q.id)) && !(q.spin && nextFloor < SPIN_FLOOR)), out = [];
+    while (out.length < 3 && pool.length) {
+      let roll = Math.random() * pool.reduce((n, q) => n + RARITY[q.r].w, 0), i = 0;
+      while (roll > RARITY[pool[i].r].w) { roll -= RARITY[pool[i].r].w; i++; }
+      out.push(pool.splice(i, 1)[0]);
+    }
+    return out;
   }
 
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -125,6 +329,9 @@
     slam: () => tone(90, 30, 0.3, "square", 0.08), heal: () => tone(500, 900, 0.15, "sine", 0.05), spin: () => { tone(300, 900, 0.25, "sawtooth", 0.04); tone(600, 200, 0.3, "triangle", 0.03); },
     roar: () => { tone(140, 50, 0.7, "sawtooth", 0.08); tone(90, 40, 0.8, "square", 0.05); }, fire: () => tone(220, 90, 0.2, "sawtooth", 0.03),
     perk: () => { tone(600, 1200, 0.18, "sine", 0.05); tone(900, 1500, 0.22, "triangle", 0.03); },
+    beam: () => { tone(900, 1800, 0.12, "sawtooth", 0.03); tone(400, 800, 0.1, "triangle", 0.03); },
+    thunder: () => { tone(80, 30, 0.6, "sawtooth", 0.08); tone(1600, 200, 0.3, "square", 0.03); },
+    win: () => { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, f * 1.01, 0.25, "square", 0.05), i * 130)); },
   };
 
   const vignette = (() => {
@@ -180,14 +387,15 @@
       const hp = carry.hp ? Math.min(maxHp, carry.hp) : maxHp;
       const p = {
         x: W / 2, y: BOT - 36, vx: 0, vy: 0, kx: 0, ky: 0, r: 7, dir: -Math.PI / 2, hp, maxHp, st: maxSt, maxSt, stWait: 0,
-        speed: 100 * (1 + L.speed) * m.speed, swing: null, combo: 0, comboT: 0, queued: false, spin: null, spinCd: 0,
+        speed: 100 * (1 + L.speed) * m.speed, swing: null, combo: 0, comboT: 0, queued: false, spin: null, spinCd: 0, cd: { beam: 0, thunder: 0 },
         dash: 0, dashCd: 0, dashDir: 0, stun: 0, inv: 0, flash: 0, walk: 0, L: Object.assign({}, L, { weapon }), m,
       };
       run = {
         floor, p, carry, perks: carry.perks.slice(), day: day(), theme: themeOf(floor), def: FLOORS[floor], enemies: [], spawns: [], shots: [], lobs: [], pools: [], waves: [], fx: [], pickups: [], t: 0,
         waveIdx: 0, waveWait: 0.8, kills: 0, banner: themeOf(floor).name, bannerT: 2.4, freeze: 0, shake: 0, slow: 0, over: false, endT: 0,
         pillars: FLOORS[floor].pillars.map(([x, y]) => ({ x, y, r: 9 })), hitFlash: 0, hpLost: 0, chain: 0, chainT: 0, bestChain: 0,
-        spinOn: floor >= SPIN_FLOOR, tip: floor === SPIN_FLOOR ? 5 : 0,
+        spinOn: floor >= SPIN_FLOOR, ab: Object.fromEntries(ABILITIES.map((a) => [a.id, floor >= a.floor])), pshots: [], bolts: [], boltFlash: 0, party: 0,
+        tip: ABILITIES.some((a) => a.floor === floor) ? 5.5 : 0, tipAb: ABILITIES.find((a) => a.floor === floor),
       };
       if (FLOORS[floor].fire) run.pillars.push({ x: 240, y: 192, r: 10, fire: true });
       bg = ART.build(floor, day());
@@ -233,7 +441,7 @@
         run.stars = 1 + (run.time <= PAR[f] ? 1 : 0) + (run.hpLost <= run.p.maxHp * 0.35 ? 1 : 0);
         run.newBest = !prevT || run.time < prevT; run.newStars = run.stars > prev;
         saveGame((g) => { g.best = Math.max(g.best || 0, f); g.stars[f] = Math.max(g.stars[f] || 0, run.stars); g.times[f] = g.times[f] ? Math.min(g.times[f], run.time) : run.time; });
-        run.banner = "Floor cleared!"; run.bannerT = 2; run.slow = 0.6;
+        run.banner = run.floor === 5 || run.floor === G.FLOORS ? "VICTORY!" : "Floor cleared!"; run.bannerT = 2.4; run.slow = 0.6;
       } else { run.banner = "Knocked out"; run.bannerT = 2; run.slow = 0.8; }
       commit();
       gs = G.gameStats(NDC.store.get()); drawStat(); drawBeasts();
@@ -335,9 +543,25 @@
       reap();
       if (fin) addFx({ k: "ring", x: p.x, y: p.y, t: 0.3, d: 0.3, c: "#fff", s: range });
     }
+    function startBeam() {
+      const p = run.p, a = ABIL.beam;
+      if (!run.ab.beam || p.cd.beam > 0 || p.st < a.cost || p.dash > 0 || p.stun > 0 || p.spin) return;
+      p.st -= a.cost; p.stWait = 0.5; p.cd.beam = a.cd; run.tip = 0;
+      const dir = p.dir, w = p.L.weapon;
+      run.pshots.push({ x: p.x + Math.cos(dir) * 10, y: p.y - 8 + Math.sin(dir) * 8, vx: Math.cos(dir) * 290, vy: Math.sin(dir) * 290, a: dir, life: 0.6, dmg: w.dmg * 0.9, hits: new Set() });
+      SFX.beam(); sparks(p.x + Math.cos(dir) * 12, p.y - 8, "#ffe08a", 6, 90);
+    }
+    function startThunder() {
+      const p = run.p, a = ABIL.thunder;
+      if (!run.ab.thunder || p.cd.thunder > 0 || p.st < a.cost || p.stun > 0) return;
+      const targets = run.enemies.filter((e) => !e.air && e.spawnT <= 0 && e.k !== "bones" && dist(p, e) < 240).sort((x, y) => dist(p, x) - dist(p, y)).slice(0, 4);
+      if (!targets.length) return;
+      p.st -= a.cost; p.stWait = 0.6; p.cd.thunder = a.cd; run.tip = 0; SFX.thunder();
+      targets.forEach((e, i) => run.bolts.push({ e, t: 0.1 + i * 0.12 }));
+    }
     function startSpin() {
       const p = run.p;
-      if (!run.spinOn || p.spin || p.spinCd > 0 || p.st < SPIN_COST || p.dash > 0 || p.stun > 0) return;
+      if (!run.ab.spin || p.spin || p.spinCd > 0 || p.st < SPIN_COST || p.dash > 0 || p.stun > 0) return;
       p.swing = null; p.queued = false;
       p.st -= SPIN_COST; p.stWait = 0.6; p.spin = { t: 0, dur: 0.5, done: 0 }; p.spinCd = SPIN_CD * p.m.spinCd; p.inv = Math.max(p.inv, 0.18);
       SFX.spin(); run.tip = 0;
@@ -359,7 +583,7 @@
       dead.forEach(kill);
       run.enemies = run.enemies.filter((e) => e.hp > 0 && !e.gone);
     }
-    const KILL_COL = { slime: "#4fc47e", bigslime: "#4fc47e", goblin: "#9bd05a", archer: "#6ab04a", bat: "#8a6fb0", brute: "#7a9a4a", king: "#f4cf5a", skeleton: "#e8e0c8", bones: "#e8e0c8", bonethrower: "#e8e0c8", knight: "#b9c2d2", mage: "#b06aff", glob: "#b4e03a", megaglob: "#b4e03a", spitter: "#9ad04a", imp: "#ff6a2a", whelp: "#ff8a3d", dragon: "#ffb03a" };
+    const KILL_COL = { slime: "#4fc47e", bigslime: "#4fc47e", goblin: "#9bd05a", archer: "#6ab04a", bat: "#8a6fb0", brute: "#7a9a4a", king: "#f4cf5a", skeleton: "#e8e0c8", bones: "#e8e0c8", bonethrower: "#e8e0c8", knight: "#b9c2d2", mage: "#b06aff", glob: "#ff9a3d", megaglob: "#ff9a3d", spitter: "#f08a2a", bomber: "#9bd05a", imp: "#ff6a2a", whelp: "#ff8a3d", dragon: "#ffb03a" };
     function kill(e) {
       const col = KILL_COL[e.kind] || "#fff";
       // first death of a skeleton leaves a bone pile that stands back up unless you smash it
@@ -377,7 +601,7 @@
       if (e.k === "O") for (let i = 0; i < 3; i++) { const a = i / 3 * TAU; const m = makeEnemy("o", e.x + Math.cos(a) * 8, e.y + Math.sin(a) * 6, e.scale); m.kx = Math.cos(a) * 110; m.ky = Math.sin(a) * 70; m.spawnT = 0; run.enemies.push(m); }
       const drop = (BOSS[e.k] || e.k === "s" || e.k === "o" || e.k === "bones") ? 0 : 0.13 * run.p.m.heart;
       if (Math.random() < drop) run.pickups.push({ x: e.x, y: e.y, t: 0, k: "heart" });
-      if (BOSS[e.k]) { run.shake = 10; run.slow = 0.8; for (const o of run.enemies) if (o !== e) { o.gone = true; puff(o.x, o.y, KILL_COL[o.kind] || "#fff", 6); } run.spawns = []; run.shots = []; run.lobs = []; }
+      if (BOSS[e.k]) { run.party = 2.2; run.shake = 10; run.slow = 0.8; for (const o of run.enemies) if (o !== e) { o.gone = true; puff(o.x, o.y, KILL_COL[o.kind] || "#fff", 6); } run.spawns = []; run.shots = []; run.lobs = []; }
     }
 
     /* ---------- update ---------- */
@@ -388,6 +612,10 @@
       if (run.bannerT > 0) run.bannerT -= dt;
       if (run.tip > 0 && run.bannerT <= 0) run.tip -= dt;
       run.chainT = Math.max(0, run.chainT - dt);
+      if (run.party > 0) { // fireworks after a boss falls
+        run.party -= dt;
+        if (Math.random() < 0.25) { const x = rnd(80, 400), y = rnd(80, 200), c = ["#f4b942", "#ff5d73", "#6ef0e0", "#c08aff", "#6ad48a"][Math.floor(rnd(0, 5))]; for (let i = 0; i < 18; i++) { const a = i / 18 * TAU; addFx({ k: "spark", x, y, vx: Math.cos(a) * 110, vy: Math.sin(a) * 110 - 30, t: rnd(0.5, 0.8), c }); } }
+      }
       for (const f of run.fx) { f.t -= dt; if (f.k === "spark" || f.k === "puff" || f.k === "flame") { f.x += f.vx * dt; f.y += f.vy * dt; f.vy += (f.k === "spark" ? 220 : -10) * dt; } }
       run.fx = run.fx.filter((f) => f.t > 0);
       run.shake = Math.max(0, run.shake - dt * 22); run.hitFlash = Math.max(0, run.hitFlash - dt);
@@ -405,7 +633,10 @@
         if (ix || iy) { const m = Math.hypot(ix, iy); ix /= m; iy /= m; }
         if (mouse.seen > 0) { mouse.seen -= dt; if (!p.swing || p.swing.t > p.swing.dur * 0.6) p.dir = turn(p.dir, Math.atan2(mouse.y - p.y, mouse.x - p.x), Math.min(1, 18 * dt)); }
 
+        p.cd.beam = Math.max(0, p.cd.beam - dt); p.cd.thunder = Math.max(0, p.cd.thunder - dt);
         if (down("spin")) startSpin();
+        if (down("beam")) startBeam();
+        if (down("thunder")) startThunder();
         // dash
         const dashCost = 20 * p.m.dash;
         if (p.dash <= 0 && down("dash") && p.dashCd <= 0 && p.stun <= 0 && p.st >= dashCost && !p.swing && !p.spin) {
@@ -446,6 +677,27 @@
         if (p.stWait <= 0) p.st = Math.min(p.maxSt, p.st + G.STAMINA_REGEN * p.m.regen * dt);
       }
 
+      // sword beams fly through monsters; thunder lands one bolt at a time
+      for (const b of run.pshots) {
+        b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt;
+        if (Math.random() < 0.7) addFx({ k: "spark", x: b.x + rnd(-3, 3), y: b.y + rnd(-3, 3), vx: 0, vy: -10, t: 0.2, c: "#ffe08a" });
+        for (const e of run.enemies) if (!e.air && e.spawnT <= 0 && !b.hits.has(e) && Math.hypot(e.x - b.x, e.y - 6 - b.y) < e.r + 9) { b.hits.add(e); strike(e, b.dmg, {}); run.freeze = Math.max(run.freeze, 0.03); }
+        if (b.x < LEFT || b.x > RIGHT || b.y < TOP - 6 || b.y > BOT || run.pillars.some((q) => Math.hypot(b.x - q.x, b.y - q.y) < q.r)) b.life = 0;
+      }
+      run.pshots = run.pshots.filter((b) => b.life > 0);
+      for (const bo of run.bolts) {
+        bo.t -= dt;
+        if (bo.t <= 0 && !bo.done) {
+          bo.done = true; const e = bo.e;
+          if (!e.gone && e.hp > 0) { strike(e, p.L.weapon.dmg * 2.4, { spin: true }); if (!BOSS[e.k]) e.stun = Math.max(e.stun, 1.1); }
+          addFx({ k: "bolt", x: e.x, y: e.y, t: 0.28, d: 0.28, seed: Math.random() * 99 }); addFx({ k: "ring", x: e.x, y: e.y, t: 0.3, d: 0.3, c: "#9fd8ff", s: 24 });
+          sparks(e.x, e.y, "#cfe8ff", 14, 140); run.boltFlash = 0.12; run.shake = Math.max(run.shake, 5);
+        }
+      }
+      run.bolts = run.bolts.filter((bo) => !bo.done);
+      run.boltFlash = Math.max(0, run.boltFlash - dt);
+      reap();
+
       // pickups
       for (const q of run.pickups) { q.t += dt; if (Math.hypot(q.x - p.x, q.y - p.y) < 12 && !run.over) { q.got = true; p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.22); text(p.x, p.y - 18, "+Health", "#7dffa8"); SFX.heal(); sparks(q.x, q.y, "#ff7d8a", 8, 60); } }
       run.pickups = run.pickups.filter((q) => !q.got && q.t < 14);
@@ -483,7 +735,8 @@
           l.done = true;
           const hit = Math.hypot(p.x - l.tx, (p.y - l.ty) * 1.6) < l.r + p.r;
           if (hit && !run.over) hurtPlayer(l.tx, l.ty, l.dmg, {});
-          if (l.k === "acid") { run.pools.push({ k: "acid", x: l.tx, y: l.ty, r: l.r, t: 3, dmg: l.pool }); sparks(l.tx, l.ty, "#b4e03a", 10, 90); }
+          if (l.k === "bomb") { sparks(l.tx, l.ty, "#ffb04a", 18, 150); puff(l.tx, l.ty, "#5a5a66", 8); addFx({ k: "ring", x: l.tx, y: l.ty, t: 0.3, d: 0.3, c: "#ffb04a", s: l.r }); run.shake = Math.max(run.shake, 4); SFX.slam(); }
+          else if (l.k === "acid") { run.pools.push({ k: "acid", x: l.tx, y: l.ty, r: l.r, t: 3, dmg: l.pool }); sparks(l.tx, l.ty, "#ff9a3d", 10, 90); }
           else { run.pools.push({ k: "fire", x: l.tx, y: l.ty, r: l.r * 0.8, t: 1.6, dmg: l.pool }); sparks(l.tx, l.ty, "#ffb04a", 14, 130); run.shake = Math.max(run.shake, 3); }
         }
       }
@@ -556,6 +809,20 @@
               e.st = "move"; e.t = 0; e.cd = bone ? 1.7 : 1.9; SFX.arrow();
               if (bone) { shoot("bone", ang, 135, 10 * sc); if (run.floor >= 8) shoot("bone", ang + 0.25, 135, 10 * sc); }
               else shoot("arrow", ang, 150, 10 * sc);
+            }
+          }
+          break;
+        }
+        case "n": {
+          if (e.st === "move") {
+            e.t += dt;
+            if (d < 110) mv(-48); else if (d > 180) mv(44); else mv(20, ang - Math.PI / 2 * (Math.sin(e.t * 0.8) > 0 ? 1 : -1));
+            if (e.cd <= 0 && d < 240) { e.st = "wind"; e.t = 0; }
+          } else if (e.st === "wind") {
+            e.t += dt;
+            if (e.t > 0.7) {
+              e.st = "move"; e.t = 0; e.cd = 2.4; SFX.arrow();
+              run.lobs.push({ k: "bomb", x0: e.x, y0: e.y - 10, tx: clamp(p.x + p.vx * 0.3, LEFT + 10, RIGHT - 10), ty: clamp(p.y + p.vy * 0.3, TOP + 10, BOT - 10), t: 0, dur: 1.15, r: 24, dmg: 16 * sc });
             }
           }
           break;
@@ -736,9 +1003,9 @@
       const big = e.k === "S" || e.k === "O", sq = e.squash || 0, s = e.k === "O" ? 1.75 : big ? 1.45 : 1;
       const glob = e.k === "o" || e.k === "O";
       const w = (14 + sq * 3) * s, hh = (10 - sq * 3) * s, x = e.x - w / 2, y = e.y - hh + 3;
-      const body = e.flash > 0 ? "#fff" : glob ? "#b4e03a" : "#4fc47e", dk = glob ? "#6a9a1a" : "#2f8f56", hi = glob ? "#eaff9a" : "#9bffc4";
+      const body = e.flash > 0 ? "#fff" : glob ? "#ff9a3d" : "#4fc47e", dk = glob ? "#c4561a" : "#2f8f56", hi = glob ? "#ffd8a0" : "#9bffc4";
       shadow(e.x, e.y + 3, w / 2);
-      R(OUT, x - 1, y - 1, w + 2, hh + 2); R(body, x, y, w, hh); R(body, x + 2 * s, y - 2 * s, w - 4 * s, 2 * s);
+      R(body, x, y, w, hh); R(body, x + 2 * s, y - 2 * s, w - 4 * s, 2 * s);
       R(dk, x, y + hh - 3, w, 3); R(hi, x + 2 * s, y + 1, 4 * s, 2);
       if (glob) { R(hi, x + w * 0.6, y + hh * 0.55, 2, 2); R(dk, x + w * 0.3, y + hh * 0.7, 2, 1); }
       R(OUT, x + w * 0.28, y + hh * 0.35, 2, 3 * s * 0.8); R(OUT, x + w * 0.62, y + hh * 0.35, 2, 3 * s * 0.8);
@@ -746,11 +1013,11 @@
     }
     function drawSpitter(e) {
       const sq = e.squash || 0, w = 16 + sq * 2, hh = 14 - sq * 2, x = e.x - w / 2, y = e.y - hh + 3;
-      const body = e.flash > 0 ? "#fff" : "#7ab03a";
+      const body = e.flash > 0 ? "#fff" : "#f08a2a";
       shadow(e.x, e.y + 3, w / 2);
-      R(OUT, x - 1, y - 1, w + 2, hh + 2); R(body, x, y, w, hh); R("#4a7a1a", x, y + hh - 3, w, 3); R("#c8f070", x + 2, y + 1, 5, 2);
+      R(body, x, y, w, hh); R("#b04a10", x, y + hh - 3, w, 3); R("#ffd08a", x + 2, y + 1, 5, 2);
       R(OUT, x + 3, y + 4, 2, 3); R(OUT, x + w - 5, y + 4, 2, 3);
-      R(OUT, x + w / 2 - 3, y + 8, 6, 3 + sq * 3); R("#b4e03a", x + w / 2 - 2, y + 9, 4, 1 + sq * 2);
+      R("#ffcf5a", x + w / 2 - 2, y + 9, 4, 1 + sq * 2);
       if (e.st === "wind") R("#ff5d73", e.x - 1, y - 12, 3, 6);
     }
     function drawGoblin(e, big) {
@@ -759,8 +1026,7 @@
       const skin = e.flash > 0 ? "#fff" : big ? "#6fae3a" : "#8bc34a", dk = big ? "#3f6a1d" : "#5a8a2a";
       shadow(x, e.y + 2, 7 * s);
       const rr = (c, ox, oy, w, hh) => R(c, x + (f > 0 ? ox : -ox - w) * s, y + oy * s, w * s, hh * s);
-      rr(OUT, -6, -17, 12, 19);
-      rr(big ? "#7a3d1a" : "#8a5a2f", -4, -8, 8, 7); rr(dk, -4, -2, 3, 3); rr(dk, 1, -2, 3, 3);
+            rr(big ? "#7a3d1a" : "#8a5a2f", -4, -8, 8, 7); rr(dk, -4, -2, 3, 3); rr(dk, 1, -2, 3, 3);
       rr(skin, -5, -16, 10, 8); rr(skin, -8, -14, 3, 3); rr(skin, 5, -14, 3, 3);
       rr("#fff6d0", -3, -12, 2, 2); rr("#fff6d0", 1, -12, 2, 2); rr(OUT, -2, -12, 1, 2); rr(OUT, 2, -12, 1, 2);
       const up = e.st === "wind" ? 1 : 0;
@@ -771,13 +1037,24 @@
       ctx.fillStyle = "rgba(255,93,115," + (0.25 + 0.2 * Math.sin(now() * 30)) + ")"; ctx.beginPath(); ctx.ellipse(e.x, e.y + 2, 16 * s, 6 * s, 0, 0, TAU); ctx.fill();
       R("#ff5d73", e.x - 1, e.y - 32 * s, 3, 6); R("#ff5d73", e.x - 1, e.y - 24 * s, 3, 3);
     }
+    function drawBomber(e) {
+      const f = e.face, x = e.x, y = e.y - Math.abs(Math.sin(e.anim)) * 1.4, wind = e.st === "wind";
+      shadow(x, e.y + 2, 7);
+      const rr = (c, ox, oy, w, hh) => R(c, x + (f > 0 ? ox : -ox - w), y + oy, w, hh);
+      rr("#6a4a2a", -4, -8, 8, 7); rr("#4a3a1e", -4, -2, 3, 3); rr("#4a3a1e", 1, -2, 3, 3);
+      rr(e.flash > 0 ? "#fff" : "#8bc34a", -5, -16, 10, 8); rr("#8bc34a", -8, -14, 3, 3); rr("#8bc34a", 5, -14, 3, 3);
+      rr("#3a2a1a", -5, -18, 10, 3); rr("#fff6d0", -3, -12, 2, 2); rr("#fff6d0", 1, -12, 2, 2);
+      rr("#c9a85a", -7, -9, 4, 6); // satchel of bombs
+      const by = wind ? -24 : -9; rr("#2a2a34", 4, by, 6, 6); rr("#5a5a66", 5, by + 1, 2, 2); rr("#8a5a2f", 7, by - 3, 1, 3);
+      if (wind && Math.floor(now() * 16) % 2) rr("#ffe08a", 7, by - 5, 2, 2);
+      if (wind) R("#ff5d73", e.x - 1, y - 30, 3, 6);
+    }
     function drawSkeleton(e) {
       const f = e.face, x = e.x, y = e.y - Math.abs(Math.sin(e.anim)) * 1.2, wind = e.st === "wind";
       const bone = e.flash > 0 ? "#fff" : "#e8e0c8", dk = "#a8a08a";
       shadow(x, e.y + 2, 7);
       const rr = (c, ox, oy, w, hh) => R(c, x + (f > 0 ? ox : -ox - w), y + oy, w, hh);
-      rr(OUT, -6, -19, 12, 21);
-      rr(bone, -4, -18, 8, 7); rr(OUT, -3, -15, 2, 2); rr(OUT, 1, -15, 2, 2); rr(dk, -2, -12, 4, 1); // skull
+            rr(bone, -4, -18, 8, 7); rr(OUT, -3, -15, 2, 2); rr(OUT, 1, -15, 2, 2); rr(dk, -2, -12, 4, 1); // skull
       rr(bone, -1, -11, 2, 8); rr(bone, -4, -10, 8, 1); rr(bone, -4, -8, 8, 1); rr(bone, -4, -6, 8, 1); // spine, ribs
       rr(bone, -3, -3, 2, 4); rr(bone, 1, -3, 2, 4);
       if (e.k === "x") { rr(bone, 4, wind ? -20 : -10, 2, 6); rr(bone, 3, wind ? -21 : -11, 4, 2); }
@@ -789,7 +1066,7 @@
     function drawBones(e) {
       const shake = e.revT < 1 ? Math.round(Math.sin(now() * 40)) : 0, col = e.flash > 0 ? "#fff" : "#e8e0c8";
       shadow(e.x, e.y + 2, 8);
-      R(OUT, e.x - 8 + shake, e.y - 5, 16, 7); R(col, e.x - 7 + shake, e.y - 4, 6, 2); R(col, e.x - 1 + shake, e.y - 3, 7, 2); R(col, e.x - 4 + shake, e.y - 2, 5, 2);
+      R(col, e.x - 7 + shake, e.y - 4, 6, 2); R(col, e.x - 1 + shake, e.y - 3, 7, 2); R(col, e.x - 4 + shake, e.y - 2, 5, 2);
       R(col, e.x + 2 + shake, e.y - 8, 5, 4); R(OUT, e.x + 3 + shake, e.y - 7, 1, 1); R(OUT, e.x + 5 + shake, e.y - 7, 1, 1);
       // a ring that closes as it gets ready to stand back up
       const u = clamp(e.revT / 3.2, 0, 1); ctx.strokeStyle = "rgba(159,216,255,0.7)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(e.x, e.y - 14, 4, -Math.PI / 2, -Math.PI / 2 + TAU * (1 - u)); ctx.stroke();
@@ -802,12 +1079,11 @@
       const resting = e.st === "rest";
       const shieldDraw = () => {
         const sx = x + Math.cos(e.faceA) * (resting ? 6 : 10), sy = y - (resting ? 2 : 9) + Math.sin(e.faceA) * 6;
-        R(OUT, sx - 5, sy - 8, 10, 15); R("#3a4256", sx - 4, sy - 7, 8, 13); R("#9fd8ff", sx - 1, sy - 4, 2, 7); R("#9fd8ff", sx - 3, sy - 2, 6, 2);
+        R("#3a4256", sx - 4, sy - 7, 8, 13); R("#9fd8ff", sx - 1, sy - 4, 2, 7); R("#9fd8ff", sx - 3, sy - 2, 6, 2);
       };
       if (back) shieldDraw();
       const rr = (c, ox, oy, w, hh) => R(c, x + (f > 0 ? ox : -ox - w), y + oy, w, hh);
-      rr(OUT, -9, -26, 18, 28);
-      rr(iron, -7, -24, 14, 10); rr(hi, -7, -24, 14, 2); rr("#9fd8ff", -4, -19, 2, 2); rr("#9fd8ff", 2, -19, 2, 2); rr(OUT, -6, -16, 12, 1);
+            rr(iron, -7, -24, 14, 10); rr(hi, -7, -24, 14, 2); rr("#9fd8ff", -4, -19, 2, 2); rr("#9fd8ff", 2, -19, 2, 2); rr(OUT, -6, -16, 12, 1);
       rr(iron, -7, -14, 14, 10); rr(hi, -7, -14, 14, 1); rr("#e8e0c8", -1, -12, 2, 6);
       rr("#3a3a48", -6, -4, 4, 5); rr("#3a3a48", 2, -4, 4, 5);
       rr("#9aa3b5", -10, wind ? -36 : -20, 3, wind ? 22 : 14); rr("#6a4630", -11, wind ? -15 : -7, 5, 2);
@@ -820,8 +1096,7 @@
       const f = e.face, x = e.x, y = e.y - 2 - Math.sin(now() * 3 + e.anim) * 2, wind = e.st === "wind";
       shadow(x, e.y + 2, 6);
       const rr = (c, ox, oy, w, hh) => R(c, x + (f > 0 ? ox : -ox - w), y + oy, w, hh);
-      rr(OUT, -6, -21, 12, 23);
-      rr(e.flash > 0 ? "#fff" : "#4a2a7a", -5, -12, 10, 13); rr("#6a3aa8", -5, -12, 10, 2); rr("#2a1a4a", -5, -1, 10, 2);
+            rr(e.flash > 0 ? "#fff" : "#4a2a7a", -5, -12, 10, 13); rr("#6a3aa8", -5, -12, 10, 2); rr("#2a1a4a", -5, -1, 10, 2);
       rr("#e8e0c8", -3, -19, 6, 6); rr(OUT, -2, -17, 1, 2); rr(OUT, 1, -17, 1, 2);
       rr("#4a2a7a", -5, -21, 10, 3); rr("#4a2a7a", -2, -24, 4, 3);
       rr("#6a4630", 6, -18, 1, 18); rr(wind ? "#ffffff" : "#c9a0ff", 5, -21, 3, 3);
@@ -833,8 +1108,7 @@
       shadow(x, e.y + 2, 5);
       const flap = Math.sin(now() * 30) > 0 ? 2 : 0;
       const rr = (c, ox, oy, w, hh) => R(c, x + (f > 0 ? ox : -ox - w), y + oy, w, hh);
-      rr(OUT, -8, -14 - flap, 16, 12 + flap);
-      rr("#7a1a14", -7, -12 - flap, 3, 5); rr("#7a1a14", 4, -12 - flap, 3, 5);
+            rr("#7a1a14", -7, -12 - flap, 3, 5); rr("#7a1a14", 4, -12 - flap, 3, 5);
       rr(e.flash > 0 ? "#fff" : "#e5482a", -3, -12, 6, 9); rr("#ff8a5a", -3, -12, 6, 2); rr("#ffe08a", -2, -10, 1, 1); rr("#ffe08a", 1, -10, 1, 1);
       rr("#3a0a0a", -3, -14, 1, 2); rr("#3a0a0a", 2, -14, 1, 2);
       if (e.st === "wind") { R("#ffb04a", x + f * 5 - 2, y - 9, 4, 4); R("#fff0a0", x + f * 5 - 1, y - 8, 2, 2); }
@@ -843,8 +1117,7 @@
       const f = e.face, flap = Math.sin(e.anim * 2) * 4, y = e.y - 14;
       shadow(e.x, e.y + 2, 7);
       const rr = (c, ox, oy, w, hh) => R(c, e.x + (f > 0 ? ox : -ox - w), y + oy, w, hh);
-      rr(OUT, -12, -6 - Math.abs(flap), 24, 14 + Math.abs(flap));
-      const body = e.flash > 0 ? "#fff" : "#e5702a";
+            const body = e.flash > 0 ? "#fff" : "#e5702a";
       rr("#a8401a", -11, -2 - flap, 8, 4); rr("#a8401a", 3, -2 - flap, 8, 4); // wings
       rr(body, -5, -3, 10, 7); rr("#ffd06a", -3, 1, 6, 3); rr(body, 4, -6, 5, 5); rr("#ffe08a", 7, -5, 1, 1); rr(body, -8, 1, 4, 2);
       if (e.st === "wind") R("#ff5d73", e.x - 1, y - 16, 3, 6);
@@ -852,8 +1125,7 @@
     function drawBat(e) {
       const flap = Math.sin(e.anim * 2.4) * 4, y = e.y - 12;
       shadow(e.x, e.y + 2, 5);
-      R(OUT, e.x - 9, y - 4 - Math.abs(flap), 18, 10 + Math.abs(flap));
-      R(e.flash > 0 ? "#fff" : "#6a4f9a", e.x - 8, y - flap, 6, 4); R(e.flash > 0 ? "#fff" : "#6a4f9a", e.x + 2, y - flap, 6, 4);
+            R(e.flash > 0 ? "#fff" : "#6a4f9a", e.x - 8, y - flap, 6, 4); R(e.flash > 0 ? "#fff" : "#6a4f9a", e.x + 2, y - flap, 6, 4);
       R(e.flash > 0 ? "#fff" : "#4a3570", e.x - 3, y - 2, 6, 7); R("#ff7d8a", e.x - 2, y, 1, 1); R("#ff7d8a", e.x + 1, y, 1, 1);
       if (e.st === "wind") R("#ff5d73", e.x - 1, y - 14, 3, 6);
     }
@@ -861,8 +1133,7 @@
       const f = e.face, x = e.x, y = e.y - Math.abs(Math.sin(e.anim * 0.7)) * 1.2, wind = e.st === "wind";
       shadow(x, e.y + 3, 13);
       const rr = (c, ox, oy, w, hh) => R(c, x + (f > 0 ? ox : -ox - w), y + oy, w, hh);
-      rr(OUT, -12, -27, 24, 30);
-      rr("#4a5a3a", -9, -12, 18, 13); rr("#6a7a5a", -10, -18, 20, 7); rr("#8a9a7a", -10, -18, 20, 2);
+            rr("#4a5a3a", -9, -12, 18, 13); rr("#6a7a5a", -10, -18, 20, 7); rr("#8a9a7a", -10, -18, 20, 2);
       rr(e.flash > 0 ? "#fff" : "#7a9a4a", -6, -26, 12, 10); rr("#ffe9a0", -4, -22, 2, 2); rr("#ffe9a0", 2, -22, 2, 2); rr("#e8e0c8", -3, -17, 2, 3); rr("#e8e0c8", 1, -17, 2, 3);
       rr("#3a3a48", -8, -2, 6, 4); rr("#3a3a48", 2, -2, 6, 4);
       rr("#6a4630", 9, wind ? -38 : -14, 4, wind ? 28 : 18); rr("#7a7a8a", 7, wind ? -42 : -18, 8, 6);
@@ -872,8 +1143,7 @@
       const f = e.face, x = e.x, y = e.y - Math.abs(Math.sin(e.anim * 0.6)) * 1.5;
       shadow(x, e.y + 4, 18);
       const rr = (c, ox, oy, w, hh) => R(c, x + (f > 0 ? ox : -ox - w), y + oy, w, hh);
-      rr(OUT, -17, -38, 34, 42);
-      rr("#8a1f2a", -16, -26, 32, 28); rr("#a8323e", -14, -26, 28, 6);
+            rr("#8a1f2a", -16, -26, 32, 28); rr("#a8323e", -14, -26, 28, 6);
       rr("#6a7a5a", -10, -18, 20, 14); rr("#8a9a7a", -10, -18, 20, 2); rr("#f4cf5a", -10, -8, 20, 2);
       rr(e.flash > 0 ? "#fff" : "#7ab03a", -8, -36, 16, 14); rr("#ffe9a0", -5, -31, 3, 3); rr("#ffe9a0", 2, -31, 3, 3); rr(OUT, -4, -30, 1, 2); rr(OUT, 3, -30, 1, 2);
       rr("#e8e0c8", -5, -24, 3, 4); rr("#e8e0c8", 2, -24, 3, 4);
@@ -897,33 +1167,32 @@
       const body = e.flash > 0 ? "#fff" : "#b8282a", dk = "#7a1418", belly = "#ffcf6a", wing = "#8a1a1e", wingHi = "#d8484a";
       const rr = (c, ox, oy, w, hh) => R(c, x + (f > 0 ? ox : -ox - w), y + oy, w, hh);
       // wings behind
-      rr(OUT, -30, -40 - flap, 26, 22); rr(wing, -29, -39 - flap, 24, 18); rr(wingHi, -29, -39 - flap, 24, 2);
+      rr(wing, -29, -39 - flap, 24, 18); rr(wingHi, -29, -39 - flap, 24, 2);
       for (let i = 0; i < 3; i++) rr(dk, -27 + i * 8, -36 - flap, 1, 14);
-      rr(OUT, 4, -42 - flap, 26, 22); rr(wing, 5, -41 - flap, 24, 18); rr(wingHi, 5, -41 - flap, 24, 2);
+      rr(wing, 5, -41 - flap, 24, 18); rr(wingHi, 5, -41 - flap, 24, 2);
       for (let i = 0; i < 3; i++) rr(dk, 7 + i * 8, -38 - flap, 1, 14);
       // tail
-      rr(OUT, -34, -10, 18, 7); rr(body, -33, -9, 16, 5); rr(OUT, -40, -14, 8, 7); rr(body, -39, -13, 6, 5); rr("#ffcf6a", -42, -16, 4, 4);
+      rr(body, -33, -9, 16, 5); rr(body, -39, -13, 6, 5); rr("#ffcf6a", -42, -16, 4, 4);
       // body and legs
-      rr(OUT, -18, -26, 34, 28); rr(body, -17, -25, 32, 26); rr(belly, -10, -16, 18, 14); rr(dk, -17, -4, 32, 3);
+      rr(body, -17, -25, 32, 26); rr(belly, -10, -16, 18, 14); rr(dk, -17, -4, 32, 3);
       for (let i = 0; i < 4; i++) rr("#e6b050", -8 + i * 4, -14 + (i % 2) * 6, 2, 1);
-      rr(OUT, -14, -2, 8, 6); rr(dk, -13, -1, 6, 4); rr(OUT, 6, -2, 8, 6); rr(dk, 7, -1, 6, 4);
+      rr(dk, -13, -1, 6, 4); rr(dk, 7, -1, 6, 4);
       // neck and head
-      rr(OUT, 8, -40, 12, 18); rr(body, 9, -39, 10, 16);
-      rr(OUT, 12, -50, 22, 14); rr(body, 13, -49, 20, 12); rr(dk, 13, -39, 20, 2); rr(belly, 26, -43, 7, 4);
+      rr(body, 9, -39, 10, 16);
+      rr(body, 13, -49, 20, 12); rr(dk, 13, -39, 20, 2); rr(belly, 26, -43, 7, 4);
       rr("#ffe08a", 22, -47, 3, 3); rr(OUT, 23, -46, 1, 2);
       rr("#e8e0c8", 14, -56, 3, 7); rr("#e8e0c8", 19, -55, 3, 6);
       rr(OUT, 30, -44, 1, 1); rr(OUT, 32, -44, 1, 1);
       for (let i = 0; i < 5; i++) rr("#e8e0c8", -12 + i * 6, -29, 3, 4);
       if (e.st === "windB" || e.st === "windV") rr("#ffb04a", 32, -43, 3, 3);
     }
-    const DRAW = { s: drawSlime, S: drawSlime, o: drawSlime, O: drawSlime, p: drawSpitter, g: (e) => drawGoblin(e, false), a: drawArcher, b: drawBat, B: drawBrute, K: drawKing,
+    const DRAW = { s: drawSlime, S: drawSlime, o: drawSlime, O: drawSlime, p: drawSpitter, g: (e) => drawGoblin(e, false), a: drawArcher, n: drawBomber, b: drawBat, B: drawBrute, K: drawKing,
       z: drawSkeleton, x: drawSkeleton, Z: drawKnightSk, m: drawMage, i: drawImp, w: drawWhelp, D: drawDragon, bones: drawBones };
     function drawArcher(e) {
       const f = e.face, x = e.x, y = e.y - Math.abs(Math.sin(e.anim)) * 1;
       shadow(x, e.y + 2, 6);
       const rr = (c, ox, oy, w, hh) => R(c, x + (f > 0 ? ox : -ox - w), y + oy, w, hh);
-      rr(OUT, -5, -16, 10, 18);
-      rr("#3b6a2a", -4, -9, 8, 9); rr("#2a4a1e", -4, -2, 3, 2); rr("#2a4a1e", 1, -2, 3, 2);
+            rr("#3b6a2a", -4, -9, 8, 9); rr("#2a4a1e", -4, -2, 3, 2); rr("#2a4a1e", 1, -2, 3, 2);
       rr(e.flash > 0 ? "#fff" : "#4f8a3a", -4, -15, 8, 7); rr("#2a4a1e", -5, -16, 10, 3);
       rr("#ffe9a0", -2, -11, 2, 2); rr("#ffe9a0", 1, -11, 2, 2);
       rr("#8a5a2f", 5, -12, 1, 12); rr("#dfe6f7", 5, -12, 1, 1);
@@ -934,7 +1203,7 @@
       if (e.stun > 0 && !e.fly && e.k !== "bones") { const top = e.y - (e.z || 0) - e.r * 2 - 12; R("#f4cf5a", e.x - 6, top + Math.sin(run.t * 12) * 1.5, 3, 3); R("#f4cf5a", e.x + 3, top - Math.sin(run.t * 12) * 1.5, 3, 3); }
       (DRAW[e.k] || drawSlime)(e);
       if (e.burn > 0 && Math.floor(run.t * 10) % 2) R("#ff8a3d", e.x - 1, e.y - e.r * 2 - 2, 2, 2);
-      if (e.hp < e.max && !BOSS[e.k] && e.k !== "bones") { const w = Math.max(10, e.r * 2), top = e.y - (e.fly ? 12 : 0) - e.r * 2 - 8; R(OUT, e.x - w / 2 - 1, top, w + 2, 4); R("#e5484d", e.x - w / 2, top + 1, w * clamp(e.hp / e.max, 0, 1), 2); }
+      if (e.hp < e.max && !BOSS[e.k] && e.k !== "bones") { const w = Math.max(10, e.r * 2), top = e.y - (e.fly ? 12 : 0) - e.r * 2 - 8; R("#e5484d", e.x - w / 2, top + 1, w * clamp(e.hp / e.max, 0, 1), 2); }
     }
     function drawPillar(q) {
       shadow(q.x, q.y + 6, 12);
@@ -1032,6 +1301,8 @@
       if (run.theme.deco === "roost") hole(240, 30, 120, 0.7);
       for (const e of run.enemies) if (e.k === "b" || e.k === "i" || e.k === "m" || e.k === "w") hole(e.x, e.y, 24, 0.45); else if (e.k === "D") hole(e.x, e.y - 20, 70, 0.6);
       for (const a of run.shots) if (a.k === "fire" || a.k === "orb") hole(a.x, a.y, 20, 0.6);
+      for (const b of run.pshots) hole(b.x, b.y, 26, 0.7);
+      for (const f of run.fx) if (f.k === "bolt") hole(f.x, f.y, 60, 0.8);
       for (const q of run.pools) if (q.k === "fire") hole(q.x, q.y, 34, 0.6);
       for (const f of run.fx) if (f.k === "ring" || f.k === "flame") hole(f.x, f.y, f.k === "ring" ? 40 : 16, 0.3);
       ctx.drawImage(lightCv, 0, 0);
@@ -1061,24 +1332,48 @@
       R(panel, 30, 2, 190, 28);
       bar(36, 6, 120, 8, p.hp / p.maxHp, "#e5484d", "#ff8a8a", `${Math.ceil(p.hp)}/${p.maxHp}`);
       bar(36, 20, 120, 5, p.st / p.maxSt, p.stun > 0 ? "#6a7899" : p.st < 20 ? "#e5a04a" : "#4f9cf0", "#9ccbff", "Stamina");
-      if (run.spinOn) { // whirlwind charge
-        const ready = p.spinCd <= 0 && p.st >= SPIN_COST, pct = 1 - p.spinCd / (SPIN_CD * p.m.spinCd);
-        R(panel, 222, 2, 44, 28); R(OUT, 228, 6, 20, 20); R("#123a38", 229, 7, 18, 18); R(ready ? "#6ef0e0" : "#2f8a80", 229, 7 + 18 * (1 - pct), 18, Math.ceil(18 * pct));
-        ctx.strokeStyle = ready ? "#0a3a36" : "#6ef0e0"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(238, 16, 5, 0.5, TAU - 0.3); ctx.stroke();
-        ctx.fillStyle = ready ? "#6ef0e0" : "#8a93b5"; ctx.textAlign = "left"; ctx.fillText(p.spinCd > 0 ? Math.ceil(p.spinCd) : "K", 252, 20);
+      const owned = ABILITIES.filter((a) => run.ab[a.id]);
+      if (owned.length) { // ability slots: fill shows the cooldown, the letter is the key
+        R(panel, 222, 2, 8 + owned.length * 26, 28);
+        owned.forEach((a, i) => {
+          const x = 228 + i * 26, left = a.id === "spin" ? p.spinCd : p.cd[a.id], full = a.id === "spin" ? SPIN_CD * p.m.spinCd : a.cd;
+          const ready = left <= 0 && p.st >= a.cost, pct = 1 - left / full, dk = ART.mix(a.c, "#000000", 0.7);
+          R(OUT, x - 1, 5, 22, 22); R(dk, x, 6, 20, 20); R(ready ? a.c : ART.mix(a.c, "#000000", 0.45), x, 6 + 20 * (1 - pct), 20, Math.ceil(20 * pct));
+          ctx.fillStyle = ready ? OUT : "#f4f1e6"; ctx.textAlign = "center"; ctx.fillText(left > 0 ? Math.ceil(left) : a.key, x + 10, 20);
+        });
       }
       R(panel, W - 150, 2, 118, 28);
       ctx.textAlign = "right"; ctx.fillStyle = "#f4f1e6";
       ctx.fillText(run.theme.name, W - 36, 14); ctx.fillStyle = "#8a93b5"; ctx.fillText(`Floor ${run.floor}  ·  ${fmtTime(run.t)}`, W - 36, 26);
-      // blessings collected this run
-      run.perks.forEach((id, i) => { const q = perkById(id); if (!q) return; const x = 36 + i * 13, y = 34; R(OUT, x - 1, y - 1, 12, 12); R(q.c, x, y, 10, 10); ctx.fillStyle = OUT; ctx.textAlign = "center"; ctx.fillText(q.g, x + 5, y + 9); });
+      // enchants collected this run
+      run.perks.forEach((id, i) => { if (perkById(id)) ctx.drawImage(iconCanvas(id, 1), 34 + i * 14, 34); });
       if (p.combo > 1 && p.comboT > 0) { ctx.textAlign = "center"; ctx.fillStyle = p.combo === 3 ? "#ffe08a" : "#fff"; ctx.fillText(p.combo === 3 ? "FINISHER!" : `Combo x${p.combo}`, p.x, p.y - 34); }
       const boss = run.enemies.find((e) => BOSS[e.k]);
       if (boss) { const w = 240; bar(120, H - 20, w, 6, boss.hp / boss.max, boss.k === "D" ? "#e5482a" : "#c4a030", boss.k === "D" ? "#ffb04a" : "#ffe08a", ""); ctx.textAlign = "center"; ctx.fillStyle = "#f4f1e6"; ctx.fillText(BOSS[boss.k], W / 2, H - 26); }
       if (run.bannerT > 0) { const a = clamp(run.bannerT, 0, 1); ctx.textAlign = "center"; ctx.font = "20px 'Pixelify Sans', monospace"; ctx.fillStyle = "rgba(0,0,0," + a * 0.6 + ")"; ctx.fillText(run.banner, W / 2 + 1, 121); ctx.fillStyle = "rgba(244,185,66," + a + ")"; ctx.fillText(run.banner, W / 2, 120); }
-      else if (run.tip > 0) { const a = clamp(run.tip, 0, 1); ctx.textAlign = "center"; ctx.font = "12px 'Pixelify Sans', monospace"; R("rgba(5,7,16," + 0.78 * a + ")", W / 2 - 175, 92, 350, 36); ctx.fillStyle = "rgba(110,240,224," + a + ")"; ctx.fillText("New ability: Whirlwind", W / 2, 107); ctx.fillStyle = "rgba(244,241,230," + a + ")"; ctx.font = "10px 'Pixelify Sans', monospace"; ctx.fillText("Press K or Q (or right-click) to spin and hit everything around you", W / 2, 121); }
+      else if (run.tip > 0 && run.tipAb) {
+        const a = clamp(run.tip, 0, 1), ab = run.tipAb; ctx.textAlign = "center";
+        R("rgba(5,7,16," + 0.8 * a + ")", W / 2 - 160, 90, 320, 40); R(ab.c, W / 2 - 160, 90, 320, 2);
+        ctx.globalAlpha = a; ctx.font = "13px 'Pixelify Sans', monospace"; ctx.fillStyle = ab.c; ctx.fillText(`New ability: ${ab.name}`, W / 2, 107);
+        ctx.font = "10px 'Pixelify Sans', monospace"; ctx.fillStyle = "#f4f1e6"; ctx.fillText(`Press ${ab.keys} to ${ab.how}`, W / 2, 122); ctx.globalAlpha = 1;
+      }
     }
 
+    function drawPlayerShots() {
+      for (const b of run.pshots) {
+        const a = clamp(b.life / 0.3, 0, 1);
+        ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.a); ctx.lineCap = "round";
+        ctx.strokeStyle = "rgba(255,224,138," + 0.9 * a + ")"; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(-6, 0, 12, -1.1, 1.1); ctx.stroke();
+        ctx.strokeStyle = "rgba(255,255,255," + a + ")"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(-6, 0, 12, -0.9, 0.9); ctx.stroke();
+        ctx.restore();
+      }
+      for (const f of run.fx) if (f.k === "bolt") { // a jagged bolt from the top of the room
+        const u = f.t / f.d; let x = f.x, y = 0; const steps = 9, seg = f.y / steps;
+        ctx.strokeStyle = "rgba(207,232,255," + u + ")"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x, y);
+        for (let i = 1; i <= steps; i++) { y = i * seg; x = f.x + (i === steps ? 0 : Math.sin(f.seed + i * 2.7) * 9); ctx.lineTo(x, y); }
+        ctx.stroke(); ctx.strokeStyle = "rgba(255,255,255," + u + ")"; ctx.lineWidth = 1; ctx.stroke();
+      }
+    }
     function drawShots() {
       for (const a of run.shots) {
         ctx.save(); ctx.translate(Math.round(a.x), Math.round(a.y));
@@ -1090,20 +1385,21 @@
       }
       for (const l of run.lobs) {
         const u = clamp(l.t / l.dur, 0, 1), x = lerp(l.x0, l.tx, u), y = lerp(l.y0, l.ty, u) - Math.sin(u * Math.PI) * (l.k === "meteor" ? 20 : 46);
-        const col = l.k === "acid" ? "#b4e03a" : "#ff6a2a";
-        ctx.strokeStyle = l.k === "acid" ? "rgba(180,224,58,0.9)" : "rgba(255,93,115,0.9)"; ctx.lineWidth = 1;
+        const col = l.k === "acid" ? "#ff9a3d" : l.k === "bomb" ? "#2a2a34" : "#ff6a2a";
+        ctx.strokeStyle = l.k === "acid" ? "rgba(255,154,61,0.95)" : "rgba(255,93,115,0.9)"; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.ellipse(l.tx, l.ty, l.r, l.r * 0.55, 0, 0, TAU); ctx.stroke();
-        ctx.fillStyle = l.k === "acid" ? "rgba(180,224,58," + 0.25 * u + ")" : "rgba(255,93,115," + 0.3 * u + ")"; ctx.beginPath(); ctx.ellipse(l.tx, l.ty, l.r * u, l.r * 0.55 * u, 0, 0, TAU); ctx.fill();
+        ctx.fillStyle = l.k === "acid" ? "rgba(255,154,61," + 0.25 * u + ")" : "rgba(255,93,115," + 0.3 * u + ")"; ctx.beginPath(); ctx.ellipse(l.tx, l.ty, l.r * u, l.r * 0.55 * u, 0, 0, TAU); ctx.fill();
         if (l.k === "meteor") { const my = l.ty - (1 - u) * 160; R(OUT, l.tx - 5, my - 5, 10, 10); R(col, l.tx - 4, my - 4, 8, 8); R("#fff0a0", l.tx - 2, my - 2, 4, 4); addFx({ k: "spark", x: l.tx + rnd(-3, 3), y: my, vx: 0, vy: -30, t: 0.2, c: "#ffb04a" }); }
-        else { R(OUT, x - 4, y - 4, 8, 8); R(col, x - 3, y - 3, 6, 6); R("#eaff9a", x - 2, y - 2, 2, 2); }
+        else if (l.k === "bomb") { R(col, x - 3, y - 3, 7, 7); R("#5a5a66", x - 2, y - 2, 2, 2); R("#8a5a2f", x + 2, y - 5, 1, 3); if (Math.floor(run.t * 16) % 2) R("#ffe08a", x + 2, y - 7, 2, 2); }
+        else { R(col, x - 3, y - 3, 6, 6); R("#ffd8a0", x - 2, y - 2, 2, 2); }
       }
     }
     function drawPools() {
       for (const q of run.pools) {
         const a = clamp(q.t, 0, 1);
         if (q.k === "acid") {
-          ctx.fillStyle = "rgba(150,210,40," + 0.35 * a + ")"; ctx.beginPath(); ctx.ellipse(q.x, q.y, q.r, q.r * 0.55, 0, 0, TAU); ctx.fill();
-          ctx.fillStyle = "rgba(220,255,120," + 0.4 * a + ")"; R(ctx.fillStyle, q.x - q.r * 0.4 + Math.sin(run.t * 3 + q.x) * 2, q.y - 1, 2, 2); R(ctx.fillStyle, q.x + q.r * 0.3, q.y + 1 + Math.sin(run.t * 4 + q.y), 2, 2);
+          ctx.fillStyle = "rgba(255,140,40," + 0.35 * a + ")"; ctx.beginPath(); ctx.ellipse(q.x, q.y, q.r, q.r * 0.55, 0, 0, TAU); ctx.fill();
+          ctx.fillStyle = "rgba(255,216,140," + 0.45 * a + ")"; R(ctx.fillStyle, q.x - q.r * 0.4 + Math.sin(run.t * 3 + q.x) * 2, q.y - 1, 2, 2); R(ctx.fillStyle, q.x + q.r * 0.3, q.y + 1 + Math.sin(run.t * 4 + q.y), 2, 2);
         } else { ctx.fillStyle = "rgba(255,106,42," + 0.3 * a + ")"; ctx.beginPath(); ctx.ellipse(q.x, q.y, q.r, q.r * 0.55, 0, 0, TAU); ctx.fill(); }
       }
     }
@@ -1131,6 +1427,7 @@
       for (const g of run.fx) if (g.k === "ghost") list.push({ y: g.y - 1, f: () => { ctx.globalAlpha = g.t * 3; ctx.save(); ctx.translate(Math.round(g.x), Math.round(g.y)); if (g.f) ctx.scale(-1, 1); if (sprite) ctx.drawImage(sprite, -11, -22, 22, 25); ctx.restore(); ctx.globalAlpha = 1; } });
       list.sort((a, b) => a.y - b.y).forEach((o) => o.f());
       drawShots();
+      drawPlayerShots();
       drawTorches();
       for (const f of run.fx) {
         if (f.k === "spark") R(f.c, f.x, f.y, 2, 2);
@@ -1140,6 +1437,7 @@
       }
       drawLighting();
       if (run.day) { ctx.drawImage(dayVignette, 0, 0); drawSunbeams(); } else ctx.drawImage(vignette, 0, 0);
+      if (run.boltFlash > 0) { ctx.fillStyle = "rgba(220,235,255," + run.boltFlash * 2 + ")"; ctx.fillRect(0, 0, W, H); }
       if (run.hitFlash > 0) { ctx.fillStyle = "rgba(255,40,60," + run.hitFlash * 0.5 + ")"; ctx.fillRect(0, 0, W, H); }
       if (run.p.hp < run.p.maxHp * 0.3 && !run.over) { ctx.fillStyle = "rgba(255,0,30," + (0.06 + 0.05 * Math.sin(run.t * 7)) + ")"; ctx.fillRect(0, 0, W, H); }
       ctx.restore();
@@ -1163,32 +1461,67 @@
         h("span", { class: "fl-r" }, locked ? h("span", { class: "fl-lock" }, "Locked") : starRow(st), tm ? h("small", null, fmtTime(tm)) : null));
     }
     function perkCard(q, i, nextF) {
-      return h("button", { class: "dg-perk", type: "button", style: { "--pc": q.c }, onclick: () => pickPerk(q, nextF) },
-        h("span", { class: "ic pixel" }, q.g), h("b", null, q.name), h("span", null, q.desc), h("small", null, `Press ${i + 1}`));
+      const rar = RARITY[q.r];
+      return h("button", { class: "dg-ench r-" + q.r, type: "button", style: { "--pc": q.c, "--rc": rar.c, "--i": i }, onclick: () => pickPerk(q, nextF) },
+        h("span", { class: "ench-rar" }, rar.label),
+        h("span", { class: "ench-icon" }, h("img", { src: iconURL(q.id, 5), alt: "", width: 60, height: 60 })),
+        h("b", null, q.name), h("span", { class: "ench-desc" }, q.desc), h("kbd", null, String(i + 1)));
     }
     function pickPerk(q, nextF) {
       SFX.perk();
       const perks = run.perks.concat(q.id), p = run.p, heal = p.maxHp * 0.3 + (q.id === "heart" ? 30 : 0);
       start(nextF, { perks, hp: Math.min(p.maxHp + (q.id === "heart" ? 30 : 0), p.hp + heal) });
     }
+    const toList = () => { phase = "menu"; run = null; offer = null; bg = null; menuEl.className = "dg-menu"; drawMenu(); };
+    const resultLine = () => h("div", { class: "dg-result" }, starRow(run.stars),
+      h("p", null, `${fmtTime(run.time)}${run.newBest ? " · new best time" : ""} · ${run.kills} defeated${run.bestChain >= 3 ? ` · ${run.bestChain} chain` : ""}`),
+      h("p", { class: "dg-why" }, `★ Cleared   ${run.time <= PAR[run.floor] ? "★" : "☆"} Under ${fmtTime(PAR[run.floor])}   ${run.hpLost <= run.p.maxHp * 0.35 ? "★" : "☆"} Lost under a third of your health`));
+    function enchantView(nextF) {
+      menuEl.className = "dg-menu dg-enchanting";
+      offer = offer || offerPerks(run.perks, nextF);
+      menuEl.append(
+        h("p", { class: "dg-eyebrow pixel" }, `Floor ${run.floor} cleared · ${fmtTime(run.time)} · `, starRow(run.stars)),
+        h("h2", { class: "dg-ench-title" }, "Choose an enchant"),
+        h("p", { class: "dg-ench-sub" }, `It lasts for the rest of this run. Floor ${nextF}, ${themeOf(nextF).name}, is next.`),
+        h("div", { class: "dg-enchs" }, offer.map((q, i) => perkCard(q, i, nextF))));
+      if (run.perks.length) menuEl.append(h("div", { class: "dg-have" }, h("span", null, "Your enchants"), run.perks.map((id) => { const q = perkById(id); return q ? h("img", { src: iconURL(id, 2), alt: q.name, title: q.name, width: 24, height: 24 }) : null; })));
+      menuEl.append(h("div", { class: "row dg-row" },
+        h("button", { class: "btn small", type: "button", onclick: () => start(run.floor, run.carry) }, "Replay this floor"),
+        h("button", { class: "btn small", type: "button", onclick: toList }, "Floor list")));
+    }
+    function victoryView() {
+      const f = run.floor, last = f === G.FLOORS;
+      menuEl.className = "dg-menu dg-victory";
+      const confetti = h("div", { class: "dg-confetti", "aria-hidden": "true" }, Array.from({ length: 28 }, (_, i) => h("i", { style: { left: (i * 37) % 100 + "%", "--d": (i % 7) * 0.35 + "s", "--t": 2.6 + (i % 5) * 0.5 + "s", background: ["#f4b942", "#ff5d73", "#6ef0e0", "#c08aff", "#6ad48a", "#ffffff"][i % 6] } })));
+      menuEl.append(confetti,
+        h("img", { class: "dg-trophy", src: iconURL("trophy", 6, "#f4b942"), alt: "", width: 72, height: 72 }),
+        h("h2", { class: "dg-vic-title pixel" }, "Victory!"),
+        h("p", { class: "dg-vic-sub" }, last ? "Cinderwing is slain. The castle is yours." : "The Goblin King has fallen. The way under the castle is open."),
+        starRow(run.stars),
+        h("dl", { class: "dg-vic-stats" },
+          h("div", null, h("dt", null, "Time"), h("dd", { class: "pixel" }, fmtTime(run.time))),
+          h("div", null, h("dt", null, "Defeated"), h("dd", { class: "pixel" }, run.kills)),
+          h("div", null, h("dt", null, "Damage taken"), h("dd", { class: "pixel" }, Math.round(run.hpLost))),
+          h("div", null, h("dt", null, "Enchants"), h("dd", { class: "pixel" }, run.perks.length))),
+        h("div", { class: "row dg-row" },
+          last ? h("button", { class: "btn primary", type: "button", onclick: () => start(1) }, "Play again from floor 1")
+            : h("button", { class: "btn primary", type: "button", onclick: () => { NDC.clear(menuEl); enchantView(f + 1); } }, "Claim your enchant"),
+          h("button", { class: "btn", type: "button", onclick: toList }, "Floor list")),
+      );
+      if (last) menuEl.append(h("p", { class: "dg-why" }, "Your stars, best times and bestiary are kept. Go for three stars on every floor."));
+      SFX.win();
+    }
     function drawMenu() {
-      NDC.clear(menuEl); menuEl.hidden = false;
+      NDC.clear(menuEl); menuEl.hidden = false; menuEl.className = "dg-menu";
       if (phase === "clear" || phase === "dead") {
         const win = phase === "clear", f = run.floor, nextF = f + 1, hasNext = win && nextF <= G.FLOORS;
-        menuEl.append(h("h2", null, win ? (f === G.FLOORS ? "Cinderwing is slain!" : `${run.theme.name} cleared`) : `Knocked out on floor ${f}`));
-        if (win) menuEl.append(h("div", { class: "dg-result" }, starRow(run.stars),
-          h("p", null, `${fmtTime(run.time)}${run.newBest ? " · new best time" : ""} · ${run.kills} defeated${run.bestChain >= 3 ? ` · ${run.bestChain} chain` : ""}`),
-          h("p", { class: "dg-why" }, `★ Cleared   ${run.time <= PAR[f] ? "★" : "☆"} Under ${fmtTime(PAR[f])}   ${run.hpLost <= run.p.maxHp * 0.35 ? "★" : "☆"} Lost under a third of your health`)));
-        else menuEl.append(h("p", { class: "muted" }, `${run.kills} defeated · ${fmtTime(run.time || run.t)}`));
-        if (hasNext) {
-          offer = offerPerks(run.perks, nextF);
-          menuEl.append(h("p", { class: "dg-pick" }, `Pick a blessing for floor ${nextF}`), h("div", { class: "dg-perks" }, offer.map((q, i) => perkCard(q, i, nextF))));
-        }
-        if (win && f === 5) menuEl.append(h("p", { class: "dg-why" }, "The way under the castle is open. Floors 6 to 10 wait below."));
-        if (win && f === G.FLOORS) menuEl.append(h("p", { class: "dg-why" }, "You beat all ten floors. Go for three stars on every one."));
+        if (win && (f === 5 || f === G.FLOORS)) { victoryView(); return; }
+        if (win && hasNext) { enchantView(nextF); return; }
+        menuEl.append(h("h2", null, `Knocked out on floor ${f}`), h("p", { class: "muted" }, `${run.kills} defeated · ${fmtTime(run.time || run.t)}`));
+        if (run.perks.length) menuEl.append(h("div", { class: "dg-have" }, h("span", null, "Your enchants"), run.perks.map((id) => h("img", { src: iconURL(id, 2), alt: "", width: 24, height: 24 }))));
         menuEl.append(h("div", { class: "row dg-row" },
-          h("button", { class: "btn" + (hasNext ? " small" : " primary"), type: "button", onclick: () => start(f, run.carry) }, win ? "Replay this floor" : "Try again"),
-          h("button", { class: "btn" + (hasNext ? " small" : ""), type: "button", onclick: () => { phase = "menu"; run = null; offer = null; bg = null; drawMenu(); } }, "Floor list")));
+          h("button", { class: "btn primary", type: "button", onclick: () => start(f, run.carry) }, "Try again"),
+          h("button", { class: "btn", type: "button", onclick: toList }, "Floor list")));
         return;
       }
       const deep = gs.best >= 5;
@@ -1238,7 +1571,7 @@
       const tag = e.target && e.target.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || e.ctrlKey || e.metaKey || e.altKey) return;
       const k = e.key.toLowerCase();
-      if (phase === "clear" && offer && ["1", "2", "3"].includes(k) && offer[+k - 1]) { pickPerk(offer[+k - 1], run.floor + 1); return; }
+      if (phase === "clear" && offer && menuEl.classList.contains("dg-enchanting") && ["1", "2", "3"].includes(k) && offer[+k - 1]) { pickPerk(offer[+k - 1], run.floor + 1); return; }
       if (phase === "play" && Object.values(KEYS).some((a) => a.includes(k))) e.preventDefault();
       keys.add(k);
     };
@@ -1247,8 +1580,8 @@
     document.addEventListener("keydown", onDown); document.addEventListener("keyup", onUp); window.addEventListener("blur", clearKeys);
     const toWorld = (e) => { const r = canvas.getBoundingClientRect(); return { x: ((e.clientX - r.left) / r.width) * W, y: ((e.clientY - r.top) / r.height) * H }; };
     canvas.addEventListener("mousemove", (e) => { const m = toWorld(e); mouse.x = m.x; mouse.y = m.y; mouse.seen = 3; });
-    canvas.addEventListener("mousedown", (e) => { const m = toWorld(e); mouse.x = m.x; mouse.y = m.y; mouse.seen = 3; keys.add(e.button === 2 ? "k" : "j"); canvas.focus({ preventScroll: true }); e.preventDefault(); });
-    const onMouseUp = (e) => { keys.delete(e.button === 2 ? "k" : "j"); };
+    canvas.addEventListener("mousedown", (e) => { const m = toWorld(e); mouse.x = m.x; mouse.y = m.y; mouse.seen = 3; keys.add(e.button === 2 ? (run && !run.ab.spin && run.ab.beam ? "i" : "k") : "j"); canvas.focus({ preventScroll: true }); e.preventDefault(); });
+    const onMouseUp = (e) => { if (e.button === 2) { keys.delete("k"); keys.delete("i"); } else keys.delete("j"); };
     window.addEventListener("mouseup", onMouseUp);
     canvas.addEventListener("contextmenu", (e) => e.preventDefault());
 
@@ -1260,8 +1593,37 @@
     };
     const pad = h("div", { class: "dg-pad" },
       h("div", { class: "dg-dpad" }, holdBtn("▲", "arrowup", "u"), holdBtn("◀", "arrowleft", "l"), holdBtn("▶", "arrowright", "r"), holdBtn("▼", "arrowdown", "d")),
-      h("div", { class: "dg-acts" }, holdBtn("Dash", "l"), holdBtn("Spin", "k"), holdBtn("Swing", "j", "primary")));
+      h("div", { class: "dg-acts" }, h("div", { class: "dg-acts-row" }, holdBtn("Beam", "i"), holdBtn("Spin", "k"), holdBtn("Bolt", "o")), h("div", { class: "dg-acts-row" }, holdBtn("Dash", "l"), holdBtn("Swing", "j", "primary"))));
     const soundBtn = h("button", { class: "link-btn", type: "button", onclick: () => { soundOn = !soundOn; soundBtn.textContent = soundOn ? "Sound: on" : "Sound: off"; if (soundOn) SFX.perk(); } }, "Sound: off");
+
+    /* full screen: the real Fullscreen API where it exists, a fixed overlay where it doesn't (iPhone) */
+    const FS_IN = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
+    const FS_OUT = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>';
+    const stageEl = h("div", { class: "dg-stage px" }, canvas, menuEl);
+    const playEl = h("div", { class: "dg-play" }, stageEl, pad);
+    const isFull = () => document.fullscreenElement === playEl || playEl.classList.contains("dg-full");
+    const fsCorner = h("button", { class: "dg-fs", type: "button", "aria-label": "Full screen", onclick: () => toggleFull() });
+    const fsBtn = h("button", { class: "link-btn", type: "button", onclick: () => toggleFull() }, "Full screen");
+    stageEl.append(fsCorner);
+    function syncFull() {
+      const on = isFull();
+      fsCorner.innerHTML = on ? FS_OUT : FS_IN; fsCorner.setAttribute("aria-label", on ? "Exit full screen" : "Full screen");
+      fsBtn.textContent = on ? "Exit full screen" : "Full screen";
+      document.body.classList.toggle("dg-locked", playEl.classList.contains("dg-full"));
+      canvas.focus({ preventScroll: true });
+    }
+    function toggleFull() {
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+      else if (playEl.classList.contains("dg-full")) playEl.classList.remove("dg-full");
+      else if (playEl.requestFullscreen && document.fullscreenEnabled) playEl.requestFullscreen().catch(() => playEl.classList.add("dg-full")).then(syncFull);
+      else playEl.classList.add("dg-full");
+      syncFull();
+    }
+    const onFsChange = () => syncFull();
+    document.addEventListener("fullscreenchange", onFsChange);
+    const onEsc = (e) => { if (e.key === "Escape" && playEl.classList.contains("dg-full")) { playEl.classList.remove("dg-full"); syncFull(); } };
+    document.addEventListener("keydown", onEsc);
+    syncFull();
 
     NDC._dg = { get run() { return run; }, get phase() { return phase; }, get offer() { return offer; }, keys, start, pickPerk, step: (dt, n) => { for (let i = 0; i < n && run; i++) { if (phase === "play") update(dt); else break; } } }; // handles for automated playtests
     /* switching theme mid-game: redraw the room, the knight and the menus right away */
@@ -1280,15 +1642,16 @@
       h("li", null, h("span", null, key("W"), key("A"), key("S"), key("D")), "Move"),
       h("li", null, h("span", null, key("J"), key("Space")), "Swing · keep pressing to combo"),
       h("li", null, h("span", null, key("L"), key("Shift")), "Dash through attacks"),
-      h("li", null, h("span", null, key("K"), key("Q")), "Whirlwind · from floor 6"));
+      h("li", null, h("span", null, key("I"), key("R")), "Sword Beam · from floor 3"),
+      h("li", null, h("span", null, key("K"), key("Q")), "Whirlwind · from floor 6"),
+      h("li", null, h("span", null, key("O"), key("F")), "Thunder · from floor 9"));
     const root = h("div", { class: "page dg-page" }, h("div", { class: "wrap", style: { maxWidth: "1040px" } },
       h("div", { class: "dg-head" },
-        h("div", null, h("h1", null, "Dungeon"), h("p", { class: "muted" }, "Ten floors under the castle, from the slime cellar down to the dragon. Clear a floor to pick a blessing for the next one.")),
+        h("div", null, h("h1", null, "Dungeon"), h("p", { class: "muted" }, "Ten floors under the castle, from the slime cellar down to the dragon. Clear a floor to pick an enchant, and unlock a new ability every three floors.")),
         controls),
       statEl,
-      h("div", { class: "dg-stage px" }, canvas, menuEl),
-      h("div", { class: "row dg-under" }, h("p", { class: "muted" }, "Mouse works too: click to swing, right-click for Whirlwind."), soundBtn),
-      pad,
+      playEl,
+      h("div", { class: "row dg-under" }, h("p", { class: "muted" }, "Mouse works too: click to swing, right-click for your best ability."), h("div", { class: "row", style: { gap: "1rem" } }, fsBtn, soundBtn)),
       beastEl));
 
     return {
@@ -1296,6 +1659,9 @@
       destroy() {
         alive = false; cancelAnimationFrame(raf);
         document.removeEventListener("keydown", onDown); document.removeEventListener("keyup", onUp); window.removeEventListener("blur", clearKeys); window.removeEventListener("mouseup", onMouseUp); document.removeEventListener("ndc-theme", onTheme);
+        document.removeEventListener("fullscreenchange", onFsChange); document.removeEventListener("keydown", onEsc);
+        if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+        document.body.classList.remove("dg-locked");
         commit();
       },
     };
