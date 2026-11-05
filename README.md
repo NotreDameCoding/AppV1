@@ -1,6 +1,6 @@
 # Notre Dame Coding — Hub
 
-The club site: learn Python, Java, JavaScript, HTML, CSS and Arduino in short lessons, earn XP, fight your way down five Dungeon floors with one fixed knight, and browse member projects. Plain HTML, CSS and JavaScript, plus GSAP from a CDN for scroll motion (the site works without it). No build step.
+The club site: learn Python, Java, JavaScript, HTML, CSS and Arduino in short lessons, earn XP, fight your way down five Dungeon floors with one fixed knight, and browse member projects. Plain HTML, CSS and JavaScript. No build step.
 
 ## Run it
 Open `index.html`, or for the best results run a tiny server: `python3 -m http.server` and visit http://localhost:8000.
@@ -13,7 +13,6 @@ Deploy: push to GitHub, then Settings > Pages > Deploy from branch, and pick the
 | Lessons | `js/courses/*.js` (one file per language) |
 | The knight's fixed kit and stats | `js/game.js` (`G.KIT`, `G.BASE_HP`, `G.BASE_STAMINA`), sprites in `js/knight.js`, game in `js/pages/dungeon.js` |
 | Colors, fonts, light and dark themes | `css/styles.css` (tokens at the top) |
-| Moving background, scroll animation | `js/backdrop.js`, `js/motion.js` |
 | Check that Floor 5 is beatable | `tools/dungeon-sim.py` |
 | Club name, email, keys | `js/config.js` |
 
