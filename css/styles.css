@@ -737,10 +737,6 @@ h2.sec { font-size: clamp(1.9rem, 3.6vw, 2.6rem); letter-spacing: -0.015em; }
   animation: breathe 9s ease-in-out infinite;
 }
 @keyframes breathe { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
-.motes { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-.motes i { position: absolute; bottom: -8px; width: 4px; height: 4px; background: var(--gold); opacity: 0; animation: mote 16s linear infinite; }
-.motes i:nth-child(3n) { width: 3px; height: 3px; background: var(--line-2); }
-@keyframes mote { 0% { transform: translateY(0); opacity: 0; } 12% { opacity: 0.45; } 80% { opacity: 0.25; } 100% { transform: translateY(-460px); opacity: 0; } }
 
 /* section header rows: title on the left, link or button on the right */
 .sec-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.9rem; }
@@ -772,19 +768,11 @@ h2.sec { font-size: clamp(1.9rem, 3.6vw, 2.6rem); letter-spacing: -0.015em; }
 .mini-proj .blurb { font-size: 0.98rem !important; }
 .mini-proj .tags { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-top: 0.3rem; }
 
-/* scroll reveal */
-.reveal { opacity: 0; transform: translateY(14px); transition: opacity 0.6s ease, transform 0.6s ease; transition-delay: var(--d, 0ms); }
-.reveal.in { opacity: 1; transform: none; }
-.home .lang-tile.reveal.in:hover { transform: translateY(-2px); transition-delay: 0ms; }
 
 @media (max-width: 880px) {
   .home .home-meet { grid-template-columns: 1fr; gap: 1.2rem; }
   .ways, .mini-projs { grid-template-columns: 1fr; }
   .hero-stats > div { padding: 0.2rem 1rem; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .reveal { opacity: 1; transform: none; }
-  .motes { display: none; }
 }
 @media (max-width: 880px) {
   .home .hero .wrap { grid-template-columns: 1fr; }
@@ -817,3 +805,27 @@ h2.sec { font-size: clamp(1.9rem, 3.6vw, 2.6rem); letter-spacing: -0.015em; }
   .node-note { position: static; transform: none; width: min(260px, 80vw); margin-top: 0.4rem; text-align: center !important; border: 0 !important; background: none; padding: 0; }
   .node-note .st { display: none; }
 }
+
+/* stacking sections: each home section pins, and the next one slides up over it */
+.home .stack { position: sticky; top: var(--stick, var(--nav-h)); background: var(--bg); }
+.home .stack.band { background: var(--bg-2); }
+.home .stack + .stack { box-shadow: 0 -10px 24px -14px rgba(0, 0, 0, 0.55); border-top: 2px solid var(--line); }
+:root[data-theme="light"] .home .stack + .stack { box-shadow: 0 -10px 24px -14px rgba(60, 45, 15, 0.28); }
+.home .hero.stack { border-bottom: 0; }
+.home .band.stack { border-bottom: 0; }
+
+/* embers rising off the knight */
+.knight-box { position: relative; display: grid; justify-items: center; }
+.knight-box .knight-wrap { position: relative; z-index: 1; }
+.embers { position: absolute; left: -22%; right: -22%; top: 8%; bottom: 0; z-index: 0; pointer-events: none; }
+.embers i { position: absolute; bottom: 10%; background: var(--gold); box-shadow: 0 0 6px rgba(244, 185, 66, 0.75); opacity: 0; animation: ember 4s linear infinite; }
+.embers i.dim { background: #ffd98a; box-shadow: none; }
+@keyframes ember {
+  0% { transform: translate(0, 0); opacity: 0; }
+  10% { opacity: 0.95; }
+  50% { transform: translate(var(--sway), -190px); }
+  85% { opacity: 0.4; }
+  100% { transform: translate(0, -400px); opacity: 0; }
+}
+:root[data-theme="light"] .embers i { background: #e2a020; box-shadow: 0 0 5px rgba(196, 130, 10, 0.6); }
+@media (prefers-reduced-motion: reduce) { .embers { display: none; } }
