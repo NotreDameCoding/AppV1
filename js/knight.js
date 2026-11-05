@@ -32,7 +32,7 @@
   const LIGHT_ARMOR = { a: "#bcc5d3", h: "#f0f4fa", b: "#6f7a8f" };
   const LIGHT_CAPE = { c: "#7c8597", C: "#4f5668" };
   const LIGHT_SHIELD = { m: "#8691a6", n: "#e2e8f2" };
-  const OUT = "#0a0c16", LIGHT_OUT = "#0a0c16", GOLD = "#f4b942", DARK_INK = "#16182b", SKIN = "#f1c9a1", BROWN = "#5a4636";
+  const OUT = "#0a0c16", LIGHT_OUT = "#f4b942", GOLD = "#f4b942", DARK_INK = "#16182b", SKIN = "#f1c9a1", BROWN = "#5a4636";
 
   const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.substr(i, 2), 16));
   const hexOf = (r, g, b) => "#" + [r, g, b].map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0")).join("");
@@ -181,18 +181,20 @@
     const edge = [];
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (!grid[y][x] && (filled(x - 1, y) || filled(x + 1, y) || filled(x, y - 1) || filled(x, y + 1))) edge.push([x, y]);
     if (eq.light) {
-      /* silver knight: a black outline that runs unbroken round the whole figure, diagonals included.
+      /* silver knight: a thin gold outline, half a pixel thick, hugging the figure. It is not drawn above the crown.
          Parts of the figure touch the edge of the sprite (the crown, the left of the shield), so the outline cells that fall outside it are kept in grid.ext and the picture is widened to fit them */
-      const out = [], ext = [];
-      for (let y = -1; y <= H; y++) for (let x = -1; x <= W; x++) {
+      const ol = [];
+      for (let y = 0; y <= H; y++) for (let x = -1; x <= W; x++) {
         if (filled(x, y)) continue;
-        let touch = false;
-        for (let dy = -1; dy <= 1 && !touch; dy++) for (let dx = -1; dx <= 1; dx++) if ((dx || dy) && filled(x + dx, y + dy)) { touch = true; break; }
-        if (!touch) continue;
-        if (x < 0 || y < 0 || x >= W || y >= H) ext.push([x, y]); else out.push([x, y]);
+        let any = false, side = false;
+        const add = (r) => ol.push(r);
+        if (filled(x - 1, y)) { add([x, y, 0.5, 1]); side = true; }
+        if (filled(x + 1, y)) { add([x + 0.5, y, 0.5, 1]); side = true; }
+        if (filled(x, y - 1)) { add([x, y, 1, 0.5]); side = true; }
+        if (filled(x, y + 1)) { add([x, y + 0.5, 1, 0.5]); side = true; }
+        if (!side) for (let dy = -1; dy <= 1; dy += 2) for (let dx = -1; dx <= 1; dx += 2) if (filled(x + dx, y + dy)) add([x + (dx > 0 ? 0.5 : 0), y + (dy > 0 ? 0.5 : 0), 0.5, 0.5]);
       }
-      out.forEach(([x, y]) => { grid[y][x] = LIGHT_OUT; });
-      grid.ext = ext;
+      grid.ol = ol;
     } else {
       edge.forEach(([x, y]) => { grid[y][x] = OUT; });
     }
@@ -203,14 +205,13 @@
     opts = opts || {};
     let crop = (opts.crop || [0, 0, W, H]).slice();
     let extra = "";
-    if (grid.ext && grid.ext.length) {
+    if (grid.ol && grid.ol.length) {
       let x0 = crop[0], y0 = crop[1], x1 = crop[0] + crop[2], y1 = crop[1] + crop[3];
-      if (x0 === 0 && grid.ext.some(([x]) => x < 0)) x0 = -1;
-      if (y0 === 0 && grid.ext.some(([, y]) => y < 0)) y0 = -1;
-      if (x1 === W && grid.ext.some(([x]) => x >= W)) x1 = W + 1;
-      if (y1 === H && grid.ext.some(([, y]) => y >= H)) y1 = H + 1;
+      if (x0 === 0 && grid.ol.some((r) => r[0] < 0)) x0 = -1;
+      if (x1 === W && grid.ol.some((r) => r[0] + r[2] > W)) x1 = W + 1;
+      if (y1 === H && grid.ol.some((r) => r[1] + r[3] > H)) y1 = H + 1;
       crop = [x0, y0, x1 - x0, y1 - y0];
-      grid.ext.forEach(([x, y]) => { if (x >= x0 && x < x1 && y >= y0 && y < y1) extra += `<rect x="${x}" y="${y}" width="1" height="1" fill="${LIGHT_OUT}"/>`; });
+      grid.ol.forEach(([x, y, w, h]) => { if (x >= x0 && x + w <= x1 && y >= y0 && y + h <= y1) extra += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${LIGHT_OUT}"/>`; });
     }
     let rects = "";
     for (let y = 0; y < H; y++) {
