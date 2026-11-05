@@ -3,7 +3,7 @@
 
   function pathTile(course, state) {
     const cs = G.courseStats(state, course);
-    return h("a", { class: "lang-tile px", href: "#/learn/" + course.id, style: { "--cc": course.color } },
+    return h("a", { class: "lang-tile px reveal", href: "#/learn/" + course.id, style: { "--cc": course.color } },
       NDC.ring(cs.pct, course.color, course.glyph),
       h("div", null,
         h("h3", null, course.name),
@@ -19,7 +19,7 @@
       const size = [3, 4, 5, 4, 6][i % 5];
       el.append(h("i", { class: i % 4 === 0 ? "dim" : "", style: {
         left: x + "%", width: size + "px", height: size + "px",
-        animationDuration: (3.2 + (i % 6) * 0.55) + "s", animationDelay: -((i * 0.73) % 5) + "s",
+        animationDuration: (11 + (i % 6) * 1.6) + "s", animationDelay: -((i * 1.9) % 19) + "s",
         "--sway": ((i % 2 ? 1 : -1) * (6 + (i % 3) * 5)) + "px",
       } }));
     }
@@ -27,7 +27,7 @@
   }
 
   function projectCard(p) {
-    return h("a", { class: "mini-proj px", href: "#/projects" },
+    return h("a", { class: "mini-proj px reveal", href: "#/projects" },
       h("h3", null, p.title),
       h("p", { class: "by" }, (p.authors || []).join(", ")),
       p.blurb ? h("p", { class: "blurb" }, p.blurb) : null,
@@ -37,15 +37,22 @@
       })));
   }
 
-  // stacking sections: each one pins once its bottom is on screen, so the next slides over it
-  function stack(root) {
-    const set = () => {
-      const navH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nav-h")) || 68;
-      root.querySelectorAll(".stack").forEach((el) => el.style.setProperty("--stick", Math.min(navH, window.innerHeight - el.offsetHeight) + "px"));
-    };
-    set();
-    window.addEventListener("resize", set);
-    return () => window.removeEventListener("resize", set);
+  // fade-and-rise as sections scroll into view; everything shows at once when motion is reduced
+  function reveal(root) {
+    const items = root.querySelectorAll(".reveal");
+    const still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (still || !("IntersectionObserver" in window)) { items.forEach((el) => el.classList.add("in")); return; }
+    const io = new IntersectionObserver((entries) => entries.forEach((e) => {
+      if (!e.isIntersecting) return;
+      e.target.classList.add("in");
+      io.unobserve(e.target);
+    }), { rootMargin: "0px 0px -8% 0px", threshold: 0.12 });
+    // stagger siblings in the same grid so a row arrives one tile after another
+    items.forEach((el) => {
+      const sibs = [...el.parentElement.children].filter((s) => s.classList.contains("reveal"));
+      el.style.setProperty("--d", (sibs.indexOf(el) % 3) * 80 + "ms");
+      io.observe(el);
+    });
   }
 
   NDC.pages.home = function () {
@@ -59,7 +66,7 @@
     const resumeCourse = started.length ? started[0].c : null;
     const resumeLesson = resumeCourse ? NDC.store.nextLesson(resumeCourse) : null;
 
-    const hero = h("section", { class: "hero stack" }, h("div", { class: "wrap" },
+    const hero = h("section", { class: "hero" }, h("div", { class: "wrap" },
       h("div", { class: "hero-copy" },
         h("p", { class: "eyebrow pixel" }, "Learn \u00b7 Build \u00b7 Play"),
         h("h1", null, "Notre Dame High School Coding Club"),
@@ -82,18 +89,17 @@
 
     const root = h("div", { class: "home" },
       hero,
-      h("section", { class: "page paths stack" }, h("div", { class: "wrap" },
-        h("div", { class: "sec-row" }, h("h2", { class: "sec" }, "Pick a path"), h("a", { class: "more", href: "#/learn" }, "All lessons →")),
+      h("section", { class: "page paths" }, h("div", { class: "wrap" },
+        h("div", { class: "sec-row reveal" }, h("h2", { class: "sec" }, "Pick a path"), h("a", { class: "more", href: "#/learn" }, "All lessons →")),
         h("div", { class: "shelf" }, NDC.courses.map((c) => pathTile(c, st))))),
-      h("section", { class: "page projects stack" }, h("div", { class: "wrap" },
-        h("div", { class: "sec-row" },
+      h("section", { class: "page projects" }, h("div", { class: "wrap" },
+        h("div", { class: "sec-row reveal" },
           h("div", null, h("h2", { class: "sec" }, "Club projects"),
             h("p", { class: "muted" }, NDC.projects.length ? `${NDC.projects.length} project${NDC.projects.length === 1 ? "" : "s"} shared so far.` : "No projects yet.")),
           h("a", { class: "btn", href: "#/projects" }, "Open the project board")),
         recent.length ? h("div", { class: "mini-projs" }, recent.map(projectCard)) : null)));
 
-    let unstack = null;
-    requestAnimationFrame(() => { unstack = stack(root); });
-    return { el: root, destroy() { if (unstack) unstack(); } };
+    requestAnimationFrame(() => reveal(root));
+    return root;
   };
 })();
