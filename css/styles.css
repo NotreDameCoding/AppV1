@@ -582,6 +582,13 @@ footer.site .wrap { display: flex; justify-content: space-between; gap: 1rem; fl
 .dg-floors .fl-ok { margin-left: auto; font-size: 0.8rem; color: var(--good); font-weight: 700; }
 .next-line { margin-top: 1.4rem; }
 
-/* the knight, lightened for the light theme: softer outline, brighter metal */
-:root[data-theme="light"] { --k-out: #3d4668; }
-:root[data-theme="light"] svg.kn { filter: brightness(1.38) saturate(1.1); }
+/* the knight is drawn twice (dark kit and white-and-gold kit); the theme picks one */
+.kn2 { display: contents; }
+:root:not([data-theme="light"]) .kn-lite { display: none; }
+:root[data-theme="light"] .kn-dark { display: none; }
+
+/* Dungeon menu over the sunny yard */
+:root[data-theme="light"] .dg-menu { background: rgba(247, 244, 232, 0.62); color: var(--text); }
+:root[data-theme="light"] .dg-menu h2 { color: var(--text); }
+:root[data-theme="light"] .dg-stage { --fill: #8a6a46; }
+:root[data-theme="light"] .dg-canvas { background: #7cc4f2; }

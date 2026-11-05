@@ -32,6 +32,7 @@ NDC.svg = function svg(markup) {
   t.innerHTML = markup.trim();
   return t.content.firstChild;
 };
+NDC.isLight = () => document.documentElement.dataset.theme === "light";
 NDC.clear = function clear(el) { while (el.firstChild) el.removeChild(el.firstChild); return el; };
 
 NDC.dayKey = function dayKey(d = new Date()) {

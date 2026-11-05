@@ -18,6 +18,9 @@
     { name: G.FLOOR_NAMES[3], a: "#221a33", b: "#1d162c", crack: "#0f0a1a", wall: "#30244a", wallHi: "#46346b", glow: "#c07dff", deco: "crystal", torch: [80, 160, 320, 400] },
     { name: G.FLOOR_NAMES[4], a: "#2a1a1a", b: "#241616", crack: "#140a0a", wall: "#42262a", wallHi: "#603840", glow: "#ffcf5a", deco: "throne", torch: [90, 170, 310, 390] },
   ];
+  /* light mode plays outside (see dungeon-day.js); dark mode is the cellar */
+  const day = () => NDC.isLight();
+  const themeOf = (f) => (day() ? NDC.dungeonDay.THEMES : THEMES)[f];
   const FLOORS = [null,
     { waves: [["s", "s", "s"], ["s", "s", "g"], ["S", "g", "g"]], pillars: [[130, 150], [350, 150]] },
     { waves: [["g", "g", "s", "s", "s"], ["a", "a", "g"], ["S", "S", "a", "g", "g"]], pillars: [[120, 140], [360, 140], [240, 210]] },
@@ -122,6 +125,12 @@
     g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,0.65)"); c.fillStyle = g; c.fillRect(0, 0, W, H); return cv;
   })();
 
+  const dayVignette = (() => {
+    const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+    const c = cv.getContext("2d"), g = c.createRadialGradient(W / 2, H / 2 + 10, 130, W / 2, H / 2 + 10, 320);
+    g.addColorStop(0, "rgba(20,40,10,0)"); g.addColorStop(1, "rgba(20,40,10,0.22)"); c.fillStyle = g; c.fillRect(0, 0, W, H); return cv;
+  })();
+
   /* ====================================================================== */
   NDC.pages.dungeon = function () {
     let gs = G.gameStats(NDC.store.get());
@@ -137,7 +146,7 @@
 
     const loadout = () => G.loadout(NDC.store.get());
     function makeSprite() {
-      const eq = Object.assign({}, NDC.store.equipped(), { shield: "none", weapon: "none" });
+      const eq = Object.assign({}, NDC.store.equipped(), { shield: "none", weapon: "none", light: day() });
       const img = new Image();
       img.onload = () => { sprite = img; };
       img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(NDC.knight.svg(eq, { crop: [0, 0, 28, 32] }));
@@ -154,12 +163,12 @@
         dash: 0, dashCd: 0, dashDir: 0, stun: 0, inv: 0, flash: 0, walk: 0, L,
       };
       run = {
-        floor, p, theme: THEMES[floor], def: FLOORS[floor], enemies: [], spawns: [], arrows: [], waves: [], fx: [], pickups: [], t: 0,
-        waveIdx: 0, waveWait: 0.8, gained: 0, kills: 0, banner: THEMES[floor].name, bannerT: 2.4, freeze: 0, shake: 0, slow: 0, over: false, endT: 0,
+        floor, p, day: day(), theme: themeOf(floor), def: FLOORS[floor], enemies: [], spawns: [], arrows: [], waves: [], fx: [], pickups: [], t: 0,
+        waveIdx: 0, waveWait: 0.8, gained: 0, kills: 0, banner: themeOf(floor).name, bannerT: 2.4, freeze: 0, shake: 0, slow: 0, over: false, endT: 0,
         pillars: FLOORS[floor].pillars.map(([x, y]) => ({ x, y, r: 9 })), best: 0, hitFlash: 0,
       };
       if (FLOORS[floor].fire) run.pillars.push({ x: 240, y: 192, r: 10, fire: true });
-      bg = buildBg(floor);
+      bg = day() ? NDC.dungeonDay.build(floor) : buildBg(floor);
       phase = "play"; makeSprite(); menuEl.hidden = true; canvas.focus({ preventScroll: true });
     }
 
@@ -585,6 +594,7 @@
         R("#ff6a1a", q.x - 5, q.y - 14 + fl, 10, 10); R("#ffb04a", q.x - 3, q.y - 18 + fl, 6, 10); R("#fff0a0", q.x - 1, q.y - 15 + fl, 2, 5);
         return;
       }
+      if (run.day) { if (run.floor === 3 && !q.fire) return; if (run.floor >= 4) NDC.dungeonDay.drawStone(R, q, run.theme, run.t); else NDC.dungeonDay.drawTree(R, q, run.floor, run.t); return; }
       R("#10131f", q.x - 10, q.y - 34, 20, 40); R(run.theme.wall, q.x - 8, q.y - 32, 16, 36); R(run.theme.wallHi, q.x - 8, q.y - 32, 3, 36); R("rgba(0,0,0,0.3)", q.x + 4, q.y - 32, 4, 36);
       R(run.theme.wallHi, q.x - 11, q.y - 36, 22, 5); R("#10131f", q.x - 11, q.y - 31, 22, 1); R(run.theme.wallHi, q.x - 11, q.y + 1, 22, 5);
     }
@@ -607,13 +617,13 @@
     }
     function drawShield() {
       const p = run.p; if (p.block <= 0.02) { drawShieldIdle(); return; }
-      const sh = NDC.knight.SHIELDS[p.L.eq.shield] || NDC.knight.SHIELDS.oak, arc = p.L.shield.arc / 100;
+      const sh = day() ? { m: NDC.knight.LIGHT_SHIELD.m, n: NDC.knight.LIGHT_SHIELD.n } : NDC.knight.SHIELDS[p.L.eq.shield] || NDC.knight.SHIELDS.oak, arc = p.L.shield.arc / 100;
       const up = easeOut(p.block), a = p.dir + (1 - up) * -0.9 * (Math.cos(p.dir) < 0 ? -1 : 1);
       const dd = 7 + up * 6 - p.shieldKick * 3;
       const sx = p.x + Math.cos(a) * dd, sy = p.y - 8 + Math.sin(a) * dd * 0.8;
       ctx.save(); ctx.translate(Math.round(sx), Math.round(sy)); ctx.rotate(a);
       const hgt = 8 + arc * 8;
-      ctx.fillStyle = "#0a0c16"; ctx.fillRect(-3, -hgt / 2 - 1, 8, hgt + 2);
+      ctx.fillStyle = day() ? NDC.knight.LIGHT_OUT : "#0a0c16"; ctx.fillRect(-3, -hgt / 2 - 1, 8, hgt + 2);
       ctx.fillStyle = sh.m; ctx.fillRect(-2, -hgt / 2, 6, hgt);
       ctx.fillStyle = "rgba(255,255,255,0.25)"; ctx.fillRect(-2, -hgt / 2, 2, hgt);
       ctx.fillStyle = sh.n; ctx.fillRect(0, -2, 2, 4);
@@ -621,9 +631,9 @@
       ctx.restore();
     }
     function drawShieldIdle() { // carried on the arm when not blocking
-      const p = run.p, sh = NDC.knight.SHIELDS[p.L.eq.shield] || NDC.knight.SHIELDS.oak, f = Math.cos(p.dir) < -0.25 ? 1 : -1;
+      const p = run.p, sh = day() ? NDC.knight.LIGHT_SHIELD : NDC.knight.SHIELDS[p.L.eq.shield] || NDC.knight.SHIELDS.oak, f = Math.cos(p.dir) < -0.25 ? 1 : -1;
       const x = p.x + f * 9, y = p.y - 9;
-      R("#0a0c16", x - 4, y - 5, 8, 12); R(sh.m, x - 3, y - 4, 6, 10); R("rgba(255,255,255,0.22)", x - 3, y - 4, 2, 10); R(sh.n, x - 1, y - 1, 2, 3);
+      R(day() ? NDC.knight.LIGHT_OUT : "#0a0c16", x - 4, y - 5, 8, 12); R(sh.m, x - 3, y - 4, 6, 10); R("rgba(255,255,255,0.22)", x - 3, y - 4, 2, 10); R(sh.n, x - 1, y - 1, 2, 3);
     }
     function drawWeapon() {
       const p = run.p, w = p.L.weapon, wp = NDC.knight.WEAPONS[p.L.eq.weapon] || NDC.knight.WEAPONS.wood;
@@ -653,7 +663,19 @@
       if (p.swing && p.swing.t / p.swing.dur > 0.24 && p.swing.t / p.swing.dur < 0.5 && Math.random() < 0.6) addFx({ k: "spark", x: hx + cx * L, y: hy + cy * L, vx: rnd(-20, 20), vy: rnd(-20, 10), t: 0.25, c: p.L.eq.weapon === "spark" ? "#6ef0e0" : (p.L.eq.weapon === "flame" ? "#ffb04a" : "#fff") });
     }
 
+    /* light mode only: drifting cloud shadows, grass that sways, a few butterflies */
+    function drawSkyLife() {
+      const t = run.t;
+      ctx.fillStyle = "rgba(20,50,20,0.10)";
+      for (let i = 0; i < 3; i++) { const x = ((t * 6 + i * 190) % (W + 160)) - 80, y = 110 + i * 58 + Math.sin(t * 0.2 + i) * 8; ctx.beginPath(); ctx.ellipse(x, y, 70, 22, 0, 0, TAU); ctx.fill(); }
+      const col = run.floor === 5 ? "#ffe08a" : "#ffffff";
+      for (let i = 0; i < 4; i++) {
+        const x = 70 + ((i * 97 + Math.sin(t * 0.6 + i * 2) * 30 + t * 4 * (i % 2 ? 1 : -1)) % 340 + 340) % 340, y = 100 + i * 44 + Math.sin(t * 1.7 + i * 3) * 10, fl = Math.sin(t * 22 + i * 5) > 0 ? 3 : 1;
+        R(col, x - fl, y, fl, 2); R(col, x + 1, y, fl, 2); R("#3a2a1a", x, y, 1, 3);
+      }
+    }
     function drawLighting() {
+      if (run.day) return;
       lctx.globalCompositeOperation = "source-over"; lctx.clearRect(0, 0, W, H);
       lctx.fillStyle = "rgba(5,7,16,0.66)"; lctx.fillRect(0, 0, W, H);
       lctx.globalCompositeOperation = "destination-out";
@@ -688,10 +710,10 @@
         R("#0a0c16", x - 2, y - 2, w + 4, hh + 4); R("#1f2540", x, y, w, hh); R(c1, x, y, Math.round(w * clamp(pct, 0, 1)), hh); R(c2, x, y, Math.round(w * clamp(pct, 0, 1)), 2);
         ctx.fillStyle = "#f4f1e6"; ctx.textAlign = "left"; ctx.fillText(label, x + w + 7, y + hh - 1);
       };
-      R("rgba(5,7,16,0.6)", 30, 2, 190, 28);
+      R(run.day ? "rgba(5,7,16,0.8)" : "rgba(5,7,16,0.6)", 30, 2, 190, 28);
       bar(36, 6, 120, 8, p.hp / p.maxHp, "#e5484d", "#ff8a8a", `${Math.ceil(p.hp)}/${p.maxHp}`);
       bar(36, 20, 120, 5, p.st / p.maxSt, p.stun > 0 ? "#6a7899" : p.st < 20 ? "#e5a04a" : "#4f9cf0", "#9ccbff", "Stamina");
-      R("rgba(5,7,16,0.6)", W - 150, 2, 118, 28);
+      R(run.day ? "rgba(5,7,16,0.8)" : "rgba(5,7,16,0.6)", W - 150, 2, 118, 28);
       ctx.textAlign = "right"; ctx.fillStyle = "#f4f1e6";
       ctx.fillText(run.theme.name, W - 36, 14); ctx.fillStyle = "#8a93b5"; ctx.fillText(`Floor ${run.floor}  ·  ${run.enemies.length + run.spawns.length} left`, W - 36, 26);
       if (p.combo > 1 && p.comboT > 0) { ctx.textAlign = "center"; ctx.fillStyle = p.combo === 3 ? "#ffe08a" : "#fff"; ctx.fillText(p.combo === 3 ? "FINISHER!" : `Combo x${p.combo}`, p.x, p.y - 34); }
@@ -703,7 +725,7 @@
     function draw() {
       ctx.imageSmoothingEnabled = false;
       ctx.save();
-      if (!run) { ctx.fillStyle = "#070912"; ctx.fillRect(0, 0, W, H); const b = bg || (bg = buildBg(1)); ctx.drawImage(b, 0, 0); ctx.fillStyle = "rgba(4,6,12,0.55)"; ctx.fillRect(0, 0, W, H); ctx.restore(); return; }
+      if (!run) { ctx.fillStyle = "#070912"; ctx.fillRect(0, 0, W, H); const b = bg || (bg = day() ? NDC.dungeonDay.build(1) : buildBg(1)); ctx.drawImage(b, 0, 0); ctx.fillStyle = day() ? "rgba(246,244,232,0.1)" : "rgba(4,6,12,0.55)"; ctx.fillRect(0, 0, W, H); ctx.restore(); return; }
       if (run.shake > 0) ctx.translate(Math.round(rnd(-1, 1) * run.shake * 0.5), Math.round(rnd(-1, 1) * run.shake * 0.5));
       ctx.drawImage(bg, 0, 0);
       // floor-level effects
@@ -730,7 +752,7 @@
         else if (f.k === "text") { ctx.font = "10px 'Pixelify Sans', monospace"; ctx.textAlign = "center"; ctx.fillStyle = "#0a0c16"; ctx.fillText(String(f.v), f.x + 1, f.y - (0.7 - f.t) * 24 + 1); ctx.fillStyle = f.c; ctx.fillText(String(f.v), f.x, f.y - (0.7 - f.t) * 24); }
       }
       drawLighting();
-      ctx.drawImage(vignette, 0, 0);
+      if (run.day) { ctx.drawImage(dayVignette, 0, 0); drawSkyLife(); } else ctx.drawImage(vignette, 0, 0);
       if (run.hitFlash > 0) { ctx.fillStyle = "rgba(255,40,60," + run.hitFlash * 0.5 + ")"; ctx.fillRect(0, 0, W, H); }
       if (run.p.hp < run.p.maxHp * 0.3 && !run.over) { ctx.fillStyle = "rgba(255,0,30," + (0.06 + 0.05 * Math.sin(run.t * 7)) + ")"; ctx.fillRect(0, 0, W, H); }
       ctx.restore();
@@ -749,7 +771,7 @@
     function floorBtn(f) {
       const cleared = gs.best >= f;
       return h("button", { class: "btn" + (cleared ? " cleared" : ""), type: "button", onclick: () => start(f) },
-        h("span", { class: "fl-n" }, f), h("span", { class: "fl-t" }, THEMES[f].name), cleared ? h("span", { class: "fl-ok" }, "Cleared") : null);
+        h("span", { class: "fl-n" }, f), h("span", { class: "fl-t" }, themeOf(f).name), cleared ? h("span", { class: "fl-ok" }, "Cleared") : null);
     }
     function drawMenu() {
       NDC.clear(menuEl); menuEl.hidden = false;
@@ -806,6 +828,14 @@
     const soundBtn = h("button", { class: "link-btn", type: "button", onclick: () => { soundOn = !soundOn; soundBtn.textContent = soundOn ? "Sound: on" : "Sound: off"; if (soundOn) SFX.parry(); } }, "Sound: off");
 
     NDC._dg = { get run() { return run; }, get phase() { return phase; }, keys };
+    /* switching theme mid-game: redraw the yard, the knight and the floor names right away */
+    const onTheme = () => {
+      makeSprite();
+      if (run) { run.day = day(); run.theme = themeOf(run.floor); bg = day() ? NDC.dungeonDay.build(run.floor) : buildBg(run.floor); }
+      else { bg = null; }
+      if (phase === "menu" || phase === "clear" || phase === "dead") drawMenu();
+    };
+    document.addEventListener("ndc-theme", onTheme);
     makeSprite(); drawStat(); drawMenu();
     raf = requestAnimationFrame(loop);
 
@@ -822,7 +852,7 @@
       el: root,
       destroy() {
         alive = false; cancelAnimationFrame(raf);
-        document.removeEventListener("keydown", onDown); document.removeEventListener("keyup", onUp); window.removeEventListener("blur", clearKeys);
+        document.removeEventListener("keydown", onDown); document.removeEventListener("keyup", onUp); window.removeEventListener("blur", clearKeys); document.removeEventListener("ndc-theme", onTheme);
         commit();
       },
     };

@@ -59,6 +59,7 @@
       const next = light() ? "dark" : "light";
       if (next === "light") document.documentElement.dataset.theme = "light"; else delete document.documentElement.dataset.theme;
       try { localStorage.setItem("ndc.theme", next); } catch (e) {}
+      document.dispatchEvent(new Event("ndc-theme"));
       b.setAttribute("aria-label", next === "light" ? "Switch to dark theme" : "Switch to light theme");
     } }, NDC.svg(SUN_MOON));
     b.setAttribute("aria-label", light() ? "Switch to dark theme" : "Switch to light theme");

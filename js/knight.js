@@ -29,7 +29,10 @@
     royal: { c: "#2a2a36", C: "#14141c" },
     gold:  { c: "#f4b942", C: "#b67f1d" },
   };
-  const OUT = "var(--k-out,#0a0c16)", GOLD = "#f4b942", DARK = "#16182b", SKIN = "#f1c9a1", BROWN = "#5a4636";
+  const LIGHT_ARMOR = { a: "#f4f6fb", h: "#ffffff", b: "#c4cbdc" };
+  const LIGHT_CAPE = { c: "#e9ecf5", C: "#b9c1d6" };
+  const LIGHT_SHIELD = { m: "#f4f6fb", n: "#e0a823" };
+  const OUT = "#0a0c16", LIGHT_OUT = "#d9a21b", GOLD = "#f4b942", DARK_INK = "#16182b", SKIN = "#f1c9a1", BROWN = "#5a4636";
 
   const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.substr(i, 2), 16));
   const hexOf = (r, g, b) => "#" + [r, g, b].map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0")).join("");
@@ -45,13 +48,15 @@
 
   function build(eq) {
     eq = eq || {};
-    const A = ARMOR[eq.armor || "steel"] || ARMOR.steel;
+    /* light version: white armor and shield trimmed in gold, drawn over a gold outline (see compose) */
+    const A = eq.light ? LIGHT_ARMOR : ARMOR[eq.armor || "steel"] || ARMOR.steel;
+    const DARK = eq.light ? "#8e97b4" : DARK_INK;
     const layers = [];
     const L = (c, o) => { const l = new Layer(c, o); layers.push(l); return l; };
     const armor = (c) => L(c || A.a, { hi: A.h, sh: A.b });
 
     // cape hangs behind the whole body
-    const cape = CAPES[eq.cape || "none"];
+    const cape = eq.light && eq.cape && eq.cape !== "none" ? LIGHT_CAPE : CAPES[eq.cape || "none"];
     if (cape) {
       const c = L(cape.c, { hi: tint(cape.c, 0.25), sh: cape.C });
       // wide, flared cape that ends in a row of sharp triangles
@@ -101,7 +106,7 @@
 
     // shield on the left arm, sword or staff on the right
     if (eq.shield !== "none") {
-      const s = SHIELDS[eq.shield || "oak"] || SHIELDS.oak;
+      const s = eq.light ? LIGHT_SHIELD : SHIELDS[eq.shield || "oak"] || SHIELDS.oak;
       // wide, thick kite shield: coloured body with a light rim
       const rows = [[1, 13], [0, 14], [0, 14], [0, 14], [0, 14], [0, 14], [0, 14], [0, 14], [0, 14], [1, 13], [2, 12], [3, 11], [4, 10], [5, 9], [6, 8]];
       const rim = L(s.n, { hi: tint(s.n, 0.35), sh: tint(s.n, -0.3) }), body = L(s.m);
@@ -151,6 +156,7 @@
   }
 
   function compose(eq) {
+    eq = eq || {};
     const grid = Array.from({ length: H }, () => Array(W).fill(null));
     for (const l of build(eq)) {
       const base = l.c, hi = l.hi || tint(base, 0.32), sh = l.sh || tint(base, -0.34), has = (x, y) => l.m.has(key(x, y));
@@ -168,7 +174,7 @@
     const filled = (x, y) => x >= 0 && y >= 0 && x < W && y < H && grid[y][x];
     const edge = [];
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (!grid[y][x] && (filled(x - 1, y) || filled(x + 1, y) || filled(x, y - 1) || filled(x, y + 1))) edge.push([x, y]);
-    edge.forEach(([x, y]) => { grid[y][x] = OUT; });
+    edge.forEach(([x, y]) => { grid[y][x] = eq && eq.light ? LIGHT_OUT : OUT; });
     return grid;
   }
 
@@ -183,7 +189,7 @@
         if (!c) { x++; continue; }
         let x2 = x + 1;
         while (x2 < W && grid[y][x2] === c) x2++;
-        rects += `<rect x="${x}" y="${y}" width="${x2 - x}" height="1" ${c.charAt(0) === "v" ? `style="fill:${c}"` : `fill="${c}"`}/>`;
+        rects += `<rect x="${x}" y="${y}" width="${x2 - x}" height="1" fill="${c}"/>`;
         x = x2;
       }
     }
@@ -191,10 +197,16 @@
   }
 
   NDC.knight = {
-    W, H, ARMOR, SHIELDS, WEAPONS, CAPES,
+    W, H, ARMOR, SHIELDS, WEAPONS, CAPES, LIGHT_SHIELD, LIGHT_OUT,
     svg(eq, opts) { return toSvg(compose(eq), opts); },
-    node(eq, opts) { return NDC.svg(this.svg(eq, opts)); },
-    head(eq) { return NDC.svg(toSvg(compose(eq), { crop: [5, 0, 18, 17], label: "Knight" })); },
+    /* on the page the knight is drawn twice, once per theme, and CSS shows the one that matches */
+    both(make) {
+      const w = document.createElement("span"); w.className = "kn2";
+      const d = NDC.svg(make(false)), l = NDC.svg(make(true));
+      d.classList.add("kn-dark"); l.classList.add("kn-lite"); w.append(d, l); return w;
+    },
+    node(eq, opts) { return this.both((lt) => this.svg(Object.assign({}, eq, { light: lt }), opts)); },
+    head(eq) { return this.both((lt) => toSvg(compose(Object.assign({}, eq, { light: lt })), { crop: [5, 0, 18, 17], label: "Knight" })); },
     /* gear icons: the piece alone on a small canvas */
     icon(slot, k) {
       if (slot === "helm") return NDC.svg(toSvg(compose({ helm: k, armor: "steel", shield: "none", weapon: "none", cape: "none" }), { crop: [4, 0, 20, 18], label: k }));
