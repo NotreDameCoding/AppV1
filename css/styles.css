@@ -210,6 +210,16 @@ h2.sec { font-family: var(--f-display); font-size: clamp(1.9rem, 3.6vw, 2.7rem);
 /* ---------- home sections ---------- */
 .shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.1rem; }
 .lang-tile { --fill: var(--panel); display: grid; grid-template-columns: auto 1fr; gap: 1.1rem; align-items: center; padding: 1.2rem 1.3rem; text-decoration: none; transition: transform 0.08s; }
+/* path tabs: two-step pixel corner, a touch rounder than the default notch */
+.lang-tile, .lang-tile::before {
+  clip-path: polygon(
+    var(--a) 0, calc(100% - var(--a)) 0, calc(100% - var(--a)) var(--b), calc(100% - var(--b)) var(--b), calc(100% - var(--b)) var(--a), 100% var(--a),
+    100% calc(100% - var(--a)), calc(100% - var(--b)) calc(100% - var(--a)), calc(100% - var(--b)) calc(100% - var(--b)), calc(100% - var(--a)) calc(100% - var(--b)), calc(100% - var(--a)) 100%,
+    var(--a) 100%, var(--a) calc(100% - var(--b)), var(--b) calc(100% - var(--b)), var(--b) calc(100% - var(--a)), 0 calc(100% - var(--a)),
+    0 var(--a), var(--b) var(--a), var(--b) var(--b), var(--a) var(--b));
+}
+.lang-tile { --a: 6px; --b: 2px; }
+.lang-tile::before { --a: 4px; --b: 1px; }
 .lang-tile:hover { --fill: var(--panel-2); transform: translateY(-2px); }
 .lang-tile h3 { font-family: var(--f-display); font-size: 1.9rem; line-height: 1; }
 .lang-tile p { color: var(--dim); font-size: 0.95rem; margin-top: 0.3rem; }
