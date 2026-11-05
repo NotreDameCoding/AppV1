@@ -137,7 +137,7 @@ NDC.bus = (() => {
 NDC.ring = function ring(pct, color, glyph, size) {
   const r = 26, c = 2 * Math.PI * r, off = c * (1 - Math.max(0, Math.min(1, pct)));
   const el = NDC.h("span", { class: "ring", style: size ? { "--size": size + "px" } : null });
-  el.append(NDC.svg(`<svg viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="${r}" fill="none" style="stroke:var(--line)" stroke-width="6"/><circle cx="30" cy="30" r="${r}" fill="none" style="stroke:${color}" stroke-width="6" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" stroke-linecap="round"/></svg>`));
+  el.append(NDC.svg(`<svg viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="${r}" fill="none" style="stroke:var(--line)" stroke-width="6"/><circle cx="30" cy="30" r="${r}" fill="none" style="stroke:${color}" stroke-width="6" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" stroke-linecap="butt"/></svg>`));
   el.append(NDC.h("span", { class: "glyph", style: { color } }, glyph));
   return el;
 };

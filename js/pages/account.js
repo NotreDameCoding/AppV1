@@ -80,7 +80,7 @@
 
     const kitCard = h("div", { class: "acct-knight px" },
       h("div", { class: "sprite" }, NDC.knight.node(NDC.store.equipped())));
-    const top = h("div", { class: "acct-top", "data-reveal": "" },
+    const top = h("div", { class: "acct-top" },
       kitCard,
       h("div", null, titleEl,
         h("p", { class: "rank-line" }, `Level ${stats.level} ${G.title(stats.level)} · ${stats.xp} XP`),
@@ -110,9 +110,9 @@
 
     const card = (cls, title, content) => h("section", { class: "card px " + cls }, h("h2", null, title), content);
     return h("div", { class: "page" }, h("div", { class: "wrap" }, top,
-      h("div", { class: "acct-grid", "data-stagger": "" },
-        card("c4", "Your knight", h("ul", { class: "kit-list" }, [["Crown", "Helm"], ["Starlight shield", "Shield"], ["Steel sword", "Weapon"], ["Black cape", "Cape"], ["Obsidian armor", "Armor"]].map(([n, s]) => h("li", null, h("span", null, n), h("span", null, s))))),
-        card("c8", "Proficiency", proficiency(state)),
+      h("div", { class: "acct-grid" },
+        card("c5", "Your knight", h("ul", { class: "kit-list" }, [["Crown", "Helm"], ["Starlight shield", "Shield"], ["Steel sword", "Weapon"], ["Black cape", "Cape"], ["Obsidian armor", "Armor"]].map(([n, s]) => h("li", null, h("span", null, n), h("span", null, s))))),
+        card("c7", "Proficiency", proficiency(state)),
         card("c12", "Badges", badgesGrid(stats)),
         card("c12", "Activity", h("div", null, heat(state.days), h("p", { class: "muted", style: { marginTop: "0.6rem", fontSize: "0.9rem" } }, `${stats.activeDays} active days · longest streak ${stats.bestStreak}`))),
         card(NDC.auth.officer ? "c6" : "c12", "Settings", settings),

@@ -39,7 +39,7 @@
         h("li", null, h("span", null, "Fill in the title, your name, the languages and a sentence about it. For a website add the link. For a program, paste your code into ", h("code", { class: "inline" }, "code"), " and set ", h("code", { class: "inline" }, "lang"), " (py, js, ht or cs) and visitors can run it right here. Then open a pull request.")),
         h("li", null, h("span", null, "An officer reviews it, and your project shows up here."))));
     return h("div", { class: "page" }, h("div", { class: "wrap" },
-      h("div", { class: "page-head", "data-reveal": "" }, h("h1", null, "Projects")),
+      h("div", { class: "page-head" }, h("h1", null, "Projects")),
       NDC.projects.length ? chips : null, grid, howto));
   };
 })();

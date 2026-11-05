@@ -810,7 +810,7 @@
     raf = requestAnimationFrame(loop);
 
     const root = h("div", { class: "page" }, h("div", { class: "wrap", style: { maxWidth: "1040px" } },
-      h("div", { class: "page-head", "data-reveal": "" }, h("h1", null, "Dungeon"),
+      h("div", { class: "page-head" }, h("h1", null, "Dungeon"),
         h("p", null, "Move WASD or arrows. Swing J or Space. Block K or Shift. Dash L or E. Mouse: click to swing, right-click to block.")),
       statEl,
       h("div", { class: "dg-stage px" }, canvas, menuEl),

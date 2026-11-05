@@ -41,7 +41,7 @@
     let n = 0;
     course.units.forEach((unit, ui) => {
       const doneIn = unit.lessons.filter((l) => state.done[l.id]).length;
-      path.append(h("div", { class: "unit-banner px", "data-reveal": "", style: { "--cc": course.color } },
+      path.append(h("div", { class: "unit-banner px", style: { "--cc": course.color } },
         h("div", null, h("p", { class: "u pixel" }, `Unit ${ui + 1}`), h("h3", null, unit.title), h("p", null, unit.blurb)),
         h("span", { class: "chip", style: { color: course.color } }, `${doneIn}/${unit.lessons.length}`)));
       unit.lessons.forEach((lesson) => {
@@ -53,7 +53,7 @@
         const glyph = isDone ? NDC.svg('<svg viewBox="0 0 9 7" shape-rendering="crispEdges" width="34" height="27"><path fill="#0b0e1a" d="M7 0h2v2H8v1H7v1H6v1H5v1H4v1H2V6H1V5H0V3h2v1h1v1h1V4h1V3h1V2h1z"/></svg>') : isSkipped ? ">>" : unlocked ? String(all.indexOf(lesson) + 1) : "#";
         const btn = h("button", { class: cls, type: "button", "aria-label": `${lesson.title}${isDone ? ", completed" : !unlocked ? ", locked" : ""}`, onclick: () => openLesson(course, unit, lesson, idx, state) },
           h("span", { class: "ic" }, glyph));
-        path.append(h("div", { class: "node-slot" + (unlocked || isDone ? "" : " locked-slot"), "data-reveal": "", style: { "--dx": DX[idx % DX.length] + "px", "--cc": course.color } },
+        path.append(h("div", { class: "node-slot" + (unlocked || isDone ? "" : " locked-slot"), style: { "--dx": DX[idx % DX.length] + "px", "--cc": course.color } },
           isCurrent ? h("span", { class: "start-flag px", style: { "--fill": "var(--gold)", "--edge": "var(--gold)" } }, "Start") : null,
           btn, h("span", { class: "node-label" }, lesson.title)));
       });
