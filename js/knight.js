@@ -29,10 +29,10 @@
     royal: { c: "#2a2a36", C: "#14141c" },
     gold:  { c: "#f4b942", C: "#b67f1d" },
   };
-  const LIGHT_ARMOR = { a: "#c9d1de", h: "#f6f8fc", b: "#8a95aa" };
+  const LIGHT_ARMOR = { a: "#cdd5e1", h: "#f8fafd", b: "#7a859b" };
   const LIGHT_CAPE = { c: "#68728a", C: "#434b5f" };
   const LIGHT_SHIELD = { m: "#5f6b82", n: "#eef2f9" };
-  const OUT = "#0a0c16", LIGHT_OUT = "#3c4458", GOLD = "#f4b942", DARK_INK = "#16182b", SKIN = "#f1c9a1", BROWN = "#5a4636";
+  const OUT = "#0a0c16", LIGHT_OUT = "#3c4458", LIGHT_SEAM = "#566078", GOLD = "#f4b942", DARK_INK = "#16182b", SKIN = "#f1c9a1", BROWN = "#5a4636";
 
   const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.substr(i, 2), 16));
   const hexOf = (r, g, b) => "#" + [r, g, b].map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0")).join("");
@@ -105,6 +105,7 @@
     }
 
     // shield on the left arm, sword or staff on the right
+    layers.gearFrom = layers.length + 1; // owner numbers from here on are gear, which gets a seam in the silver version
     if (eq.shield !== "none") {
       const s = eq.light ? LIGHT_SHIELD : SHIELDS[eq.shield || "oak"] || SHIELDS.oak;
       // wide, thick kite shield: coloured body with a light rim
@@ -158,7 +159,11 @@
   function compose(eq) {
     eq = eq || {};
     const grid = Array.from({ length: H }, () => Array(W).fill(null));
-    for (const l of build(eq)) {
+    const owner = Array.from({ length: H }, () => Array(W).fill(-1));
+    let li = 0;
+    const built = build(eq);
+    for (const l of built) {
+      li++;
       const base = l.c, hi = l.hi || tint(base, 0.32), sh = l.sh || tint(base, -0.34), has = (x, y) => l.m.has(key(x, y));
       for (const k of l.m) {
         const x = k % 64, y = (k - x) / 64;
@@ -168,13 +173,23 @@
           if (!has(x + 1, y) || !has(x, y + 1)) c = sh;
           if (!has(x, y - 1) && !has(x, y + 1)) c = base;
         }
-        grid[y][x] = c;
+        grid[y][x] = c; owner[y][x] = li;
       }
     }
     const filled = (x, y) => x >= 0 && y >= 0 && x < W && y < H && grid[y][x];
     const edge = [];
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (!grid[y][x] && (filled(x - 1, y) || filled(x + 1, y) || filled(x, y - 1) || filled(x, y + 1))) edge.push([x, y]);
-    edge.forEach(([x, y]) => { grid[y][x] = eq && eq.light ? LIGHT_OUT : OUT; }); // the silver knight gets a soft slate edge instead of black
+    if (eq.light) {
+      /* silver knight: no outline round the outside. Instead a dark seam is drawn where one piece of gear sits in front of another, which is what keeps the shield, arm and body apart */
+      const seam = [];
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        const o = owner[y][x]; if (o < 0) continue;
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy; if (nx >= 0 && ny >= 0 && nx < W && ny < H && owner[ny][nx] >= built.gearFrom && owner[ny][nx] > o && grid[ny][nx]) { seam.push([x, y]); break; } }
+      }
+      seam.forEach(([x, y]) => { grid[y][x] = LIGHT_SEAM; });
+    } else {
+      edge.forEach(([x, y]) => { grid[y][x] = OUT; });
+    }
     return grid;
   }
 
