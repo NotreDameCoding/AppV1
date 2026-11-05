@@ -93,7 +93,7 @@
 
   /* ---- the knight ----
      Everyone gets the same knight. There is no shop and nothing to level up in the Dungeon: these numbers are
-     the whole kit, and Floor 5 is tuned (see tools/dungeon-sim.py) so a player who dodges, blocks and chains
+     the whole kit (plus the perks picked during a run), and Floor 5 is tuned (see tools/dungeon-sim.py) so a player who dodges, blocks and chains
      swings can beat it with exactly this. */
   G.KIT = {
     helm:   { id: "crowned",   name: "Crown",            hp: 150 },
@@ -108,12 +108,15 @@
   G.isOfficer = () => !!(NDC.auth && NDC.auth.officer);
 
   /* ---- Dungeon ---- */
-  G.FLOORS = 5;
-  G.FLOOR_NAMES = ["Slime Cellar", "Mossy Halls", "Goblin Camp", "Deep Warrens", "The Goblin King"];
-  G.FLOOR_GLOW = ["#5fe0c8", "#9bff7a", "#ff9a3d", "#c07dff", "#ffcf5a"];
+  G.FLOORS = 10;
+  G.FLOOR_NAMES = ["Slime Cellar", "Mossy Halls", "Goblin Camp", "Deep Warrens", "The Goblin King",
+    "Bone Crypt", "Catacombs", "Glob Sewers", "Ember Forge", "Dragon's Roost"];
+  G.FLOOR_GLOW = ["#5fe0c8", "#9bff7a", "#ff9a3d", "#c07dff", "#ffcf5a", "#9fd8ff", "#b6ffe0", "#b4ff5a", "#ff6a2a", "#ffb03a"];
+  /* best floor, total kills, stars per floor (0-3), best clear time per floor (seconds), and kills per enemy kind */
   G.gameStats = function (state) {
     const gm = state.game || {};
-    return { best: gm.best || 0, kills: gm.kills || 0 };
+    const stars = gm.stars || {}, totalStars = Object.values(stars).reduce((n, v) => n + (v || 0), 0);
+    return { best: gm.best || 0, kills: gm.kills || 0, stars, totalStars, times: gm.times || {}, slain: gm.slain || {} };
   };
   NDC.courseById = (id) => NDC.courses.find((c) => c.id === id);
 

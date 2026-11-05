@@ -30,12 +30,6 @@
     return h("div", null, rows);
   }
 
-  function badgesGrid(stats) {
-    return h("div", { class: "badges" }, G.badges.map((b) => {
-      const has = stats.badges.includes(b.id);
-      return h("div", { class: "badge px" + (has ? "" : " locked") }, h("div", { class: "g" }, b.glyph), h("b", null, b.name), h("small", null, b.desc));
-    }));
-  }
 
   function officerPanel() {
     const host = h("div", null, h("p", { class: "muted" }, "Loading…"));
@@ -88,8 +82,7 @@
         h("p", { class: "muted", style: { marginTop: "0.5rem" } }, `${stats.levelSpan - stats.levelInto} XP to level ${stats.level + 1}`),
         h("div", { class: "row", style: { marginTop: "1rem", gap: "0.7rem" } },
           h("span", { class: "chip flame" }, `${stats.streak} day streak`),
-          h("span", { class: "chip" }, `${stats.lessons} lessons`),
-          h("span", { class: "chip" }, `${stats.badges.length}/${G.badges.length} badges`))));
+          h("span", { class: "chip" }, `${stats.lessons} lessons`))));
 
     const settings = h("div", null,
       h("div", { class: "form-row" }, h("label", { for: "dn" }, "Display name"), nameInput),
@@ -111,9 +104,7 @@
     const card = (cls, title, content) => h("section", { class: "card px " + cls }, h("h2", null, title), content);
     return h("div", { class: "page" }, h("div", { class: "wrap" }, top,
       h("div", { class: "acct-grid" },
-        card("c5", "Your knight", h("ul", { class: "kit-list" }, [["Crown", "Helm"], ["Starlight shield", "Shield"], ["Steel sword", "Weapon"], ["Black cape", "Cape"], ["Obsidian armor", "Armor"]].map(([n, s]) => h("li", null, h("span", null, n), h("span", null, s))))),
-        card("c7", "Proficiency", proficiency(state)),
-        card("c12", "Badges", badgesGrid(stats)),
+        card("c12", "Proficiency", proficiency(state)),
         card("c12", "Activity", h("div", null, heat(state.days), h("p", { class: "muted", style: { marginTop: "0.6rem", fontSize: "0.9rem" } }, `${stats.activeDays} active days · longest streak ${stats.bestStreak}`))),
         card(NDC.auth.officer ? "c6" : "c12", "Settings", settings),
         NDC.auth.officer ? card("c6", "Officer view", officerPanel()) : null)));

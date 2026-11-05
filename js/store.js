@@ -34,7 +34,11 @@
       Object.assign(out.skipped, src.skipped || {});
       for (const [k, v] of Object.entries(src.days || {})) out.days[k] = { lessons: Math.max(v.lessons || 0, (out.days[k] || {}).lessons || 0) };
       const sg = src.game || {};
-      out.game = { xp: 0, best: Math.max(out.game.best, sg.best || 0), kills: Math.max(out.game.kills, sg.kills || 0) };
+      const og = out.game, stars = Object.assign({}, og.stars), times = Object.assign({}, og.times), slain = Object.assign({}, og.slain);
+      for (const [f, v] of Object.entries(sg.stars || {})) stars[f] = Math.max(stars[f] || 0, v || 0);
+      for (const [f, v] of Object.entries(sg.times || {})) if (v) times[f] = times[f] ? Math.min(times[f], v) : v;
+      for (const [k, v] of Object.entries(sg.slain || {})) slain[k] = Math.max(slain[k] || 0, v || 0);
+      out.game = { xp: 0, best: Math.max(og.best || 0, sg.best || 0), kills: Math.max(og.kills || 0, sg.kills || 0), stars, times, slain };
       out.answers = { total: Math.max(out.answers.total, (src.answers || {}).total || 0), correct: Math.max(out.answers.correct, (src.answers || {}).correct || 0) };
     }
     for (const id of Object.keys(out.done)) delete out.skipped[id];
