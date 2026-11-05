@@ -623,7 +623,7 @@
       const sx = p.x + Math.cos(a) * dd, sy = p.y - 8 + Math.sin(a) * dd * 0.8;
       ctx.save(); ctx.translate(Math.round(sx), Math.round(sy)); ctx.rotate(a);
       const hgt = 8 + arc * 8;
-      if (!day()) { ctx.fillStyle = "#0a0c16"; ctx.fillRect(-3, -hgt / 2 - 1, 8, hgt + 2); }
+      ctx.fillStyle = day() ? NDC.knight.LIGHT_OUT : "#0a0c16"; ctx.fillRect(-3, -hgt / 2 - 1, 8, hgt + 2);
       ctx.fillStyle = sh.m; ctx.fillRect(-2, -hgt / 2, 6, hgt);
       ctx.fillStyle = "rgba(255,255,255,0.25)"; ctx.fillRect(-2, -hgt / 2, 2, hgt);
       ctx.fillStyle = sh.n; ctx.fillRect(0, -2, 2, 4);
@@ -633,7 +633,7 @@
     function drawShieldIdle() { // carried on the arm when not blocking
       const p = run.p, sh = day() ? NDC.knight.LIGHT_SHIELD : NDC.knight.SHIELDS[p.L.eq.shield] || NDC.knight.SHIELDS.oak, f = Math.cos(p.dir) < -0.25 ? 1 : -1;
       const x = p.x + f * 9, y = p.y - 9;
-      if (!day()) R("#0a0c16", x - 4, y - 5, 8, 12); R(sh.m, x - 3, y - 4, 6, 10); R("rgba(255,255,255,0.22)", x - 3, y - 4, 2, 10); R(sh.n, x - 1, y - 1, 2, 3);
+      R(day() ? NDC.knight.LIGHT_OUT : "#0a0c16", x - 4, y - 5, 8, 12); R(sh.m, x - 3, y - 4, 6, 10); R("rgba(255,255,255,0.22)", x - 3, y - 4, 2, 10); R(sh.n, x - 1, y - 1, 2, 3);
     }
     function drawWeapon() {
       const p = run.p, w = p.L.weapon, wp = NDC.knight.WEAPONS[p.L.eq.weapon] || NDC.knight.WEAPONS.wood;

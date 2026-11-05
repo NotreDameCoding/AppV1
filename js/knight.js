@@ -29,10 +29,10 @@
     royal: { c: "#2a2a36", C: "#14141c" },
     gold:  { c: "#f4b942", C: "#b67f1d" },
   };
-  const LIGHT_ARMOR = { a: "#bcc5d3", h: "#f0f4fa", b: "#6f7a8f" };
-  const LIGHT_CAPE = { c: "#7c8597", C: "#4f5668" };
-  const LIGHT_SHIELD = { m: "#8691a6", n: "#e2e8f2" };
-  const OUT = "#0a0c16", LIGHT_OUT = "#0a0c16", GOLD = "#f4b942", DARK_INK = "#16182b", SKIN = "#f1c9a1", BROWN = "#5a4636";
+  const LIGHT_ARMOR = { a: "#c9d1de", h: "#f6f8fc", b: "#8a95aa" };
+  const LIGHT_CAPE = { c: "#68728a", C: "#434b5f" };
+  const LIGHT_SHIELD = { m: "#5f6b82", n: "#eef2f9" };
+  const OUT = "#0a0c16", LIGHT_OUT = "#3c4458", GOLD = "#f4b942", DARK_INK = "#16182b", SKIN = "#f1c9a1", BROWN = "#5a4636";
 
   const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.substr(i, 2), 16));
   const hexOf = (r, g, b) => "#" + [r, g, b].map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0")).join("");
@@ -174,7 +174,7 @@
     const filled = (x, y) => x >= 0 && y >= 0 && x < W && y < H && grid[y][x];
     const edge = [];
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (!grid[y][x] && (filled(x - 1, y) || filled(x + 1, y) || filled(x, y - 1) || filled(x, y + 1))) edge.push([x, y]);
-    if (!(eq && eq.light)) edge.forEach(([x, y]) => { grid[y][x] = OUT; }); // the silver knight has no outline
+    edge.forEach(([x, y]) => { grid[y][x] = eq && eq.light ? LIGHT_OUT : OUT; }); // the silver knight gets a soft slate edge instead of black
     return grid;
   }
 
