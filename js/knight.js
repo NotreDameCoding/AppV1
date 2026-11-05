@@ -92,7 +92,7 @@
       const base = A.a, hi = A.h, sh = A.b;
       const hl = L(base, { hi, sh });
       rect(hl, 7, 4, 14, 12); rect(hl, 8, 3, 12, 1);
-      rect(L(DARK, { flat: true }), 8, 9, 12, 2);
+      if (!eq.back) rect(L(DARK, { flat: true }), 8, 9, 12, 2); // eye slit; none when he faces away
       if (helm === "iron") rect(L(sh, { flat: true }), 8, 13, 12, 1);
       if (helm === "plumed") { ell(L("#e5484d", { hi: "#ff9ea0", sh: "#942e3a" }), 13.5, 3, 3.4, 3); rect(layers[layers.length - 1], 12, 4, 4, 3); }
       if (helm === "horned") {
@@ -104,6 +104,9 @@
         rect(gd, 7, 2, 14, 2); rect(gd, 7, 0, 2, 2); rect(gd, 13, 0, 2, 2); rect(gd, 19, 0, 2, 2);
       }
     }
+
+    // seen from behind, the cape hangs over his back
+    if (eq.back && cape) { const c2 = L(cape.c, { hi: tint(cape.c, 0.25), sh: cape.C }); rect(c2, 8, 16, 12, 10); }
 
     // shield on the left arm, sword or staff on the right
     layers.gearFrom = layers.length + 1; // owner numbers from here on are gear, which gets a seam in the silver version
