@@ -725,15 +725,17 @@ h2.sec { font-size: clamp(1.9rem, 3.6vw, 2.6rem); letter-spacing: -0.015em; }
 .hero-stats > div:first-child { padding-left: 0; border-left: 0; }
 .hero-stats dt { color: var(--dim); font-size: 0.85rem; font-weight: 600; }
 .hero-stats dd { margin: 0.15rem 0 0; font-size: 1.9rem; line-height: 1; color: var(--text); }
-.home .stage .knight-wrap { width: min(340px, 72vw); }
-.home .platform { width: min(400px, 82vw); }
+.home .stage .knight-wrap { width: min(252px, 64vw); } /* 9 screen pixels per sprite pixel, so the pixel edges stay crisp */
+.home .platform { width: min(296px, 76vw); height: 24px; margin-top: -5px; }
 
 /* very slow background motion: grid drifts, gold glow breathes, a few pixel motes rise */
 .home .hero::before { animation: grid-drift 60s linear infinite; }
 @keyframes grid-drift { to { background-position: 0 0, 32px 32px, 32px 32px; } }
-.home .hero::after {
-  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background: radial-gradient(40% 55% at 76% 58%, var(--gold-soft), transparent 70%);
+/* the glow is centered on the knight itself, so it stays behind him at every screen width */
+.home .knight-box::before {
+  content: ""; position: absolute; left: 50%; top: 50%; width: min(80vw, 1150px); height: 600px;
+  transform: translate(-50%, -50%); z-index: -1; pointer-events: none;
+  background: radial-gradient(50% 50% at 50% 50%, var(--gold-soft), transparent 70%);
   animation: breathe 9s ease-in-out infinite;
 }
 @keyframes breathe { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
@@ -776,7 +778,8 @@ h2.sec { font-size: clamp(1.9rem, 3.6vw, 2.6rem); letter-spacing: -0.015em; }
 }
 @media (max-width: 880px) {
   .home .hero .wrap { grid-template-columns: 1fr; }
-  .home .stage .knight-wrap { width: 210px; }
+  .home .stage .knight-wrap { width: 168px; }
+  .home .platform { width: 198px; height: 18px; margin-top: -4px; }
 }
 
 /* learn: bigger nodes with a note beside each one so the path column isn't a narrow strip */
