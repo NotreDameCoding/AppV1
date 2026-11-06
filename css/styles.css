@@ -725,8 +725,8 @@ h2.sec { font-size: clamp(1.9rem, 3.6vw, 2.6rem); letter-spacing: -0.015em; }
 .hero-stats > div:first-child { padding-left: 0; border-left: 0; }
 .hero-stats dt { color: var(--dim); font-size: 0.85rem; font-weight: 600; }
 .hero-stats dd { margin: 0.15rem 0 0; font-size: 1.9rem; line-height: 1; color: var(--text); }
-.home .stage .knight-wrap { width: min(252px, 64vw); } /* 9 screen pixels per sprite pixel, so the pixel edges stay crisp */
-.home .platform { width: min(296px, 76vw); height: 24px; margin-top: -5px; }
+.home .stage .knight-wrap { width: min(341px, 64vw); aspect-ratio: 31 / 34; } /* the sprite is 31x34 cells with its outline; 11 screen pixels per cell keeps the edges crisp */
+.home .platform { width: min(362px, 76vw); height: 26px; margin-top: -8px; }
 
 /* very slow background motion: grid drifts, gold glow breathes, a few pixel motes rise */
 .home .hero::before { animation: grid-drift 60s linear infinite; }
@@ -778,8 +778,8 @@ h2.sec { font-size: clamp(1.9rem, 3.6vw, 2.6rem); letter-spacing: -0.015em; }
 }
 @media (max-width: 880px) {
   .home .hero .wrap { grid-template-columns: 1fr; }
-  .home .stage .knight-wrap { width: 168px; }
-  .home .platform { width: 198px; height: 18px; margin-top: -4px; }
+  .home .stage .knight-wrap { width: 217px; } /* 7 screen pixels per cell */
+  .home .platform { width: 232px; height: 20px; margin-top: -6px; }
 }
 
 /* learn: bigger nodes with a note beside each one so the path column isn't a narrow strip */

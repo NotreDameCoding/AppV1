@@ -2,6 +2,10 @@
    so every piece of gear can be swapped. Each layer is a shape; light comes from the top left. */
 (function () {
   const W = 28, H = 32;
+  /* the knight is designed on a 28x32 grid, but the sword's guard pokes one column past the right side and the black
+     outline needs a cell of room all round, so pieces are drawn on a canvas with a margin of M cells on every side.
+     The picture is then cropped to whatever was actually drawn, so nothing at the edges gets cut off. */
+  const M = 2;
 
   const ARMOR = {
     steel:  { a: "#9fb0d0", h: "#d3def5", b: "#6a7899" },
@@ -41,7 +45,7 @@
   /* a layer is a set of cells plus a colour; shapes are added with rect() and ell(), mirrored left to right when asked */
   function Layer(c, o) { this.m = new Set(); this.c = c; this.hi = (o && o.hi) || null; this.sh = (o && o.sh) || null; this.flat = !!(o && o.flat); }
   const key = (x, y) => y * 64 + x;
-  function add(L, x, y, mir) { if (x >= 0 && x < W && y >= 0 && y < H) L.m.add(key(x, y)); if (mir && W - 1 - x >= 0 && W - 1 - x < W && y >= 0 && y < H) L.m.add(key(W - 1 - x, y)); }
+  function add(L, x, y, mir) { if (x >= 0 && x < W + M && y >= 0 && y < H) L.m.add(key(x, y)); if (mir && W - 1 - x >= 0 && W - 1 - x < W && y >= 0 && y < H) L.m.add(key(W - 1 - x, y)); }
   function rect(L, x, y, w, h, mir) { for (let j = y; j < y + h; j++) for (let i = x; i < x + w; i++) add(L, i, j, mir); return L; }
   function ell(L, cx, cy, rx, ry, mir) { for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) { const dx = (i + 0.5 - cx) / rx, dy = (j + 0.5 - cy) / ry; if (dx * dx + dy * dy <= 1) add(L, i, j, mir); } return L; }
   const pts = (L, list) => { list.forEach(([x, y]) => add(L, x, y)); return L; };
@@ -164,8 +168,9 @@
   function compose(eq) {
     eq = Object.assign({}, eq, { light: false });
     eq = eq || {};
-    const grid = Array.from({ length: H }, () => Array(W).fill(null));
-    const owner = Array.from({ length: H }, () => Array(W).fill(-1));
+    // rows and columns are shifted by M, so the outline can sit at x = -1 or y = -1 next to a piece on the edge
+    const grid = Array.from({ length: H + 2 * M }, () => Array(W + 2 * M).fill(null));
+    const owner = Array.from({ length: H + 2 * M }, () => Array(W + 2 * M).fill(-1));
     let li = 0;
     const built = build(eq);
     for (const l of built) {
@@ -179,17 +184,17 @@
           if (!has(x + 1, y) || !has(x, y + 1)) c = sh;
           if (!has(x, y - 1) && !has(x, y + 1)) c = base;
         }
-        grid[y][x] = c; owner[y][x] = li;
+        grid[y + M][x + M] = c; owner[y + M][x + M] = li;
       }
     }
-    const filled = (x, y) => x >= 0 && y >= 0 && x < W && y < H && grid[y][x];
+    const filled = (x, y) => x >= -M && y >= -M && x < W + M && y < H + M && grid[y + M][x + M];
     const edge = [];
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (!grid[y][x] && (filled(x - 1, y) || filled(x + 1, y) || filled(x, y - 1) || filled(x, y + 1))) edge.push([x, y]);
+    for (let y = -M; y < H + M; y++) for (let x = -M; x < W + M; x++) if (!filled(x, y) && (filled(x - 1, y) || filled(x + 1, y) || filled(x, y - 1) || filled(x, y + 1))) edge.push([x, y]);
     if (eq.light) {
       /* silver knight: a thin gold outline, half a pixel thick, hugging the figure. It is not drawn above the crown.
          Parts of the figure touch the edge of the sprite (the crown, the left of the shield), so the outline cells that fall outside it are kept in grid.ext and the picture is widened to fit them */
       const ol = [];
-      for (let y = 0; y <= H; y++) for (let x = -1; x <= W; x++) {
+      for (let y = 1 - M; y < H + M - 1; y++) for (let x = 1 - M; x < W + M - 1; x++) {
         if (filled(x, y)) continue;
         let any = false, side = false;
         const add = (r) => ol.push(r);
@@ -201,14 +206,22 @@
       }
       grid.ol = ol;
     } else {
-      edge.forEach(([x, y]) => { grid[y][x] = OUT; });
+      edge.forEach(([x, y]) => { grid[y + M][x + M] = OUT; });
     }
     return grid;
   }
 
+  /* the smallest box (in sprite cells) that holds everything drawn, outline included */
+  function drawnBox(grid) {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    grid.forEach((row, r) => row.forEach((c, i) => { if (c) { x0 = Math.min(x0, i); x1 = Math.max(x1, i); y0 = Math.min(y0, r); y1 = Math.max(y1, r); } }));
+    if (x1 < 0) return [0, 0, W, H];
+    return [x0 - M, y0 - M, x1 - x0 + 1, y1 - y0 + 1];
+  }
+
   function toSvg(grid, opts) {
     opts = opts || {};
-    let crop = (opts.crop || [0, 0, W, H]).slice();
+    let crop = (opts.crop || drawnBox(grid)).slice();
     let extra = "";
     if (grid.ol && grid.ol.length) {
       let x0 = crop[0], y0 = crop[1], x1 = crop[0] + crop[2], y1 = crop[1] + crop[3];
@@ -219,15 +232,16 @@
       grid.ol.forEach(([x, y, w, h]) => { if (x >= x0 && x + w <= x1 && y >= y0 && y + h <= y1) extra += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${LIGHT_OUT}"/>`; });
     }
     let rects = "";
-    for (let y = 0; y < H; y++) {
-      let x = 0;
-      while (x < W) {
-        const c = grid[y][x];
-        if (!c) { x++; continue; }
-        let x2 = x + 1;
-        while (x2 < W && grid[y][x2] === c) x2++;
-        rects += `<rect x="${x}" y="${y}" width="${x2 - x}" height="1" fill="${c}"/>`;
-        x = x2;
+    for (let r = 0; r < grid.length; r++) {
+      const row = grid[r], n = row.length;
+      let i = 0;
+      while (i < n) {
+        const c = row[i];
+        if (!c) { i++; continue; }
+        let i2 = i + 1;
+        while (i2 < n && row[i2] === c) i2++;
+        rects += `<rect x="${i - M}" y="${r - M}" width="${i2 - i}" height="1" fill="${c}"/>`;
+        i = i2;
       }
     }
     return `<svg class="kn" xmlns="http://www.w3.org/2000/svg" viewBox="${crop.join(" ")}" shape-rendering="crispEdges" role="img" aria-label="${opts.label || "Pixel knight"}">${extra}${rects}</svg>`;
