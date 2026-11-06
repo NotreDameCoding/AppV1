@@ -28,7 +28,7 @@ NDC.projects = [
      authors: ["Jake gozen"],
      link: "https://cyberknights.sirkorgo.com/#about", // Filler link
      languages: ["js", "ht", "cs"],                         // py, jv, js, ht, cs, ar
-     blurb: "Dedicated website for Cyberknights Robotics",
+     blurb: "Website for Cyberknights Robotics",
      date: "2026-12-01"
    },
       {
@@ -62,7 +62,7 @@ NDC.projects = [
      authors: ["Charlie Williams"],
      link: "https://www.figma.com/make/LXOcHMvylgFVzjHtAYw3M4/Sort-Apples-by-Condition?code-node-id=0-6&p=f&t=nYSMiPchHRkJBpca-0&fullscreen=1",
      languages: ["js", "ht", "cs"],                         // py, jv, js, ht, cs, ar
-     blurb: "Piano Memory Game",
+     blurb: "Apple Sorting Game",
      date: "2026-11-04"
    },
    
