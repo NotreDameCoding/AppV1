@@ -1,7 +1,7 @@
 /* The Dungeon: a top-down fighting game for the knight, drawn at a low resolution in an angled overhead view.
    Move: WASD / arrows. Swing: J or Space (or left click). Dash: L, E or Shift. Sword Beam (floor 3+): I or R. Whirlwind (floor 6+): K or Q. Thunder (floor 9+): O or F.
    Ten floors: the castle (1-5, ending at the Goblin King) and under the castle (6-10, ending at Cinderwing the dragon).
-   Clearing a floor lets you pick an enchant that lasts for the rest of the run. A new ability unlocks on floors 3, 6 and 9. Saved: best floor, kills, stars and
+   Floors open one at a time: clearing a floor opens the next, and the deepest floor cleared is saved. Clearing a floor lets you pick an enchant that lasts for the rest of the run. A new ability unlocks on floors 3, 6 and 9. Saved: best floor, kills, stars and
    best time per floor, and how many of each monster you've beaten (the bestiary). Room art is in dungeon-art.js. */
 (function () {
   const h = NDC.h, G = NDC.game, ART = NDC.dungeonArt;
@@ -390,6 +390,7 @@
 
     /* ---------- starting ---------- */
     function start(floor, carry) {
+      if (floor > (G.gameStats(NDC.store.get()).best || 0) + 1) return; // locked: clear the floor before it first
       gs = G.gameStats(NDC.store.get());
       carry = carry || { perks: [] };
       const L = loadout(), m = mods(carry.perks);
@@ -1608,12 +1609,14 @@
     }
 
     /* ---------- menus ---------- */
+    const floorOpen = (f) => f <= (G.gameStats(NDC.store.get()).best || 0) + 1;
     const starRow = (n, total) => h("span", { class: "dg-stars", "aria-label": `${n} of ${total || 3} stars` }, Array.from({ length: total || 3 }, (_, i) => h("i", { class: i < n ? "on" : "" })));
     function floorBtn(f) {
-      const locked = f > SPIN_FLOOR - 1 && gs.best < SPIN_FLOOR - 1, cleared = gs.best >= f, st = gs.stars[f] || 0, tm = gs.times[f];
+      // floors open one at a time: you can play any floor you've cleared, plus the next one
+      const locked = !floorOpen(f), cleared = gs.best >= f, st = gs.stars[f] || 0, tm = gs.times[f];
       return h("button", { class: "btn dg-fl" + (cleared ? " cleared" : "") + (locked ? " locked" : ""), type: "button", disabled: locked ? true : null, style: { "--fg": G.FLOOR_GLOW[f - 1] }, onclick: () => { if (!locked) begin(f); } },
         h("span", { class: "fl-n" }, f), h("span", { class: "fl-t" }, themeOf(f).name),
-        h("span", { class: "fl-r" }, locked ? h("span", { class: "fl-lock" }, "Locked") : starRow(st), tm ? h("small", null, fmtTime(tm)) : null));
+        h("span", { class: "fl-r" }, locked ? h("span", { class: "fl-lock", title: `Clear floor ${f - 1} to open` }, "Locked") : starRow(st), tm ? h("small", null, fmtTime(tm)) : null));
     }
     function perkCard(q, i, nextF) {
       const rar = RARITY[q.r];
@@ -1808,11 +1811,18 @@
       else if (playEl.classList.contains("dg-full")) playEl.classList.remove("dg-full");
       else if (playEl.requestFullscreen && document.fullscreenEnabled) playEl.requestFullscreen().catch(() => playEl.classList.add("dg-full")).then(syncFull);
       else playEl.classList.add("dg-full");
-      syncFull();
+      syncFull(); wake();
     }
-    const onFsChange = () => syncFull();
+    /* in full screen the sound and exit buttons (and the mouse pointer) fade out after a moment; moving or tapping brings them back */
+    let idleT = 0;
+    const wake = () => {
+      playEl.classList.remove("dg-idle"); clearTimeout(idleT);
+      if (isFull()) idleT = setTimeout(() => { if (isFull()) playEl.classList.add("dg-idle"); }, 2500);
+    };
+    playEl.addEventListener("pointermove", wake); playEl.addEventListener("pointerdown", wake);
+    const onFsChange = () => { syncFull(); wake(); };
     document.addEventListener("fullscreenchange", onFsChange);
-    const onEsc = (e) => { if (e.key === "Escape" && playEl.classList.contains("dg-full")) { playEl.classList.remove("dg-full"); syncFull(); } };
+    const onEsc = (e) => { if (e.key === "Escape" && playEl.classList.contains("dg-full")) { playEl.classList.remove("dg-full"); syncFull(); wake(); } };
     document.addEventListener("keydown", onEsc);
     syncFull();
 
@@ -1837,7 +1847,7 @@
     return {
       el: root,
       destroy() {
-        alive = false; cancelAnimationFrame(raf);
+        alive = false; cancelAnimationFrame(raf); clearTimeout(idleT);
         document.removeEventListener("keydown", onDown); document.removeEventListener("keyup", onUp); window.removeEventListener("blur", clearKeys); window.removeEventListener("mouseup", onMouseUp); document.removeEventListener("ndc-theme", onTheme);
         document.removeEventListener("fullscreenchange", onFsChange); document.removeEventListener("keydown", onEsc);
         if (document.fullscreenElement) document.exitFullscreen().catch(() => {});

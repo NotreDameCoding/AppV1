@@ -987,10 +987,25 @@ kbd { font: 700 0.75rem/1 var(--f-body); min-width: 1.6rem; padding: 0.3rem 0.4r
 .dg-stage { position: relative; }
 .dg-fs { position: absolute; top: 10px; right: 10px; z-index: 5; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.25); background: rgba(6, 8, 15, 0.55); color: #fff; opacity: 0.75; }
 .dg-fs:hover { opacity: 1; background: rgba(6, 8, 15, 0.8); }
-.dg-play:fullscreen, .dg-play.dg-full { position: fixed; inset: 0; z-index: 300; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem; padding: 0.6rem; }
-.dg-play:fullscreen .dg-stage, .dg-play.dg-full .dg-stage { width: min(100%, calc((100dvh - 1.2rem) * 1.6)); }
-.dg-play:fullscreen .dg-pad, .dg-play.dg-full .dg-pad { width: min(100%, 44rem); margin-top: 0; }
-@media (pointer: coarse) { .dg-play:fullscreen .dg-stage, .dg-play.dg-full .dg-stage { width: min(100%, calc((100dvh - 9rem) * 1.6)); } }
+/* full screen: the game fills the screen edge to edge (black bars only where the screen's shape differs from the game's),
+   no frame, and nothing underneath it. Touch controls float over the corners of the game instead of sitting below it. */
+.dg-play:fullscreen, .dg-play.dg-full { position: fixed; inset: 0; z-index: 300; background: #000; display: flex; align-items: center; justify-content: center; padding: 0; }
+.dg-play:fullscreen .dg-stage, .dg-play.dg-full .dg-stage { width: min(100vw, calc(100dvh * 1.6)); padding: 0; clip-path: none; background: none; }
+.dg-play:fullscreen .dg-stage::before, .dg-play.dg-full .dg-stage::before { display: none; }
+.dg-play:fullscreen .dg-pad, .dg-play.dg-full .dg-pad { position: absolute; left: max(1rem, env(safe-area-inset-left)); right: max(1rem, env(safe-area-inset-right)); bottom: max(1rem, env(safe-area-inset-bottom)); margin: 0; z-index: 6; pointer-events: none; }
+.dg-play:fullscreen .dg-pad .dg-touch, .dg-play.dg-full .dg-pad .dg-touch { pointer-events: auto; opacity: 0.6; }
+.dg-play:fullscreen .dg-pad .dg-touch:active, .dg-play.dg-full .dg-pad .dg-touch:active { opacity: 0.9; }
+/* on short screens (a phone held sideways) the floating controls shrink so they cover less of the game */
+@media (max-height: 520px) {
+  .dg-play:fullscreen .dg-dpad, .dg-play.dg-full .dg-dpad { grid-template-columns: repeat(3, 2.8rem); grid-template-rows: repeat(2, 2.8rem); gap: 0.25rem; }
+  .dg-play:fullscreen .dg-touch, .dg-play.dg-full .dg-touch { min-width: 2.8rem; min-height: 2.8rem; font-size: 0.85rem; padding: 0.3rem 0.5rem; }
+  .dg-play:fullscreen .dg-acts .dg-touch, .dg-play.dg-full .dg-acts .dg-touch { min-width: 3.9rem; }
+  .dg-play:fullscreen .dg-acts, .dg-play.dg-full .dg-acts, .dg-play:fullscreen .dg-acts-row, .dg-play.dg-full .dg-acts-row { gap: 0.25rem; }
+}
+/* sound and exit buttons move to the top middle (the bottom corners belong to the touch controls) and fade out while you play */
+.dg-play:fullscreen .dg-corner, .dg-play.dg-full .dg-corner { top: max(10px, env(safe-area-inset-top)); bottom: auto; right: 50%; transform: translateX(50%); transition: opacity 0.4s; }
+.dg-play.dg-idle .dg-corner { opacity: 0; pointer-events: none; }
+.dg-play.dg-idle { cursor: none; }
 body.dg-locked { overflow: hidden; }
 .dg-acts { flex-direction: column; align-items: flex-end; gap: 0.4rem; }
 .dg-acts-row { display: flex; gap: 0.4rem; }
